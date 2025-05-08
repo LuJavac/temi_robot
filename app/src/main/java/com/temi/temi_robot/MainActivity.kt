@@ -19,7 +19,6 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "Bouton cliqué !", Toast.LENGTH_SHORT).show()
         }
 
-
     }
 
 
