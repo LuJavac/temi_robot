@@ -56,29 +56,13 @@ class RobotController():
 
     // Overrides
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
-        when {
-            asrResult.equals("Hello", ignoreCase = true) -> {
-                robot.askQuestion("Hello, I'm temi, what can I do for you?")
-            }
-            asrResult.equals("Play music", ignoreCase = true) -> {
-                robot.finishConversation()
-                speak("Okay, please enjoy.")
-            }
-            asrResult.equals("Play movie", ignoreCase = true) -> {
-                robot.finishConversation()
-                speak("Okay, please enjoy.")
-            }
-            asrResult.lowercase().contains("follow me") -> {
-                robot.finishConversation()
-                speak("Okay, please enjoy.")
-            }
-            asrResult.lowercase().contains("go to home base") -> {
-                robot.finishConversation()
-                speak("Okay, please enjoy.")
-            }
-            else -> {
-                robot.askQuestion("Sorry I can't understand you, could you please ask something else?")
-            }
+        if(asrResult.lowercase().contains("bye")){
+            robot.finishConversation()
+            speak("Okay bye bye")
+        } else {
+            robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
+            robot.askQuestion("Do you need something else ?")
         }
+
     }
 }

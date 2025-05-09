@@ -21,7 +21,7 @@ public class SpeechControl : ComponentActivity() {
         val startButton = findViewById<Button>(R.id.start_button)
 
         startButton.setOnClickListener{
-            robotController.askQuestion("How are you ?")
+            robotController.askQuestion("Hi, do you need any help ?")
         }
 
     }
