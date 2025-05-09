@@ -54,10 +54,6 @@ class RobotController():
         robot.askQuestion(question)
     }
 
-    fun finishConversation(){
-        robot.finishConversation()
-    }
-
     // Overrides
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         when {
