@@ -6,9 +6,10 @@ import androidx.activity.ComponentActivity
 /////////////////////////////////////////////////////////
 
 import android.widget.Button
-import android.widget.Toast
 
-public class MainActivity : ComponentActivity() {
+public class SpeechControl : ComponentActivity() {
+    private val robotController = RobotController()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -16,10 +17,8 @@ public class MainActivity : ComponentActivity() {
         val startButton = findViewById<Button>(R.id.start_button)
 
         startButton.setOnClickListener{
-            Toast.makeText(this, "Bouton cliqué !", Toast.LENGTH_SHORT).show()
+            robotController.speak("Hello Cecile")
         }
 
     }
-
-
 }
