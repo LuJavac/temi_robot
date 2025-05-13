@@ -1,4 +1,6 @@
 <resources>
-    <string name="app_name">temi_robot</string>
-    <string name="clique_moi">Clique-moi</string>
+    <string name="app_name">Temi library assistant</string>
+    <string name="ask_me_something">Ask me something</string>
+    <string name="my_gif">My GIF</string>
+    <string name="nyp_logo" />
 </resources>

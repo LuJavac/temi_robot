@@ -1,5 +1,6 @@
 [versions]
 agp = "8.10.0"
+glide = "4.16.0"
 googleHiltAndroid = "2.51.1"
 hiltAndroid = "1.2.0"
 hiltAndroidCompiler = "2.56.2"
@@ -19,6 +20,7 @@ sdkVersion = "1.134.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompiler" }
 hilt-android-compiler-v2511 = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompilerVersion" }
