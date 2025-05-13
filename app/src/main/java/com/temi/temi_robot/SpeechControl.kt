@@ -6,7 +6,6 @@ import androidx.activity.ComponentActivity
 import android.widget.Button
 import android.widget.ImageView
 import com.robotemi.sdk.constants.Gender
-import com.bumptech.glide.Glide
 
 
 
