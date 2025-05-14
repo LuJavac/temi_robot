@@ -4,28 +4,22 @@ package com.temi.temi_robot
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
+import com.robotemi.sdk.face.ContactModel
+import com.robotemi.sdk.face.OnFaceRecognizedListener
 import com.robotemi.sdk.permission.Permission
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
-
-// Data classes
-data class AskResult(val result: String, val id: Long = System.currentTimeMillis())
-
-class RobotController():
-    Robot.AsrListener
+class RobotController(private var defaultLocations: List<String>):
+    Robot.AsrListener,
+    OnFaceRecognizedListener
 {
     private val robot = Robot.getInstance() // Create robot object
-
 
     // Add listeners to robot instance
     init {
         robot.addAsrListener(this)
+        robot.addOnFaceRecognizedListener(this)
     }
 
-    // Stateflows for listeners
-    private val _askResult = MutableStateFlow(AskResult("hello"))
-    val askResult = _askResult.asStateFlow()
 
     // Lists for Q&A
     private val openingHours = listOf("time", "hours", "hour", "opened", "opening", "opens", "close", "closes", "closing")
@@ -38,7 +32,18 @@ class RobotController():
     private val jason = listOf("jason", "jackson")
 
 
-    // General functions
+    /////////// General functions
+
+    // Getters and setters
+    fun getDefaultLocations() : List<String> {
+        return defaultLocations
+    }
+
+    fun setDefaultLocations(locations: List<String>) {
+        defaultLocations = locations
+    }
+
+    // Speech
     fun speak(speech: String, haveFace: Boolean = true) { // Make the robot speak
         // Creating TTS request before speaking
         val request = TtsRequest.create(
@@ -51,10 +56,7 @@ class RobotController():
         robot.speak(request)
     }
 
-    fun askQuestion(question: String) {
-        robot.askQuestion(question)
-    }
-
+    // Movements and map
     fun getLocations() : List<String> {
         return robot.locations
     }
@@ -72,9 +74,13 @@ class RobotController():
         robot.requestPermissions(permissions, requestCode)
     }
 
+    // Face recognition
+    fun startFaceRecognition(){
+        robot.startFaceRecognition()
+    }
+
     // Overrides
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
-
         if(openingHours.any { word -> asrResult.contains(word, ignoreCase = true)}){ // Checks if one of the key words is part of the demand
             robot.finishConversation()
             speak("The main library is opened from 8:30 am to 8 pm from Monday to Friday, and is closed on Saturdays. The reading lounge is opened from 8:30 am to 9 pm from Monday to Friday, and from 8:30 am to 1 pm on Saturdays. On Sundays and public holidays, everything is closed.")
@@ -108,10 +114,16 @@ class RobotController():
             speak( "Let's go see this weirdo")
             robot.goTo("jason")
         }
-
         else {
             robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
         }
+        patrol(defaultLocations)
+        robot.startFaceRecognition()
+    }
 
+    override fun onFaceRecognized(contactModelList: List<ContactModel>) {
+        robot.stopMovement()
+        robot.stopFaceRecognition()
+        robot.askQuestion("Hi, how can I help you ?")
     }
 }
