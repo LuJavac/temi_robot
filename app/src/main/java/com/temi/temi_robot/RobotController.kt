@@ -5,9 +5,9 @@ import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.map.MapModel
+import com.robotemi.sdk.permission.Permission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
 
 
 // Data classes
@@ -58,6 +58,14 @@ class RobotController():
 
     fun getMapList() : List<MapModel>{
         return robot.getMapList()
+    }
+
+    fun checkSelfPermission(permission: Permission) : Int{
+        return robot.checkSelfPermission(permission)
+    }
+
+    fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
+        robot.requestPermissions(permissions, requestCode)
     }
 
     fun goTo(location: String){

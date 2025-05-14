@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 
 import android.widget.Button
 import android.widget.ImageView
+import com.robotemi.sdk.permission.Permission
 
 
 public class SpeechControl : ComponentActivity() {
@@ -18,7 +19,10 @@ public class SpeechControl : ComponentActivity() {
         val startButton = findViewById<Button>(R.id.start_button)
 
         startButton.setOnClickListener{
-            robotController.askQuestion("Hi, how can I help you ?")
+            println(robotController.getMapList())
+
+            675bb5e3c2d0ea45c7a1d25f
+            //robotController.askQuestion("Hi, how can I help you ?")
         }
 
     }
