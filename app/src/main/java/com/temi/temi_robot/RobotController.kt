@@ -4,7 +4,6 @@ package com.temi.temi_robot
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
-import com.robotemi.sdk.map.MapModel
 import com.robotemi.sdk.permission.Permission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +16,6 @@ class RobotController():
     Robot.AsrListener
 {
     private val robot = Robot.getInstance() // Create robot object
-    //private val libraryMap = robot.loadMap(mapList[0].id)
 
 
     // Add listeners to robot instance
@@ -37,6 +35,7 @@ class RobotController():
     private val databases = listOf("databases", "database")
     private val examinationPapers = listOf("examination", "examination", "test papers", "model answers")
     private val journalsCollection = listOf("journal", "journals", "magazine", "magazines", "newspaper", "newspapers")
+    private val jason = listOf("jason", "jackson")
 
 
     // General functions
@@ -56,20 +55,21 @@ class RobotController():
         robot.askQuestion(question)
     }
 
-    fun getMapList() : List<MapModel>{
-        return robot.getMapList()
+    fun getLocations() : List<String> {
+        return robot.locations
     }
 
+    fun patrol(locations : List<String>){
+        robot.patrol(locations, times = 0)
+    }
+
+    // Permissions
     fun checkSelfPermission(permission: Permission) : Int{
         return robot.checkSelfPermission(permission)
     }
 
     fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
         robot.requestPermissions(permissions, requestCode)
-    }
-
-    fun goTo(location: String){
-        robot.goTo(location)
     }
 
     // Overrides
@@ -103,6 +103,12 @@ class RobotController():
             robot.finishConversation()
             speak( "The journals are located at different places. The lifestyles magazines are at level 4, and the health, sciences and academic journals are at level 5.")
         }
+        else if(jason.any { word -> asrResult.contains(word, ignoreCase = true)}){
+            robot.finishConversation()
+            speak( "Let's go see this weirdo")
+            robot.goTo("jason")
+        }
+
         else {
             robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
         }

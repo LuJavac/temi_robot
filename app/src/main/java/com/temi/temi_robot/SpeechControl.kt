@@ -18,11 +18,11 @@ public class SpeechControl : ComponentActivity() {
         val nypLogo = findViewById<ImageView>(R.id.my_gif)
         val startButton = findViewById<Button>(R.id.start_button)
 
-        startButton.setOnClickListener{
-            println(robotController.getMapList())
+        val locations = listOf("jason", "test point 3", "me3")
 
-            675bb5e3c2d0ea45c7a1d25f
-            //robotController.askQuestion("Hi, how can I help you ?")
+        startButton.setOnClickListener{
+            //robotController.patrol(locations)
+            robotController.askQuestion("Hi, how can I help you ?")
         }
 
     }
