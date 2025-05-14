@@ -10,7 +10,8 @@ import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>):
     Robot.AsrListener,
-    OnFaceRecognizedListener
+    OnFaceRecognizedListener,
+    Robot.TtsListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -18,8 +19,8 @@ class RobotController(private var defaultLocations: List<String>):
     init {
         robot.addAsrListener(this)
         robot.addOnFaceRecognizedListener(this)
+        robot.addTtsListener(this)
     }
-
 
     // Lists for Q&A
     private val openingHours = listOf("time", "hours", "hour", "opened", "opening", "opens", "close", "closes", "closing")
@@ -30,6 +31,10 @@ class RobotController(private var defaultLocations: List<String>):
     private val examinationPapers = listOf("examination", "examination", "test papers", "model answers")
     private val journalsCollection = listOf("journal", "journals", "magazine", "magazines", "newspaper", "newspapers")
     private val jason = listOf("jason", "jackson")
+
+    // Time test
+    private var lastRequestTime = 0L //
+    private val requestCooldownMillis = 20000L // 50 seconds
 
 
     /////////// General functions
@@ -113,17 +118,30 @@ class RobotController(private var defaultLocations: List<String>):
             robot.finishConversation()
             speak( "Let's go see this weirdo")
             robot.goTo("jason")
+            speak("We arrived")
         }
         else {
             robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
         }
-        patrol(defaultLocations)
-        robot.startFaceRecognition()
     }
 
     override fun onFaceRecognized(contactModelList: List<ContactModel>) {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastRequestTime < requestCooldownMillis) {
+            return
+        }
+
         robot.stopMovement()
         robot.stopFaceRecognition()
         robot.askQuestion("Hi, how can I help you ?")
+    }
+
+    override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
+        lastRequestTime = System.currentTimeMillis()
+
+        if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
+            patrol(defaultLocations)
+            robot.startFaceRecognition()
+        }
     }
 }
