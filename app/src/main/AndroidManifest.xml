@@ -16,9 +16,6 @@
         <meta-data
             android:name="@string/metadata_permissions"
             android:value="com.robotemi.permission.map, com.robotemi.permission.face_recognition, com.robotemi.permission.settings" />
-        <meta-data
-            android:name="com.robotemi.sdk.metadata.SKILL"
-            android:value="@string/temi_robot" />
 
         <meta-data
             android:name="com.robotemi.sdk.metadata.KIOSK"

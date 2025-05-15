@@ -9,7 +9,7 @@ import com.robotemi.sdk.permission.Permission
 
 
 public class SpeechControl : ComponentActivity() {
-    private val locations = listOf("jason", "test point 3", "me3")
+    private val locations = listOf("test point 3","johan", "jason")
     private val robotController = RobotController(locations)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +20,6 @@ public class SpeechControl : ComponentActivity() {
 
         val nypLogo = findViewById<ImageView>(R.id.my_gif)
         val startButton = findViewById<Button>(R.id.start_button)
-
 
         startButton.setOnClickListener{
             robotController.patrol(locations)

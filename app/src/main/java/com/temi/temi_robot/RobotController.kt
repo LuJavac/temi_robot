@@ -7,12 +7,14 @@ import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.face.ContactModel
 
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
+import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>):
     Robot.AsrListener,
     Robot.TtsListener,
-    OnDetectionStateChangedListener
+    OnDetectionStateChangedListener,
+    OnGoToLocationStatusChangedListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -21,6 +23,7 @@ class RobotController(private var defaultLocations: List<String>):
         robot.addAsrListener(this)
         robot.addTtsListener(this)
         robot.addOnDetectionStateChangedListener(this)
+        robot.addOnGoToLocationStatusChangedListener(this)
     }
 
     // Lists for Q&A
@@ -37,6 +40,7 @@ class RobotController(private var defaultLocations: List<String>):
     private var lastRequestTime = 0L //
     private val requestCooldownMillis = 20000L // 50 seconds
 
+    private var isMoveRequest = false
 
     /////////// General functions
 
@@ -47,6 +51,12 @@ class RobotController(private var defaultLocations: List<String>):
 
     fun setDefaultLocations(locations: List<String>) {
         defaultLocations = locations
+    }
+
+    // Own functions
+
+    private fun changeLocationsOrder() {
+        defaultLocations = defaultLocations.drop(1) + defaultLocations.first()
     }
 
     // Speech
@@ -117,11 +127,13 @@ class RobotController(private var defaultLocations: List<String>):
         }
         else if(jason.any { word -> asrResult.contains(word, ignoreCase = true)}){
             robot.finishConversation()
+            isMoveRequest = true
             speak( "Let's go see this weirdo")
             robot.goTo("jason")
         }
         else {
-            robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
+            robot.finishConversation()
+            speak("test")
         }
     }
 
@@ -138,11 +150,33 @@ class RobotController(private var defaultLocations: List<String>):
             robot.askQuestion("Hi, how can I help you ?")
         }
     }
+
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
+        if (isMoveRequest) {
+            return
+        }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
+
             patrol(defaultLocations)
             robot.setDetectionModeOn(true, 0.5f)
+        }
+    }
+
+    override fun onGoToLocationStatusChanged(
+        location: String,
+        status: String,
+        descriptionId: Int,
+        description: String
+    ) {
+
+        if(status == OnGoToLocationStatusChangedListener.COMPLETE){
+            if(isMoveRequest){
+                isMoveRequest = false
+                speak("We arrived")
+            } else {
+                changeLocationsOrder()
+            }
         }
     }
 }
