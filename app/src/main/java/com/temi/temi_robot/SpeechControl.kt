@@ -16,12 +16,15 @@ public class SpeechControl : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        robotController.setDetectionModeOn(false, 0.5f)
+
         val nypLogo = findViewById<ImageView>(R.id.my_gif)
         val startButton = findViewById<Button>(R.id.start_button)
 
+
         startButton.setOnClickListener{
             robotController.patrol(locations)
-            robotController.startFaceRecognition()
+            robotController.setDetectionModeOn(true, 0.5f)
         }
 
     }

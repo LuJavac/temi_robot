@@ -15,7 +15,14 @@
         tools:targetApi="31">
         <meta-data
             android:name="@string/metadata_permissions"
-            android:value="com.robotemi.permission.map, com.robotemi.permission.face_recognition" />
+            android:value="com.robotemi.permission.map, com.robotemi.permission.face_recognition, com.robotemi.permission.settings" />
+        <meta-data
+            android:name="com.robotemi.sdk.metadata.SKILL"
+            android:value="@string/temi_robot" />
+
+        <meta-data
+            android:name="com.robotemi.sdk.metadata.KIOSK"
+            android:value="TRUE" />
         <activity
             android:name=".SpeechControl"
             android:exported="true"

@@ -5,21 +5,22 @@ import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.face.ContactModel
-import com.robotemi.sdk.face.OnFaceRecognizedListener
+
+import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>):
     Robot.AsrListener,
-    OnFaceRecognizedListener,
-    Robot.TtsListener
+    Robot.TtsListener,
+    OnDetectionStateChangedListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
     // Add listeners to robot instance
     init {
         robot.addAsrListener(this)
-        robot.addOnFaceRecognizedListener(this)
         robot.addTtsListener(this)
+        robot.addOnDetectionStateChangedListener(this)
     }
 
     // Lists for Q&A
@@ -79,9 +80,9 @@ class RobotController(private var defaultLocations: List<String>):
         robot.requestPermissions(permissions, requestCode)
     }
 
-    // Face recognition
-    fun startFaceRecognition(){
-        robot.startFaceRecognition()
+    // Person Detection
+    fun setDetectionModeOn(on : Boolean, distance : Float){
+        robot.setDetectionModeOn(on, distance)
     }
 
     // Overrides
@@ -118,30 +119,30 @@ class RobotController(private var defaultLocations: List<String>):
             robot.finishConversation()
             speak( "Let's go see this weirdo")
             robot.goTo("jason")
-            speak("We arrived")
         }
         else {
             robot.startDefaultNlu(asrResult, SttLanguage.EN_US)
         }
     }
 
-    override fun onFaceRecognized(contactModelList: List<ContactModel>) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastRequestTime < requestCooldownMillis) {
-            return
+    override fun onDetectionStateChanged(state: Int) {
+        if (state == 2) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastRequestTime < requestCooldownMillis) {
+                return
+            }
+            lastRequestTime = currentTime
+
+            robot.stopMovement()
+            robot.setDetectionModeOn(false, 0.5f)
+            robot.askQuestion("Hi, how can I help you ?")
         }
-
-        robot.stopMovement()
-        robot.stopFaceRecognition()
-        robot.askQuestion("Hi, how can I help you ?")
     }
-
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
-        lastRequestTime = System.currentTimeMillis()
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
             patrol(defaultLocations)
-            robot.startFaceRecognition()
+            robot.setDetectionModeOn(true, 0.5f)
         }
     }
 }
