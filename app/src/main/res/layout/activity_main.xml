@@ -2,27 +2,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/nyp_background"
-    android:gravity="center_horizontal"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:gravity="left"
+    android:orientation="vertical">
 
     <ImageView
         android:id="@+id/my_gif"
-        android:layout_width="914dp"
-        android:layout_height="269dp"
-        android:layout_marginTop="270dp"
+        android:layout_width="303dp"
+        android:layout_height="107dp"
         android:contentDescription="@string/nyp_logo"
+        android:gravity="left"
         android:src="@drawable/nyp_logo" />
 
     <Button
         android:id="@+id/start_button"
-        android:layout_width="931dp"
-        android:layout_height="154dp"
+        android:layout_width="1029dp"
+        android:layout_height="390dp"
         android:layout_gravity="center"
-        android:layout_marginHorizontal="100dp"
-        android:backgroundTint="@android:color/holo_blue_light"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="180dp"
+        android:background="@drawable/button_border"
+        android:shadowColor="#80000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
         android:text="@string/ask_me_something"
         android:textColor="@android:color/white"
-        android:textSize="40sp" />
+        android:textSize="75sp" />
 
 </LinearLayout>

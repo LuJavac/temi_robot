@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/button_border.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Contour -->
+    <stroke
+        android:width="5dp"
+        android:color="@android:color/black" />
+
+    <!-- Fond transparent -->
+    <solid android:color="#88003399" />
+
+    <!-- Coins arrondis (facultatif) -->
+    <corners android:radius="12dp" />
+</shape>

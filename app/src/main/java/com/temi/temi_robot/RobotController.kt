@@ -54,7 +54,6 @@ class RobotController(private var defaultLocations: List<String>):
     }
 
     // Own functions
-
     private fun changeLocationsOrder() {
         defaultLocations = defaultLocations.drop(1) + defaultLocations.first()
     }
@@ -72,6 +71,11 @@ class RobotController(private var defaultLocations: List<String>):
         robot.speak(request)
     }
 
+    fun askQuestion(question: String) {
+        robot.askQuestion(question)
+    }
+
+
     // Movements and map
     fun getLocations() : List<String> {
         return robot.locations
@@ -79,6 +83,10 @@ class RobotController(private var defaultLocations: List<String>):
 
     fun patrol(locations : List<String>){
         robot.patrol(locations, times = 0)
+    }
+
+    fun stopMovement(){
+        robot.stopMovement()
     }
 
     // Permissions

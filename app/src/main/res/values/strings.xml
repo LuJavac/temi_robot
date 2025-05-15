@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Temi library assistant</string>
-    <string name="ask_me_something">Ask me something</string>
+    <string name="ask_me_something">Wave at me or click on the button to ask me something</string>
     <string name="my_gif">My GIF</string>
     <string name="nyp_logo" />
     <string name="temi_robot">Temi robot</string>
