@@ -1,20 +1,24 @@
 package com.temi.temi_robot
 
+import android.os.Handler
+import android.os.Looper
 
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
-import com.robotemi.sdk.face.ContactModel
-
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
+import com.robotemi.sdk.listeners.OnMovementStatusChangedListener
+import com.robotemi.sdk.listeners.OnRobotReadyListener
 import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>):
     Robot.AsrListener,
     Robot.TtsListener,
+    OnRobotReadyListener,
     OnDetectionStateChangedListener,
-    OnGoToLocationStatusChangedListener
+    OnGoToLocationStatusChangedListener,
+    OnMovementStatusChangedListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -22,8 +26,10 @@ class RobotController(private var defaultLocations: List<String>):
     init {
         robot.addAsrListener(this)
         robot.addTtsListener(this)
+        robot.addOnRobotReadyListener(this)
         robot.addOnDetectionStateChangedListener(this)
         robot.addOnGoToLocationStatusChangedListener(this)
+        robot.addOnMovementStatusChangedListener(this)
     }
 
     // Lists for Q&A
@@ -36,11 +42,26 @@ class RobotController(private var defaultLocations: List<String>):
     private val journalsCollection = listOf("journal", "journals", "magazine", "magazines", "newspaper", "newspapers")
     private val jason = listOf("jason", "jackson")
 
-    // Time test
+    // Time values
     private var lastRequestTime = 0L //
     private val requestCooldownMillis = 20000L // 50 seconds
 
+    // Inactivity handling
+    private var inactivityHandler = Handler(Looper.getMainLooper())
+    private val inactivityRunnable = Runnable {
+        patrol(defaultLocations)
+        robot.setDetectionModeOn(true, 0.5f)
+    }
+
+    fun resetInactivityTimer() {
+        println("reset")
+        inactivityHandler.removeCallbacks(inactivityRunnable)
+        inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
+    }
+
+    // Own variables
     private var isMoveRequest = false
+    private var readyCallback: RobotReadyCallback? = null
 
     /////////// General functions
 
@@ -85,21 +106,16 @@ class RobotController(private var defaultLocations: List<String>):
         return robot.locations
     }
 
+    fun goTo(location: String) {
+        robot.goTo(location)
+    }
+
     fun patrol(locations : List<String>){
         robot.patrol(locations, times = 0)
     }
 
     fun stopMovement(){
         robot.stopMovement()
-    }
-
-    // Permissions
-    fun checkSelfPermission(permission: Permission) : Int{
-        return robot.checkSelfPermission(permission)
-    }
-
-    fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
-        robot.requestPermissions(permissions, requestCode)
     }
 
     // Person Detection
@@ -111,8 +127,28 @@ class RobotController(private var defaultLocations: List<String>):
         return robot.detectionModeOn
     }
 
+
+    // Permissions
+    fun checkSelfPermission(permission: Permission) : Int{
+        return robot.checkSelfPermission(permission)
+    }
+
+    fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
+        robot.requestPermissions(permissions, requestCode)
+    }
+
+    // Own interface and callbacks
+    interface RobotReadyCallback {
+        fun onRobotIsReady()
+    }
+
+    fun setRobotReadyCallback(callback: RobotReadyCallback) {
+        this.readyCallback = callback
+    }
+
     // Overrides
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
+        resetInactivityTimer()
         if(openingHours.any { word -> asrResult.contains(word, ignoreCase = true)}){ // Checks if one of the key words is part of the demand
             robot.finishConversation()
             speak("The main library is opened from 8:30 am to 8 pm from Monday to Friday, and is closed on Saturdays. The reading lounge is opened from 8:30 am to 9 pm from Monday to Friday, and from 8:30 am to 1 pm on Saturdays. On Sundays and public holidays, everything is closed.")
@@ -154,6 +190,7 @@ class RobotController(private var defaultLocations: List<String>):
     }
 
     override fun onDetectionStateChanged(state: Int) {
+        resetInactivityTimer()
         if (state == 2) {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastRequestTime < requestCooldownMillis) {
@@ -168,6 +205,7 @@ class RobotController(private var defaultLocations: List<String>):
     }
 
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
+        resetInactivityTimer()
         if (isMoveRequest) {
             return
         }
@@ -192,6 +230,17 @@ class RobotController(private var defaultLocations: List<String>):
             } else {
                 changeLocationsOrder()
             }
+        }
+    }
+
+    override fun onMovementStatusChanged(type: String, status: String) {
+        println("status changed")
+        resetInactivityTimer()
+    }
+
+    override fun onRobotReady(isReady: Boolean) {
+        if(isReady){
+            readyCallback?.onRobotIsReady()
         }
     }
 }

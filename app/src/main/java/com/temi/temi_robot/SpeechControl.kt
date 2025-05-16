@@ -1,14 +1,15 @@
 package com.temi.temi_robot
 
+import android.Manifest
+import android.app.ActivityManager
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-
 import android.widget.Button
 import android.widget.ImageView
-import com.robotemi.sdk.permission.Permission
+import androidx.activity.ComponentActivity
+import androidx.annotation.RequiresPermission
 
 
-public class SpeechControl : ComponentActivity() {
+public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
     private val locations = listOf("test point 3","johan", "jason")
     private val robotController = RobotController(locations)
 
@@ -19,11 +20,19 @@ public class SpeechControl : ComponentActivity() {
         val nypLogo = findViewById<ImageView>(R.id.my_gif)
         val startButton = findViewById<Button>(R.id.start_button)
 
+        robotController.setRobotReadyCallback(this)
+
         startButton.setOnClickListener{
             robotController.setDetectionModeOn(false, 0.5f)
             robotController.setLastRequestTimeNow()
             robotController.stopMovement()
+            robotController.resetInactivityTimer()
             robotController.askQuestion("Hi, how can I help you ?")
         }
     }
+
+    override fun onRobotIsReady() {
+        robotController.patrol(locations)
+    }
+
 }
