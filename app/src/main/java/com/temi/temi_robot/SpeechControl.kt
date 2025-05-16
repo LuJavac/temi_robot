@@ -21,14 +21,9 @@ public class SpeechControl : ComponentActivity() {
 
         startButton.setOnClickListener{
             robotController.setDetectionModeOn(false, 0.5f)
+            robotController.setLastRequestTimeNow()
             robotController.stopMovement()
             robotController.askQuestion("Hi, how can I help you ?")
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        robotController.patrol(locations)
-        robotController.setDetectionModeOn(true, 0.5f)
     }
 }

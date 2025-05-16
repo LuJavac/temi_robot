@@ -58,6 +58,10 @@ class RobotController(private var defaultLocations: List<String>):
         defaultLocations = defaultLocations.drop(1) + defaultLocations.first()
     }
 
+    fun setLastRequestTimeNow(){
+        lastRequestTime = System.currentTimeMillis()
+    }
+
     // Speech
     fun speak(speech: String, haveFace: Boolean = true) { // Make the robot speak
         // Creating TTS request before speaking
@@ -101,6 +105,10 @@ class RobotController(private var defaultLocations: List<String>):
     // Person Detection
     fun setDetectionModeOn(on : Boolean, distance : Float){
         robot.setDetectionModeOn(on, distance)
+    }
+
+    fun isDetectionModeOn() : Boolean {
+        return robot.detectionModeOn
     }
 
     // Overrides
@@ -165,7 +173,6 @@ class RobotController(private var defaultLocations: List<String>):
         }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
-
             patrol(defaultLocations)
             robot.setDetectionModeOn(true, 0.5f)
         }
