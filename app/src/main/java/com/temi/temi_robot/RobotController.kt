@@ -2,6 +2,7 @@ package com.temi.temi_robot
 
 import android.os.Handler
 import android.os.Looper
+import com.chaquo.python.PyObject
 
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
@@ -12,7 +13,7 @@ import com.robotemi.sdk.listeners.OnMovementStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
 import com.robotemi.sdk.permission.Permission
 
-class RobotController(private var defaultLocations: List<String>):
+class RobotController(private var defaultLocations: List<String>, private var module: PyObject):
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
@@ -33,6 +34,8 @@ class RobotController(private var defaultLocations: List<String>):
     }
 
     // Lists for Q&A
+
+    // Question 1
     private val openingHours = listOf("time", "hours", "hour", "opened", "opening", "opens", "close", "closes", "closing")
     private val loansAndReturns = listOf("loan", "loans", "loaned", "loaning", "borrow", "borrowed", "borrowing", "return", "returns", "returning")
     private val bookingConditions = listOf("book", "bookings", "booking", "booked", "reservation", "reservations", "reserved")
@@ -46,12 +49,12 @@ class RobotController(private var defaultLocations: List<String>):
     private val renewLoans = listOf("renew", "renewed", "renewing", "loan", "loans")
     private val newMaterials = listOf("new", "materials", "material", "news", "borrow", "borrowed", "returned", "return", "overdue", "items", "item")
     private val payFines = listOf("pay", "fines", "fine", "fees", "fee", "paid", "lost", "materials", "material")
-    private val accessEressources = listOf("access", "resources", "resource", "who", "off", "campus")
+    private val accessEressources = listOf("access", "resources", "resource", "off", "campus")
     private val libraryOfThings = listOf("library", "things", "thing", "Library of Things")
     private val bookRooms = listOf("book", "rooms", "room")
     private val contactAssistance = listOf("contact", "call", "librarian", "assistance", "assistant")
     private val location = listOf("located", "where", "NYP", "location", "library")
-    private val access = listOf("who", "access", "library")
+    private val access = listOf("access", "library")
     private val holidays = listOf("holidays", "holiday", "closed", "close", "open", "opened", "term", "breaks", "break")
     private val contact = listOf("contact", "library")
     private val virtualTour = listOf("virtual", "virtuals", "tour", "tours")
@@ -96,8 +99,6 @@ class RobotController(private var defaultLocations: List<String>):
     private val recommend = listOf("recommend", "recommendations", "recommendation")
     private val feedback = listOf("feedback", "feedbacks")
     private val support = listOf("support", "supports", "special needs")
-
-
     private val jason = listOf("jason", "jackson")
 
     // Time values
@@ -139,6 +140,14 @@ class RobotController(private var defaultLocations: List<String>):
 
     fun setLastRequestTimeNow(){
         lastRequestTime = System.currentTimeMillis()
+    }
+
+    private fun isIntoList(list1: List<String>, list2: List<String> = emptyList(), request: String): Boolean {
+        if(list2.isEmpty()){
+            return list1.any { word -> request.contains(word, ignoreCase = true) }
+        } else {
+            return list1.any { word -> request.contains(word, ignoreCase = true) } && list2.any { word -> request.contains(word, ignoreCase = true) }
+        }
     }
 
     // Speech
@@ -203,6 +212,7 @@ class RobotController(private var defaultLocations: List<String>):
     fun setRobotReadyCallback(callback: RobotReadyCallback) {
         this.readyCallback = callback
     }
+
 
     // Overrides
     override fun onDetectionStateChanged(state: Int) {
@@ -513,7 +523,13 @@ class RobotController(private var defaultLocations: List<String>):
         }
         else {
             robot.finishConversation()
-            speak("I didn't understand that")
+            val result = module.callAttr("get_response", asrResult)
+            if (result != null) {
+                val response = result.toString()
+                speak(response)
+            } else {
+                speak("chatbot error")
+            }
         }
     }
 }

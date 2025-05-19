@@ -2,8 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.chaquo.python")
 }
-
 android {
     namespace = "com.temi.temi_robot"
     compileSdk = 35
@@ -14,8 +14,13 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // On Apple silicon, you can omit x86_64.
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
     }
 
     buildTypes {
@@ -37,6 +42,19 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.12"
+        buildPython("python3")
+        pip{
+            install("openai==0.27.8")
+            install("pydantic==1.10.13")
+        }
+    }
+    productFlavors { }
+    sourceSets { }
 }
 
 dependencies {
