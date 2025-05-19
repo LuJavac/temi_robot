@@ -34,7 +34,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     // Lists for Q&A
-
     private val answer_1 = "The Library is open from 8:30 AM to 8:00 PM, Mondays to Fridays, and from 8:30 AM to 12:00 noon on Saturdays. During the Mid-Semester Break, hours are reduced to 8:30 AM to 6:00 PM, Mondays to Fridays. The Library is closed on Sundays and Public Holidays."
     private val keywords1_1 = listOf("opening hours", "hours", "schedule", "timetable", "library hours", "operating hours")
 
@@ -58,7 +57,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords1_6 = listOf("access", "use", "view")
     private val keywords2_6 = listOf("e-resources", "digital resources", "online resources", "databases")
 
-    private val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing." val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
+    private val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing."
+    private val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
     private val keywords2_7 = listOf("location", "found", "where", "placed", "situated")
 
     private val answer_8 = "The Library of Things is a special collection of gadgets and educational kits designed to enhance learning. It includes items such as board games, robotic kits, and other interactive tools."
@@ -272,7 +272,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords1_60 = listOf("volunteer", "help", "assist", "volunteers")
     private val keywords2_60 = listOf("library", "apply", "how", "become")
 
-    private val jason = listOf("jason", "jackson")
 
     // Time values
     private var lastRequestTime = 0L //
@@ -286,7 +285,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     fun resetInactivityTimer() {
-        println("reset")
         inactivityHandler.removeCallbacks(inactivityRunnable)
         inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
     }
@@ -433,7 +431,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     override fun onMovementStatusChanged(type: String, status: String) {
-        println("status changed")
         resetInactivityTimer()
     }
 
