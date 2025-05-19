@@ -50,228 +50,227 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords1_4 = listOf("borrow", "check out", "loan")
     private val keywords2_4 = listOf("overdue", "not returned", "late", "unreturned")
 
-    val answer_5 = "All fines and charges for lost materials must be paid using cashless methods. Accepted options include NETS, PayNow, and AXS."
-    val keywords1_5 = listOf("pay", "settle", "clear")
-    val keywords2_5 = listOf("fine", "fines", "penalties", "fees", "lost materials", "lost items")
+    private val answer_5 = "All fines and charges for lost materials must be paid using cashless methods. Accepted options include NETS, PayNow, and AXS."
+    private val keywords1_5 = listOf("pay", "settle", "clear")
+    private val keywords2_5 = listOf("fine", "fines", "penalties", "fees", "lost materials", "lost items")
 
-    val answer_6 = "NYP students and full-time staff can access the Library’s digital resources remotely using their NYP credentials."
-    val keywords1_6 = listOf("access", "use", "view")
-    val keywords2_6 = listOf("e-resources", "digital resources", "online resources", "databases")
+    private val answer_6 = "NYP students and full-time staff can access the Library’s digital resources remotely using their NYP credentials."
+    private val keywords1_6 = listOf("access", "use", "view")
+    private val keywords2_6 = listOf("e-resources", "digital resources", "online resources", "databases")
 
-    val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing."
-    val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
-    val keywords2_7 = listOf("location", "found", "where", "placed", "situated")
+    private val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing." val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
+    private val keywords2_7 = listOf("location", "found", "where", "placed", "situated")
 
-    val answer_8 = "The Library of Things is a special collection of gadgets and educational kits designed to enhance learning. It includes items such as board games, robotic kits, and other interactive tools."
-    val keywords1_8 = listOf("Library of Things", "collection of gadgets", "educational kits", "learning tools")
+    private val answer_8 = "The Library of Things is a special collection of gadgets and educational kits designed to enhance learning. It includes items such as board games, robotic kits, and other interactive tools."
+    private val keywords1_8 = listOf("Library of Things", "collection of gadgets", "educational kits", "learning tools")
 
-    val answer_9 = "You can book a library room for 2 hours if there are at least 3 students. Booking is available 5 days in advance via the Library or Student Portal."
-    val keywords1_9 = listOf("book", "reserve", "schedule")
-    val keywords2_9 = listOf("library room", "study room", "group room", "discussion room", "study rooms", "library rooms", "group rooms")
+    private val answer_9 = "You can book a library room for 2 hours if there are at least 3 students. Booking is available 5 days in advance via the Library or Student Portal."
+    private val keywords1_9 = listOf("book", "reserve", "schedule")
+    private val keywords2_9 = listOf("library room", "study room", "group room", "discussion room", "study rooms", "library rooms", "group rooms")
 
-    val answer_10 = "To get help from a librarian, please call the library hotline at 6550 0150. (Note: Assistance through a virtual assistant like Temi may be available in the future.)"
-    val keywords1_10 = listOf("contact", "talk to", "reach", "speak with")
-    val keywords2_10 = listOf("librarian", "library staff", "helpdesk", "information desk")
+    private val answer_10 = "To get help from a librarian, please call the library hotline at 6550 0150. (Note: Assistance through a virtual assistant like Temi may be available in the future.)"
+    private val keywords1_10 = listOf("contact", "talk to", "reach", "speak with")
+    private val keywords2_10 = listOf("librarian", "library staff", "helpdesk", "information desk")
 
-    val answer_11 = "The loan period for books is 14 days. Items can be renewed twice if no one else has reserved them."
-    val keywords1_11 = listOf("loan period", "borrow duration", "due date")
-    val keywords2_11 = listOf("books", "items", "materials", "book", "item")
+    private val answer_11 = "The loan period for books is 14 days. Items can be renewed twice if no one else has reserved them."
+    private val keywords1_11 = listOf("loan period", "borrow duration", "due date")
+    private val keywords2_11 = listOf("books", "items", "materials", "book", "item")
 
-    val answer_12 = "If an item is reserved by another user, you will not be able to renew it."
-    val keywords1_12 = listOf("renew", "extend", "prolong")
-    val keywords2_12 = listOf("reserved", "on hold", "requested")
+    private val answer_12 = "If an item is reserved by another user, you will not be able to renew it."
+    private val keywords1_12 = listOf("renew", "extend", "prolong")
+    private val keywords2_12 = listOf("reserved", "on hold", "requested")
 
-    val answer_13 = "Library lockers are available for temporary storage. They are located near the library entrance."
-    val keywords1_13 = listOf("locker", "storage", "store", "lockers", "storages", "stores")
-    val keywords2_13 = listOf("location", "where", "placed")
+    private val answer_13 = "Library lockers are available for temporary storage. They are located near the library entrance."
+    private val keywords1_13 = listOf("locker", "storage", "store", "lockers", "storages", "stores")
+    private val keywords2_13 = listOf("location", "where", "placed")
 
-    val answer_14 = "You can suggest a title for the library to acquire by filling in the recommendation form on the Library Portal."
-    val keywords1_14 = listOf("suggest", "recommend", "propose")
-    val keywords2_14 = listOf("title", "book", "resource", "material", "titles", "books", "resources", "materials")
+    private val answer_14 = "You can suggest a title for the library to acquire by filling in the recommendation form on the Library Portal."
+    private val keywords1_14 = listOf("suggest", "recommend", "propose")
+    private val keywords2_14 = listOf("title", "book", "resource", "material", "titles", "books", "resources", "materials")
 
-    val answer_15 = "Lost and found items are kept at the Information Services Counter."
-    val keywords1_15 = listOf("lost and found", "lost item", "missing item", "lost items", "missing items")
-    val keywords2_15 = listOf("location", "where", "found")
+    private val answer_15 = "Lost and found items are kept at the Information Services Counter."
+    private val keywords1_15 = listOf("lost and found", "lost item", "missing item", "lost items", "missing items")
+    private val keywords2_15 = listOf("location", "where", "found")
 
-    val answer_16 = "Group study rooms come with whiteboards and power sockets."
-    val keywords1_16 = listOf("facilities", "features", "equipment")
-    val keywords2_16 = listOf("group study rooms", "discussion rooms")
+    private val answer_16 = "Group study rooms come with whiteboards and power sockets."
+    private val keywords1_16 = listOf("facilities", "features", "equipment")
+    private val keywords2_16 = listOf("group study rooms", "discussion rooms")
 
-    val answer_17 = "Food and drinks are not allowed in the library except for water in spill-proof bottles."
-    val keywords1_17 = listOf("food", "drink", "eating", "beverages", "drinks", "beverage")
-    val keywords2_17 = listOf("allowed", "permitted", "can I bring")
+    private val answer_17 = "Food and drinks are not allowed in the library except for water in spill-proof bottles."
+    private val keywords1_17 = listOf("food", "drink", "eating", "beverages", "drinks", "beverage")
+    private val keywords2_17 = listOf("allowed", "permitted", "can I bring")
 
-    val answer_18 = "Printing and photocopying services are available at the library with a valid student or staff ID."
-    val keywords1_18 = listOf("printing", "photocopying", "copy", "print", "copies")
-    val keywords2_18 = listOf("available", "where", "how to use")
+    private val answer_18 = "Printing and photocopying services are available at the library with a valid student or staff ID."
+    private val keywords1_18 = listOf("printing", "photocopying", "copy", "print", "copies")
+    private val keywords2_18 = listOf("available", "where", "how to use")
 
-    val answer_19 = "There are quiet zones in the library marked with signage."
-    val keywords1_19 = listOf("quiet zone", "silent area", "study area", "quiet zones", "silent areas", "study areas")
-    val keywords2_19 = listOf("location", "where", "found")
+    private val answer_19 = "There are quiet zones in the library marked with signage."
+    private val keywords1_19 = listOf("quiet zone", "silent area", "study area", "quiet zones", "silent areas", "study areas")
+    private val keywords2_19 = listOf("location", "where", "found")
 
-    val answer_20 = "Library fines can be avoided by returning items on time and renewing them before the due date."
-    val keywords1_20 = listOf("avoid", "prevent", "stop")
-    val keywords2_20 = listOf("fines", "late fees", "penalties","fine", "penalty", "charge")
+    private val answer_20 = "Library fines can be avoided by returning items on time and renewing them before the due date."
+    private val keywords1_20 = listOf("avoid", "prevent", "stop")
+    private val keywords2_20 = listOf("fines", "late fees", "penalties","fine", "penalty", "charge")
 
-    val answer_21 = "You can return borrowed items using the book drop near the library entrance or at the service counter."
-    val keywords1_21 = listOf("return", "drop off", "give back")
-    val keywords2_21 = listOf("books", "items", "borrowed materials", "book", "item", "borrowed item")
+    private val answer_21 = "You can return borrowed items using the book drop near the library entrance or at the service counter."
+    private val keywords1_21 = listOf("return", "drop off", "give back")
+    private val keywords2_21 = listOf("books", "items", "borrowed materials", "book", "item", "borrowed item")
 
-    val answer_22 = "Late returns will incur a fine. Please check the library portal for detailed fine policies."
-    val keywords1_22 = listOf("late return", "overdue", "not on time")
-    val keywords2_22 = listOf("fine", "penalty", "charge")
+    private val answer_22 = "Late returns will incur a fine. Please check the library portal for detailed fine policies."
+    private val keywords1_22 = listOf("late return", "overdue", "not on time")
+    private val keywords2_22 = listOf("fine", "penalty", "charge")
 
-    val answer_23 = "Overdue book fines start at $0.50 per day, while media items may incur higher rates."
-    val keywords1_23 = listOf("fines", "penalties", "fees", "fine", "penalty", "charge", "fee")
-    val keywords2_23 = listOf("books", "media", "overdue items", "overdue item")
+    private val answer_23 = "Overdue book fines start at $0.50 per day, while media items may incur higher rates."
+    private val keywords1_23 = listOf("fines", "penalties", "fees", "fine", "penalty", "charge", "fee")
+    private val keywords2_23 = listOf("books", "media", "overdue items", "overdue item")
 
-    val answer_24 = "Yes, you can reserve books currently on loan via the library catalogue."
-    val keywords1_24 = listOf("reserve", "place hold", "book request")
-    val keywords2_24 = listOf("book", "item", "resource", "books", "items", "resources")
+    private val answer_24 = "Yes, you can reserve books currently on loan via the library catalogue."
+    private val keywords1_24 = listOf("reserve", "place hold", "book request")
+    private val keywords2_24 = listOf("book", "item", "resource", "books", "items", "resources")
 
-    val answer_25 = "Log into your library account to view your borrowing history."
-    val keywords1_25 = listOf("borrowing history", "loan history", "checkout records")
-    val keywords2_25 = listOf("check", "view", "see")
+    private val answer_25 = "Log into your library account to view your borrowing history."
+    private val keywords1_25 = listOf("borrowing history", "loan history", "checkout records")
+    private val keywords2_25 = listOf("check", "view", "see")
 
-    val answer_26 = "No, items borrowed from NYP Library must be returned to the same library."
-    val keywords1_26 = listOf("return", "drop off")
-    val keywords2_26 = listOf("other libraries", "different location", "outside NYP", "other library")
+    private val answer_26 = "No, items borrowed from NYP Library must be returned to the same library."
+    private val keywords1_26 = listOf("return", "drop off")
+    private val keywords2_26 = listOf("other libraries", "different location", "outside NYP", "other library")
 
-    val answer_27 = "Report any lost or damaged item immediately. You may need to pay a replacement and administrative fee."
-    val keywords1_27 = listOf("lost", "damaged", "broken")
-    val keywords2_27 = listOf("report", "inform", "notify")
+    private val answer_27 = "Report any lost or damaged item immediately. You may need to pay a replacement and administrative fee."
+    private val keywords1_27 = listOf("lost", "damaged", "broken")
+    private val keywords2_27 = listOf("report", "inform", "notify")
 
-    val answer_28 = "You can access e-books and e-journals through the Library Portal by searching the online catalogue or databases."
-    val keywords1_28 = listOf("access", "view", "read")
-    val keywords2_28 = listOf("ebooks", "ejournals", "digital materials", "ebooks", "ejournal", "digital material")
+    private val answer_28 = "You can access e-books and e-journals through the Library Portal by searching the online catalogue or databases."
+    private val keywords1_28 = listOf("access", "view", "read")
+    private val keywords2_28 = listOf("ebooks", "ejournals", "digital materials", "ebooks", "ejournal", "digital material")
 
-    val answer_29 = "Use the OneSearch tool on the library homepage to find books, articles, and media resources."
-    val keywords1_29 = listOf("search", "find", "look for")
-    val keywords2_29 = listOf("resources", "books", "articles", "media", "resource", "book", "article")
+    private val answer_29 = "Use the OneSearch tool on the library homepage to find books, articles, and media resources."
+    private val keywords1_29 = listOf("search", "find", "look for")
+    private val keywords2_29 = listOf("resources", "books", "articles", "media", "resource", "book", "article")
 
-    val answer_30 = "Yes, you can download e-books depending on the platform such as ProQuest or EBSCO."
-    val keywords1_30 = listOf("download", "save", "access offline")
-    val keywords2_30 = listOf("ebooks", "electronic books", "ebook", "electronic book")
+    private val answer_30 = "Yes, you can download e-books depending on the platform such as ProQuest or EBSCO."
+    private val keywords1_30 = listOf("download", "save", "access offline")
+    private val keywords2_30 = listOf("ebooks", "electronic books", "ebook", "electronic book")
 
-    val answer_31 = "Yes, databases like IEEE and JSTOR are accessible via the library’s subscribed services."
-    val keywords1_31 = listOf("databases", "IEEE", "JSTOR", "database", "I triple e")
-    val keywords2_31 = listOf("available", "access", "use")
+    private val answer_31 = "Yes, databases like IEEE and JSTOR are accessible via the library’s subscribed services."
+    private val keywords1_31 = listOf("databases", "IEEE", "JSTOR", "database", "I triple e")
+    private val keywords2_31 = listOf("available", "access", "use")
 
-    val answer_32 = "Past-year exam papers are available in the Digital Repository or through your school’s LMS."
-    val keywords1_32 = listOf("exam papers", "past year papers", "old exams", "exam paper", "past year paper", "old exam")
-    val keywords2_32 = listOf("access", "find", "where")
+    private val answer_32 = "Past-year exam papers are available in the Digital Repository or through your school’s LMS."
+    private val keywords1_32 = listOf("exam papers", "past year papers", "old exams", "exam paper", "past year paper", "old exam")
+    private val keywords2_32 = listOf("access", "find", "where")
 
-    val answer_33 = "Log into the Library Portal using your NYP network ID and password at lib.nyp.edu.sg."
-    val keywords1_33 = listOf("login", "sign in", "access")
-    val keywords2_33 = listOf("library portal", "account", "website")
+    private val answer_33 = "Log into the Library Portal using your NYP network ID and password at lib.nyp.edu.sg."
+    private val keywords1_33 = listOf("login", "sign in", "access")
+    private val keywords2_33 = listOf("library portal", "account", "website")
 
-    val answer_34 = "There is no dedicated app, but the library website is mobile-friendly and fully functional."
-    val keywords1_34 = listOf("app", "application", "mobile")
-    val keywords2_34 = listOf("library", "access", "services")
+    private val answer_34 = "There is no dedicated app, but the library website is mobile-friendly and fully functional."
+    private val keywords1_34 = listOf("app", "application", "mobile")
+    private val keywords2_34 = listOf("library", "access", "services")
 
-    val answer_35 = "Use the online booking system via the Library Portal to book a group discussion room."
-    val keywords1_35 = listOf("book", "reserve", "schedule")
-    val keywords2_35 = listOf("group discussion room", "study room", "study rooms", "group rooms", "group room", "discussion room", "discussion rooms")
+    private val answer_35 = "Use the online booking system via the Library Portal to book a group discussion room."
+    private val keywords1_35 = listOf("book", "reserve", "schedule")
+    private val keywords2_35 = listOf("group discussion room", "study room", "study rooms", "group rooms", "group room", "discussion room", "discussion rooms")
 
-    val answer_36 = "Printing, copying, and scanning services are available with your student or staff card."
-    val keywords1_36 = listOf("printing", "copying", "scanning")
-    val keywords2_36 = listOf("available", "use", "where")
+    private val answer_36 = "Printing, copying, and scanning services are available with your student or staff card."
+    private val keywords1_36 = listOf("printing", "copying", "scanning")
+    private val keywords2_36 = listOf("available", "use", "where")
 
-    val answer_37 = "To print from your laptop, install the NYP network printer or use WebPrint via the NYP intranet."
-    val keywords1_37 = listOf("print", "send to printer")
-    val keywords2_37 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
+    private val answer_37 = "To print from your laptop, install the NYP network printer or use WebPrint via the NYP intranet."
+    private val keywords1_37 = listOf("print", "send to printer")
+    private val keywords2_37 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
 
-    val answer_38 = "Yes, desktop computers are available in the library on a first-come-first-served basis."
-    val keywords1_38 = listOf("computers", "PCs", "desktops", "computer", "PC", "desktop")
-    val keywords2_38 = listOf("available", "use", "access")
+    private val answer_38 = "Yes, desktop computers are available in the library on a first-come-first-served basis."
+    private val keywords1_38 = listOf("computers", "PCs", "desktops", "computer", "PC", "desktop")
+    private val keywords2_38 = listOf("available", "use", "access")
 
-    val answer_39 = "Yes, the library includes makerspaces and innovation labs depending on the current initiatives."
-    val keywords1_39 = listOf("makerspace", "makerspaces", "tech corner", "labs", "lab", "tech corners")
-    val keywords2_39 = listOf("available", "have", "exist")
+    private val answer_39 = "Yes, the library includes makerspaces and innovation labs depending on the current initiatives."
+    private val keywords1_39 = listOf("makerspace", "makerspaces", "tech corner", "labs", "lab", "tech corners")
+    private val keywords2_39 = listOf("available", "have", "exist")
 
-    val answer_40 = "Wi-Fi is available in the library. Connect using your NYP network credentials."
-    val keywords1_40 = listOf("wifi", "wireless", "internet")
-    val keywords2_40 = listOf("connect", "available", "access")
+    private val answer_40 = "Wi-Fi is available in the library. Connect using your NYP network credentials."
+    private val keywords1_40 = listOf("wifi", "wireless", "internet")
+    private val keywords2_40 = listOf("connect", "available", "access")
 
-    val answer_41 = "You can bring your own laptop to the library and use the available power sockets and Wi-Fi."
-    val keywords1_41 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
-    val keywords2_41 = listOf("bring", "use", "allowed")
+    private val answer_41 = "You can bring your own laptop to the library and use the available power sockets and Wi-Fi."
+    private val keywords1_41 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
+    private val keywords2_41 = listOf("bring", "use", "allowed")
 
-    val answer_42 = "You can suggest library events or workshops through the feedback form on the Library Portal."
-    val keywords1_42 = listOf("suggest", "propose", "recommend")
-    val keywords2_42 = listOf("events", "workshops", "programs", "event", "program")
+    private val answer_42 = "You can suggest library events or workshops through the feedback form on the Library Portal."
+    private val keywords1_42 = listOf("suggest", "propose", "recommend")
+    private val keywords2_42 = listOf("events", "workshops", "programs", "event", "program")
 
-    val answer_43 = "Workshops and training sessions are announced on the Library Portal and via email notifications."
-    val keywords1_43 = listOf("workshop", "training", "session", "workshops", "training sessions", "sessions")
-    val keywords2_43 = listOf("schedule", "when", "announcement")
+    private val answer_43 = "Workshops and training sessions are announced on the Library Portal and via email notifications."
+    private val keywords1_43 = listOf("workshop", "training", "session", "workshops", "training sessions", "sessions")
+    private val keywords2_43 = listOf("schedule", "when", "announcement")
 
-    val answer_44 = "Orientation tours are available for new students at the start of each semester."
-    val keywords1_44 = listOf("orientation", "tour", "introduction", "tours")
-    val keywords2_44 = listOf("available", "offered", "schedule")
+    private val answer_44 = "Orientation tours are available for new students at the start of each semester."
+    private val keywords1_44 = listOf("orientation", "tour", "introduction", "tours")
+    private val keywords2_44 = listOf("available", "offered", "schedule")
 
-    val answer_45 = "You may request help from a librarian for your research project by scheduling a consultation."
-    val keywords1_45 = listOf("help", "assistance", "guidance")
-    val keywords2_45 = listOf("research", "project", "assignment")
+    private val answer_45 = "You may request help from a librarian for your research project by scheduling a consultation."
+    private val keywords1_45 = listOf("help", "assistance", "guidance")
+    private val keywords2_45 = listOf("research", "project", "assignment")
 
-    val answer_46 = "The library provides citation guides and workshops to help you with referencing."
-    val keywords1_46 = listOf("citation", "referencing", "sources", "source", "citations")
-    val keywords2_46 = listOf("guide", "help", "support")
+    private val answer_46 = "The library provides citation guides and workshops to help you with referencing."
+    private val keywords1_46 = listOf("citation", "referencing", "sources", "source", "citations")
+    private val keywords2_46 = listOf("guide", "help", "support")
 
-    val answer_47 = "Plagiarism detection tools like Turnitin are accessible through your school’s LMS."
-    val keywords1_47 = listOf("plagiarism", "copying", "originality")
-    val keywords2_47 = listOf("tool", "detection", "turn it in", "tools")
+    private val answer_47 = "Plagiarism detection tools like Turnitin are accessible through your school’s LMS."
+    private  val keywords1_47 = listOf("plagiarism", "copying", "originality")
+    private val keywords2_47 = listOf("tool", "detection", "turn it in", "tools")
 
-    val answer_48 = "Books borrowed by mistake can be returned at the service counter without penalty if done promptly."
-    val keywords1_48 = listOf("wrong book", "mistake", "accidental borrow")
-    val keywords2_48 = listOf("return", "give back", "undo")
+    private val answer_48 = "Books borrowed by mistake can be returned at the service counter without penalty if done promptly."
+    private val keywords1_48 = listOf("wrong book", "mistake", "accidental borrow")
+    private val keywords2_48 = listOf("return", "give back", "undo")
 
-    val answer_49 = "Yes, alumni can access selected digital resources. Check the Alumni Portal for eligibility."
-    val keywords1_49 = listOf("alumni", "graduates", "former students", "alumni", "graduate", "former student")
-    val keywords2_49 = listOf("access", "resources", "library", "resource")
+    private val answer_49 = "Yes, alumni can access selected digital resources. Check the Alumni Portal for eligibility."
+    private val keywords1_49 = listOf("alumni", "graduates", "former students", "alumni", "graduate", "former student")
+    private val keywords2_49 = listOf("access", "resources", "library", "resource")
 
-    val answer_50 = "Library staff can help you locate hard-to-find materials or place an inter-library loan request."
-    val keywords1_50 = listOf("find", "locate", "track down")
-    val keywords2_50 = listOf("materials", "resources", "books", "material", "resource", "book")
+    private val answer_50 = "Library staff can help you locate hard-to-find materials or place an inter-library loan request."
+    private val keywords1_50 = listOf("find", "locate", "track down")
+    private val keywords2_50 = listOf("materials", "resources", "books", "material", "resource", "book")
 
-    val answer_51 = "Children are allowed in the library if accompanied by an NYP student or staff."
-    val keywords1_51 = listOf("children", "kids", "minors", "child", "kid", "minor")
-    val keywords2_51 = listOf("allowed", "can", "permitted")
+    private val answer_51 = "Children are allowed in the library if accompanied by an NYP student or staff."
+    private val keywords1_51 = listOf("children", "kids", "minors", "child", "kid", "minor")
+    private val keywords2_51 = listOf("allowed", "can", "permitted")
 
-    val answer_52 = "Noise complaints can be reported to library staff at the service counter."
-    val keywords1_52 = listOf("noise", "loud", "disturbance", "noises")
-    val keywords2_52 = listOf("report", "complain", "notify")
+    private val answer_52 = "Noise complaints can be reported to library staff at the service counter."
+    private val keywords1_52 = listOf("noise", "loud", "disturbance", "noises")
+    private val keywords2_52 = listOf("report", "complain", "notify")
 
-    val answer_53 = "Headphones can be borrowed from the Information Services Counter."
-    val keywords1_53 = listOf("headphones", "earphones", "audio device")
-    val keywords2_53 = listOf("borrow", "loan", "get")
+    private val answer_53 = "Headphones can be borrowed from the Information Services Counter."
+    private val keywords1_53 = listOf("headphones", "earphones", "audio device")
+    private val keywords2_53 = listOf("borrow", "loan", "get")
 
-    val answer_54 = "Yes, the library offers book displays and themed exhibits regularly."
-    val keywords1_54 = listOf("exhibits", "displays", "book themes", "exhibit", "display", "book theme")
-    val keywords2_54 = listOf("available", "offered", "schedule")
+    private val answer_54 = "Yes, the library offers book displays and themed exhibits regularly."
+    private val keywords1_54 = listOf("exhibits", "displays", "book themes", "exhibit", "display", "book theme")
+    private val keywords2_54 = listOf("available", "offered", "schedule")
 
-    val answer_55 = "Yes, your feedback is welcome. Use the feedback form on the Library Portal."
-    val keywords1_55 = listOf("feedback", "comment", "suggestion", "feedbacks", "comments", "suggestions")
-    val keywords2_55 = listOf("submit", "give", "send")
+    private val answer_55 = "Yes, your feedback is welcome. Use the feedback form on the Library Portal."
+    private val keywords1_55 = listOf("feedback", "comment", "suggestion", "feedbacks", "comments", "suggestions")
+    private val keywords2_55 = listOf("submit", "give", "send")
 
-    val answer_56 = "The library has height-adjustable tables and other accessible facilities for users with disabilities."
-    val keywords1_56 = listOf("accessible", "disability", "wheelchair")
-    val keywords2_56 = listOf("facilities", "equipment", "support", "facilities", "equipment")
+    private val answer_56 = "The library has height-adjustable tables and other accessible facilities for users with disabilities."
+    private val keywords1_56 = listOf("accessible", "disability", "wheelchair")
+    private val keywords2_56 = listOf("facilities", "equipment", "support", "facilities", "equipment")
 
-    val answer_57 = "Yes, library tours are available for visiting groups upon request."
-    val keywords1_57 = listOf("tours", "visit", "orientation", "tour", "visits")
-    val keywords2_57 = listOf("group", "request", "available", "requests", "groups")
+    private val answer_57 = "Yes, library tours are available for visiting groups upon request."
+    private val keywords1_57 = listOf("tours", "visit", "orientation", "tour", "visits")
+    private val keywords2_57 = listOf("group", "request", "available", "requests", "groups")
 
-    val answer_58 = "Extended hours are offered during exam periods. Check the Library Portal for updates."
-    val keywords1_58 = listOf("extended hours", "longer hours", "exam time")
-    val keywords2_58 = listOf("schedule", "available", "open")
+    private val answer_58 = "Extended hours are offered during exam periods. Check the Library Portal for updates."
+    private val keywords1_58 = listOf("extended hours", "longer hours", "exam time")
+    private val keywords2_58 = listOf("schedule", "available", "open")
 
-    val answer_59 = "Library news and updates are shared via the portal, email, and digital screens on campus."
-    val keywords1_59 = listOf("news", "updates", "announcements", "update", "announcement")
-    val keywords2_59 = listOf("where", "find", "access")
+    private val answer_59 = "Library news and updates are shared via the portal, email, and digital screens on campus."
+    private val keywords1_59 = listOf("news", "updates", "announcements", "update", "announcement")
+    private val keywords2_59 = listOf("where", "find", "access")
 
-    val answer_60 = "You can volunteer at the library by applying through the student development office or library website."
-    val keywords1_60 = listOf("volunteer", "help", "assist", "volunteers")
-    val keywords2_60 = listOf("library", "apply", "how", "become")
+    private val answer_60 = "You can volunteer at the library by applying through the student development office or library website."
+    private val keywords1_60 = listOf("volunteer", "help", "assist", "volunteers")
+    private val keywords2_60 = listOf("library", "apply", "how", "become")
 
     private val jason = listOf("jason", "jackson")
 
