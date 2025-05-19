@@ -142,7 +142,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         lastRequestTime = System.currentTimeMillis()
     }
 
-    private fun isIntoList(list1: List<String>, list2: List<String> = emptyList(), request: String): Boolean {
+    private fun isIntoList(request: String, list1: List<String>, list2: List<String> = emptyList()): Boolean {
         if(list2.isEmpty()){
             return list1.any { word -> request.contains(word, ignoreCase = true) }
         } else {
@@ -271,7 +271,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
-        if(openingHours.any { word -> asrResult.contains(word, ignoreCase = true)}){ // Checks if one of the key words is part of the demand
+        if(isIntoList(asrResult, openingHours)){ // Checks if one of the key words is part of the demand
             robot.finishConversation()
             speak("The main library is opened from 8:30 am to 8 pm from Monday to Friday, and is closed on Saturdays. The reading lounge is opened from 8:30 am to 9 pm from Monday to Friday, and from 8:30 am to 1 pm on Saturdays. On Sundays and public holidays, everything is closed.")
         }
