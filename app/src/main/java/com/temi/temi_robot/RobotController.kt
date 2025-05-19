@@ -35,70 +35,244 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     // Lists for Q&A
 
-    // Question 1
-    private val openingHours = listOf("time", "hours", "hour", "opened", "opening", "opens", "close", "closes", "closing")
-    private val loansAndReturns = listOf("loan", "loans", "loaned", "loaning", "borrow", "borrowed", "borrowing", "return", "returns", "returning")
-    private val bookingConditions = listOf("book", "bookings", "booking", "booked", "reservation", "reservations", "reserved")
-    private val lossesCardAndStuff = listOf("lost", "loss", "losses")
-    private val databases = listOf("databases", "database")
-    private val examinationPapers = listOf("examination", "examination", "test papers", "model answers")
-    private val journalsCollection = listOf("journal", "journals", "magazine", "magazines", "newspaper", "newspapers")
+    private val answer_1 = "The Library is open from 8:30 AM to 8:00 PM, Mondays to Fridays, and from 8:30 AM to 12:00 noon on Saturdays. During the Mid-Semester Break, hours are reduced to 8:30 AM to 6:00 PM, Mondays to Fridays. The Library is closed on Sundays and Public Holidays."
+    private val keywords1_1 = listOf("opening hours", "hours", "schedule", "timetable", "library hours", "operating hours")
 
+    private val answer_2 = "You can check your loan account by logging in to the Library Portal using your NYP email address."
+    private val keywords1_2 = listOf("loan records", "loan history", "borrowing history", "checked out items", "loan account")
+    private val keywords2_2 = listOf("check", "view", "see", "access")
 
-    private val loanRecords = listOf("check", "records", "record", "loan", "loans")
-    private val renewLoans = listOf("renew", "renewed", "renewing", "loan", "loans")
-    private val newMaterials = listOf("new", "materials", "material", "news", "borrow", "borrowed", "returned", "return", "overdue", "items", "item")
-    private val payFines = listOf("pay", "fines", "fine", "fees", "fee", "paid", "lost", "materials", "material")
-    private val accessEressources = listOf("access", "resources", "resource", "off", "campus")
-    private val libraryOfThings = listOf("library", "things", "thing", "Library of Things")
-    private val bookRooms = listOf("book", "rooms", "room")
-    private val contactAssistance = listOf("contact", "call", "librarian", "assistance", "assistant")
-    private val location = listOf("located", "where", "NYP", "location", "library")
-    private val access = listOf("access", "library")
-    private val holidays = listOf("holidays", "holiday", "closed", "close", "open", "opened", "term", "breaks", "break")
-    private val contact = listOf("contact", "library")
-    private val virtualTour = listOf("virtual", "virtuals", "tour", "tours")
-    private val visitors = listOf("visitor", "visitors", "walk-in", "exterior", "public")
-    private val lostSomething = listOf("lost", "something", "loose")
-    private val food = listOf("food", "foods", "drink", "drinks")
-    private val zones = listOf("quiet", "zones", "zone", "discussion", "group", "area", "areas")
-    private val register = listOf("register", "registration", "registered", "member")
-    private val borrow = listOf("staff", "borrow", "items", "material", "materials")
-    private val alumni = listOf("alumni", "alumnis")
-    private val forgetCard = listOf("forget", "card", "cards", "student", "staff")
-    private val digitalAccess = listOf("digital", "digitals", "ressources", "ressource")
-    private val nbItems = listOf("number", "items", "item", "borrow", "at one time")
-    private val loanDurations = listOf("durations", "duration")
-    private val renewBorrowedItem = listOf("renew", "borrowed", "item", "items")
-    private val returnBorrowedItem = listOf("return", "borrowed", "item", "items")
-    private val returnLate = listOf("happens", "happened", "late")
-    private val overdue = listOf("fines", "fine", "overdue", "books", "media")
-    private val currently = listOf("borrow", "borrowed", "currently", "already")
-    private val history = listOf("history", "histories", "history")
-    private val otherLibraries = listOf("libraries", "library", "other", "Singapore")
-    private val damage = listOf("damage", "damaged", "damaged")
-    private val eBooks = listOf("e-books", "ebook", "ebooks","e-journals", "e-journal", "ejournal")
-    private val search = listOf("search", "searching", "find", "finds", "finds", "online", "ressources")
-    private val download = listOf("download", "downloads", "download")
-    private val IEEE = listOf("IEEE", "ieee", "JSTOR", "jstor")
-    private val exams = listOf("exams", "exam", "examination", "test", "tests", "past-year", "last year")
-    private val portal = listOf("portal", "portals")
-    private val app = listOf("app", "apps", "application", "applications")
-    private val bookRoom = listOf("book", "room", "rooms", "discussion room")
-    private val print = listOf("print", "prints", "print", "printing", "photocopy", "photocopies", "photocopy", "photocopying")
-    private val laptop = listOf("laptop", "laptops")
-    private val wifi = listOf("wifi", "internet", "wi-fi")
-    private val charge = listOf("charge", "charging", "charger")
-    private val research = listOf("research", "researches", "research")
-    private val citation = listOf("citation", "citations", "reference", "references", "referencing")
-    private val workshops = listOf("workshops", "workshop", "seminar", "seminars", "training sessions", "training session")
-    private val consultation = listOf("consultation", "consultations", "consultant", "consultants")
-    private val guides = listOf("guides", "guide", "guidebook", "guidebooks")
-    private val turnitin = listOf("turnitin", "turnitins")
-    private val archives = listOf("archives", "archive", "special collections", "special collection")
-    private val recommend = listOf("recommend", "recommendations", "recommendation")
-    private val feedback = listOf("feedback", "feedbacks")
-    private val support = listOf("support", "supports", "special needs")
+    private val answer_3 = "You can renew your borrowed items at the Self-Check Machines, the Information Services Counter, or online via the Library Portal."
+    private val keywords1_3 = listOf("renew", "extend", "prolong")
+    private val keywords2_3 = listOf("loans", "loan", "borrowed items", "checked out items", "borrowed item", "checked out item")
+
+    private val answer_4 = "You cannot borrow any new Library materials until all overdue items are returned and any outstanding fines are cleared."
+    private val keywords1_4 = listOf("borrow", "check out", "loan")
+    private val keywords2_4 = listOf("overdue", "not returned", "late", "unreturned")
+
+    val answer_5 = "All fines and charges for lost materials must be paid using cashless methods. Accepted options include NETS, PayNow, and AXS."
+    val keywords1_5 = listOf("pay", "settle", "clear")
+    val keywords2_5 = listOf("fine", "fines", "penalties", "fees", "lost materials", "lost items")
+
+    val answer_6 = "NYP students and full-time staff can access the Library’s digital resources remotely using their NYP credentials."
+    val keywords1_6 = listOf("access", "use", "view")
+    val keywords2_6 = listOf("e-resources", "digital resources", "online resources", "databases")
+
+    val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing."
+    val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
+    val keywords2_7 = listOf("location", "found", "where", "placed", "situated")
+
+    val answer_8 = "The Library of Things is a special collection of gadgets and educational kits designed to enhance learning. It includes items such as board games, robotic kits, and other interactive tools."
+    val keywords1_8 = listOf("Library of Things", "collection of gadgets", "educational kits", "learning tools")
+
+    val answer_9 = "You can book a library room for 2 hours if there are at least 3 students. Booking is available 5 days in advance via the Library or Student Portal."
+    val keywords1_9 = listOf("book", "reserve", "schedule")
+    val keywords2_9 = listOf("library room", "study room", "group room", "discussion room", "study rooms", "library rooms", "group rooms")
+
+    val answer_10 = "To get help from a librarian, please call the library hotline at 6550 0150. (Note: Assistance through a virtual assistant like Temi may be available in the future.)"
+    val keywords1_10 = listOf("contact", "talk to", "reach", "speak with")
+    val keywords2_10 = listOf("librarian", "library staff", "helpdesk", "information desk")
+
+    val answer_11 = "The loan period for books is 14 days. Items can be renewed twice if no one else has reserved them."
+    val keywords1_11 = listOf("loan period", "borrow duration", "due date")
+    val keywords2_11 = listOf("books", "items", "materials", "book", "item")
+
+    val answer_12 = "If an item is reserved by another user, you will not be able to renew it."
+    val keywords1_12 = listOf("renew", "extend", "prolong")
+    val keywords2_12 = listOf("reserved", "on hold", "requested")
+
+    val answer_13 = "Library lockers are available for temporary storage. They are located near the library entrance."
+    val keywords1_13 = listOf("locker", "storage", "store", "lockers", "storages", "stores")
+    val keywords2_13 = listOf("location", "where", "placed")
+
+    val answer_14 = "You can suggest a title for the library to acquire by filling in the recommendation form on the Library Portal."
+    val keywords1_14 = listOf("suggest", "recommend", "propose")
+    val keywords2_14 = listOf("title", "book", "resource", "material", "titles", "books", "resources", "materials")
+
+    val answer_15 = "Lost and found items are kept at the Information Services Counter."
+    val keywords1_15 = listOf("lost and found", "lost item", "missing item", "lost items", "missing items")
+    val keywords2_15 = listOf("location", "where", "found")
+
+    val answer_16 = "Group study rooms come with whiteboards and power sockets."
+    val keywords1_16 = listOf("facilities", "features", "equipment")
+    val keywords2_16 = listOf("group study rooms", "discussion rooms")
+
+    val answer_17 = "Food and drinks are not allowed in the library except for water in spill-proof bottles."
+    val keywords1_17 = listOf("food", "drink", "eating", "beverages", "drinks", "beverage")
+    val keywords2_17 = listOf("allowed", "permitted", "can I bring")
+
+    val answer_18 = "Printing and photocopying services are available at the library with a valid student or staff ID."
+    val keywords1_18 = listOf("printing", "photocopying", "copy", "print", "copies")
+    val keywords2_18 = listOf("available", "where", "how to use")
+
+    val answer_19 = "There are quiet zones in the library marked with signage."
+    val keywords1_19 = listOf("quiet zone", "silent area", "study area", "quiet zones", "silent areas", "study areas")
+    val keywords2_19 = listOf("location", "where", "found")
+
+    val answer_20 = "Library fines can be avoided by returning items on time and renewing them before the due date."
+    val keywords1_20 = listOf("avoid", "prevent", "stop")
+    val keywords2_20 = listOf("fines", "late fees", "penalties","fine", "penalty", "charge")
+
+    val answer_21 = "You can return borrowed items using the book drop near the library entrance or at the service counter."
+    val keywords1_21 = listOf("return", "drop off", "give back")
+    val keywords2_21 = listOf("books", "items", "borrowed materials", "book", "item", "borrowed item")
+
+    val answer_22 = "Late returns will incur a fine. Please check the library portal for detailed fine policies."
+    val keywords1_22 = listOf("late return", "overdue", "not on time")
+    val keywords2_22 = listOf("fine", "penalty", "charge")
+
+    val answer_23 = "Overdue book fines start at $0.50 per day, while media items may incur higher rates."
+    val keywords1_23 = listOf("fines", "penalties", "fees", "fine", "penalty", "charge", "fee")
+    val keywords2_23 = listOf("books", "media", "overdue items", "overdue item")
+
+    val answer_24 = "Yes, you can reserve books currently on loan via the library catalogue."
+    val keywords1_24 = listOf("reserve", "place hold", "book request")
+    val keywords2_24 = listOf("book", "item", "resource", "books", "items", "resources")
+
+    val answer_25 = "Log into your library account to view your borrowing history."
+    val keywords1_25 = listOf("borrowing history", "loan history", "checkout records")
+    val keywords2_25 = listOf("check", "view", "see")
+
+    val answer_26 = "No, items borrowed from NYP Library must be returned to the same library."
+    val keywords1_26 = listOf("return", "drop off")
+    val keywords2_26 = listOf("other libraries", "different location", "outside NYP", "other library")
+
+    val answer_27 = "Report any lost or damaged item immediately. You may need to pay a replacement and administrative fee."
+    val keywords1_27 = listOf("lost", "damaged", "broken")
+    val keywords2_27 = listOf("report", "inform", "notify")
+
+    val answer_28 = "You can access e-books and e-journals through the Library Portal by searching the online catalogue or databases."
+    val keywords1_28 = listOf("access", "view", "read")
+    val keywords2_28 = listOf("ebooks", "ejournals", "digital materials", "ebooks", "ejournal", "digital material")
+
+    val answer_29 = "Use the OneSearch tool on the library homepage to find books, articles, and media resources."
+    val keywords1_29 = listOf("search", "find", "look for")
+    val keywords2_29 = listOf("resources", "books", "articles", "media", "resource", "book", "article")
+
+    val answer_30 = "Yes, you can download e-books depending on the platform such as ProQuest or EBSCO."
+    val keywords1_30 = listOf("download", "save", "access offline")
+    val keywords2_30 = listOf("ebooks", "electronic books", "ebook", "electronic book")
+
+    val answer_31 = "Yes, databases like IEEE and JSTOR are accessible via the library’s subscribed services."
+    val keywords1_31 = listOf("databases", "IEEE", "JSTOR", "database", "I triple e")
+    val keywords2_31 = listOf("available", "access", "use")
+
+    val answer_32 = "Past-year exam papers are available in the Digital Repository or through your school’s LMS."
+    val keywords1_32 = listOf("exam papers", "past year papers", "old exams", "exam paper", "past year paper", "old exam")
+    val keywords2_32 = listOf("access", "find", "where")
+
+    val answer_33 = "Log into the Library Portal using your NYP network ID and password at lib.nyp.edu.sg."
+    val keywords1_33 = listOf("login", "sign in", "access")
+    val keywords2_33 = listOf("library portal", "account", "website")
+
+    val answer_34 = "There is no dedicated app, but the library website is mobile-friendly and fully functional."
+    val keywords1_34 = listOf("app", "application", "mobile")
+    val keywords2_34 = listOf("library", "access", "services")
+
+    val answer_35 = "Use the online booking system via the Library Portal to book a group discussion room."
+    val keywords1_35 = listOf("book", "reserve", "schedule")
+    val keywords2_35 = listOf("group discussion room", "study room", "study rooms", "group rooms", "group room", "discussion room", "discussion rooms")
+
+    val answer_36 = "Printing, copying, and scanning services are available with your student or staff card."
+    val keywords1_36 = listOf("printing", "copying", "scanning")
+    val keywords2_36 = listOf("available", "use", "where")
+
+    val answer_37 = "To print from your laptop, install the NYP network printer or use WebPrint via the NYP intranet."
+    val keywords1_37 = listOf("print", "send to printer")
+    val keywords2_37 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
+
+    val answer_38 = "Yes, desktop computers are available in the library on a first-come-first-served basis."
+    val keywords1_38 = listOf("computers", "PCs", "desktops", "computer", "PC", "desktop")
+    val keywords2_38 = listOf("available", "use", "access")
+
+    val answer_39 = "Yes, the library includes makerspaces and innovation labs depending on the current initiatives."
+    val keywords1_39 = listOf("makerspace", "makerspaces", "tech corner", "labs", "lab", "tech corners")
+    val keywords2_39 = listOf("available", "have", "exist")
+
+    val answer_40 = "Wi-Fi is available in the library. Connect using your NYP network credentials."
+    val keywords1_40 = listOf("wifi", "wireless", "internet")
+    val keywords2_40 = listOf("connect", "available", "access")
+
+    val answer_41 = "You can bring your own laptop to the library and use the available power sockets and Wi-Fi."
+    val keywords1_41 = listOf("laptop", "computer", "device", "laptops", "computers", "devices")
+    val keywords2_41 = listOf("bring", "use", "allowed")
+
+    val answer_42 = "You can suggest library events or workshops through the feedback form on the Library Portal."
+    val keywords1_42 = listOf("suggest", "propose", "recommend")
+    val keywords2_42 = listOf("events", "workshops", "programs", "event", "program")
+
+    val answer_43 = "Workshops and training sessions are announced on the Library Portal and via email notifications."
+    val keywords1_43 = listOf("workshop", "training", "session", "workshops", "training sessions", "sessions")
+    val keywords2_43 = listOf("schedule", "when", "announcement")
+
+    val answer_44 = "Orientation tours are available for new students at the start of each semester."
+    val keywords1_44 = listOf("orientation", "tour", "introduction", "tours")
+    val keywords2_44 = listOf("available", "offered", "schedule")
+
+    val answer_45 = "You may request help from a librarian for your research project by scheduling a consultation."
+    val keywords1_45 = listOf("help", "assistance", "guidance")
+    val keywords2_45 = listOf("research", "project", "assignment")
+
+    val answer_46 = "The library provides citation guides and workshops to help you with referencing."
+    val keywords1_46 = listOf("citation", "referencing", "sources", "source", "citations")
+    val keywords2_46 = listOf("guide", "help", "support")
+
+    val answer_47 = "Plagiarism detection tools like Turnitin are accessible through your school’s LMS."
+    val keywords1_47 = listOf("plagiarism", "copying", "originality")
+    val keywords2_47 = listOf("tool", "detection", "turn it in", "tools")
+
+    val answer_48 = "Books borrowed by mistake can be returned at the service counter without penalty if done promptly."
+    val keywords1_48 = listOf("wrong book", "mistake", "accidental borrow")
+    val keywords2_48 = listOf("return", "give back", "undo")
+
+    val answer_49 = "Yes, alumni can access selected digital resources. Check the Alumni Portal for eligibility."
+    val keywords1_49 = listOf("alumni", "graduates", "former students", "alumni", "graduate", "former student")
+    val keywords2_49 = listOf("access", "resources", "library", "resource")
+
+    val answer_50 = "Library staff can help you locate hard-to-find materials or place an inter-library loan request."
+    val keywords1_50 = listOf("find", "locate", "track down")
+    val keywords2_50 = listOf("materials", "resources", "books", "material", "resource", "book")
+
+    val answer_51 = "Children are allowed in the library if accompanied by an NYP student or staff."
+    val keywords1_51 = listOf("children", "kids", "minors", "child", "kid", "minor")
+    val keywords2_51 = listOf("allowed", "can", "permitted")
+
+    val answer_52 = "Noise complaints can be reported to library staff at the service counter."
+    val keywords1_52 = listOf("noise", "loud", "disturbance", "noises")
+    val keywords2_52 = listOf("report", "complain", "notify")
+
+    val answer_53 = "Headphones can be borrowed from the Information Services Counter."
+    val keywords1_53 = listOf("headphones", "earphones", "audio device")
+    val keywords2_53 = listOf("borrow", "loan", "get")
+
+    val answer_54 = "Yes, the library offers book displays and themed exhibits regularly."
+    val keywords1_54 = listOf("exhibits", "displays", "book themes", "exhibit", "display", "book theme")
+    val keywords2_54 = listOf("available", "offered", "schedule")
+
+    val answer_55 = "Yes, your feedback is welcome. Use the feedback form on the Library Portal."
+    val keywords1_55 = listOf("feedback", "comment", "suggestion", "feedbacks", "comments", "suggestions")
+    val keywords2_55 = listOf("submit", "give", "send")
+
+    val answer_56 = "The library has height-adjustable tables and other accessible facilities for users with disabilities."
+    val keywords1_56 = listOf("accessible", "disability", "wheelchair")
+    val keywords2_56 = listOf("facilities", "equipment", "support", "facilities", "equipment")
+
+    val answer_57 = "Yes, library tours are available for visiting groups upon request."
+    val keywords1_57 = listOf("tours", "visit", "orientation", "tour", "visits")
+    val keywords2_57 = listOf("group", "request", "available", "requests", "groups")
+
+    val answer_58 = "Extended hours are offered during exam periods. Check the Library Portal for updates."
+    val keywords1_58 = listOf("extended hours", "longer hours", "exam time")
+    val keywords2_58 = listOf("schedule", "available", "open")
+
+    val answer_59 = "Library news and updates are shared via the portal, email, and digital screens on campus."
+    val keywords1_59 = listOf("news", "updates", "announcements", "update", "announcement")
+    val keywords2_59 = listOf("where", "find", "access")
+
+    val answer_60 = "You can volunteer at the library by applying through the student development office or library website."
+    val keywords1_60 = listOf("volunteer", "help", "assist", "volunteers")
+    val keywords2_60 = listOf("library", "apply", "how", "become")
+
     private val jason = listOf("jason", "jackson")
 
     // Time values
@@ -271,255 +445,230 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
-        if(isIntoList(asrResult, openingHours)){ // Checks if one of the key words is part of the demand
+        if(isIntoList(asrResult, keywords1_1)){
             robot.finishConversation()
-            speak("The main library is opened from 8:30 am to 8 pm from Monday to Friday, and is closed on Saturdays. The reading lounge is opened from 8:30 am to 9 pm from Monday to Friday, and from 8:30 am to 1 pm on Saturdays. On Sundays and public holidays, everything is closed.")
+            speak(answer_1)
+        } else if(isIntoList(asrResult, keywords1_2, keywords2_2)){
+            robot.finishConversation()
+            speak(answer_2)
+        } else if(isIntoList(asrResult, keywords1_3, keywords2_3)){
+            robot.finishConversation()
+            speak(answer_3)
+        } else if(isIntoList(asrResult, keywords1_4, keywords2_4)){
+            robot.finishConversation()
+            speak(answer_4)
+        } else if(isIntoList(asrResult, keywords1_5, keywords2_5)){
+            robot.finishConversation()
+            speak(answer_5)
+        } else if(isIntoList(asrResult, keywords1_6, keywords2_6)){
+            robot.finishConversation()
+            speak(answer_6)
+        } else if(isIntoList(asrResult, keywords1_7, keywords2_7)){
+            robot.finishConversation()
+            speak(answer_7)
+        } else if(isIntoList(asrResult, keywords1_8)){
+            robot.finishConversation()
+            speak(answer_8)
+        } else if (isIntoList(asrResult, keywords1_9, keywords2_9)){
+            robot.finishConversation()
+            speak(answer_9)
+        } else if (isIntoList(asrResult, keywords1_10, keywords2_10)){
+            robot.finishConversation()
+            speak(answer_10)
+        } else if (isIntoList(asrResult, keywords1_11, keywords2_11)){
+            robot.finishConversation()
+            speak(answer_11)
+        } else if (isIntoList(asrResult, keywords1_12, keywords2_12)){
+            robot.finishConversation()
+            speak(answer_12)
+        } else if (isIntoList(asrResult, keywords1_13, keywords2_13)){
+            robot.finishConversation()
+            speak(answer_13)
+        } else if (isIntoList(asrResult, keywords1_14, keywords2_14)){
+            robot.finishConversation()
+            speak(answer_14)
+        } else if (isIntoList(asrResult, keywords1_15, keywords2_15)){
+            robot.finishConversation()
+            speak(answer_15)
+        } else if (isIntoList(asrResult, keywords1_16, keywords2_16)){
+            robot.finishConversation()
+            speak(answer_16)
         }
-        else if(loansAndReturns.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_17, keywords2_17)){
             robot.finishConversation()
-            speak("You can borrow or return all accompanying materials at the Information Services Counter on Level 4. However, you cannot borrow new library materials if you haven't returned overdue items. You can renew your loans at the Self-Check Machines at the Information Services Counter on level 4, or via the internet library portal. It is all free of charges. To check your loan records, you can use the internet library portal.")
+            speak(answer_17)
         }
-        else if(bookingConditions.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_18, keywords2_18)){
             robot.finishConversation()
-            speak("To manage your bookings, please use the internet library portal. Reservations are free of charge, and can only be placed on items with status \"on loan\" and \"in processed\". Others status cannot be reserved. Reserved items must be collected by the person who booked them.")
+            speak(answer_18)
         }
-        else if(lossesCardAndStuff.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_19, keywords2_19)){
             robot.finishConversation()
-            speak("For any questions in case you've lost your library card or any borrowed item, please report to the Information Services Counter, at level 4.")
+            speak(answer_19)
         }
-        else if(databases.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_20, keywords2_20)){
             robot.finishConversation()
-            speak("To access online databases, you can connect via the internet library portal and go to \"Resources\". These are available to all NYP students and full-time staff.")
+            speak(answer_20)
         }
-        else if(examinationPapers.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_21, keywords2_21)){
             robot.finishConversation()
-            speak("To access past examination papers, you must connect via the internet library portal. Electronic copies from academic year 2015 onwards are available in PDF. You can access, download and print them. However, common test papers and model answers to examination papers are not available.")
+            speak(answer_21)
         }
-        else if(journalsCollection.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_22, keywords2_22)){
             robot.finishConversation()
-            speak( "The journals are located at different places. The lifestyles magazines are at level 4, and the health, sciences and academic journals are at level 5.")
+            speak(answer_22)
         }
-        else if(jason.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_23, keywords2_23)){
             robot.finishConversation()
-            isMoveRequest = true
-            speak( "Let's go see this weirdo")
-            robot.goTo("jason")
+            speak(answer_23)
         }
-        else if(loanRecords.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_24, keywords2_24)){
             robot.finishConversation()
-            speak("You can check your loan account by logging in to the library portal using your NYP email address.")
+            speak(answer_24)
         }
-        else if(renewLoans.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_25, keywords2_25)){
             robot.finishConversation()
-            speak("Loans can be renewed at the Self-Check Machines, at the Information Services Counter, or via Library Portal.")
+            speak(answer_25)
         }
-        else if(newMaterials.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_26, keywords2_26)){
             robot.finishConversation()
-            speak("No. You are not allowed to borrow any Library materials unless the overdue items are returned and fines are cleared.")
+            speak(answer_26)
         }
-        else if(payFines.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_27, keywords2_27)){
             robot.finishConversation()
-            speak("Cashless payment is implemented for all payment of fines and lost materials. You can pay by NETS, PayNow or via AXS.")
+            speak(answer_27)
         }
-        else if(accessEressources.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_28, keywords2_28)){
             robot.finishConversation()
-            speak("Off-campus access to these e-resources is available to NYP students & full-time staff.")
+            speak(answer_28)
         }
-        else if(libraryOfThings.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_29, keywords2_29)){
             robot.finishConversation()
-            speak("Library of Things is a collection of cool gadgets and educational kits that can help to enhance your learning experiences. They include board games, robotic kits and other learning tools.")
+            speak(answer_29)
         }
-        else if(bookRooms.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_30, keywords2_30)){
             robot.finishConversation()
-            speak("A minimum of 3 students can book a library room for 2 hours. With 5 days advanced booking, you can book via the Library or Student portal.")
+            speak(answer_30)
         }
-        else if(contactAssistance.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_31, keywords2_31)){
             robot.finishConversation()
-            speak("Please call the library hotline at 65500150")
+            speak(answer_31)
         }
-        else if(location.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_32, keywords2_32)){
             robot.finishConversation()
-            speak("The library is located at Block A, Level 4, Nanyang Polytechnic campus .")
+            speak(answer_32)
         }
-        else if(access.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_33, keywords2_33)){
             robot.finishConversation()
-            speak("NYP students, staff, and registered members such as alumni and partners can access the library.")
+            speak(answer_33)
         }
-        else if(holidays.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_34, keywords2_34)){
             robot.finishConversation()
-            speak("The library is open during term breaks but closed on public holidays. Check the calendar on the library website for holiday hours .")
+            speak(answer_34)
         }
-        else if(contact.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_35, keywords2_35)){
             robot.finishConversation()
-            speak("You can email the library at [library@nyp.edu.sg](mailto:library@nyp.edu.sg) or call the helpdesk at +65 6451 5115.")
+            speak(answer_35)
         }
-        else if(virtualTour.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_36, keywords2_36)){
             robot.finishConversation()
-            speak("Yes, a virtual tour is available on the library’s website to help new users explore the space.")
+            speak(answer_36)
         }
-        else if(visitors.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_37, keywords2_37)){
             robot.finishConversation()
-            speak("Access is limited to NYP members. External visitors may need prior approval or appointment.")
+            speak(answer_37)
         }
-        else if(lostSomething.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_38, keywords2_38)){
             robot.finishConversation()
-            speak("Approach the service desk or contact NYP's Lost and Found at the Student Affairs Office.")
+            speak(answer_38)
         }
-        else if(food.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_39, keywords2_39)){
             robot.finishConversation()
-            speak("Only bottled drinks are allowed. Food is strictly prohibited to maintain cleanliness.")
+            speak(answer_39)
         }
-        else if(zones.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_40, keywords2_40)){
             robot.finishConversation()
-            speak("Yes, the library has designated quiet study areas and group discussion rooms that can be booked online.")
+            speak(answer_40)
         }
-        else if(register.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_41, keywords2_41)){
             robot.finishConversation()
-            speak("NYP students and staff are automatically registered. Alumni and external users can apply via the library portal .")
+            speak(answer_41)
         }
-        else if(alumni.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_42, keywords2_42)){
             robot.finishConversation()
-            speak("Yes, alumni may access selected services upon registration. Contact the library for details .")
+            speak(answer_42)
         }
-        else if(borrow.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_43, keywords2_43)){
             robot.finishConversation()
-            speak("Yes, staff enjoy extended loan periods and access to all resources .")
+            speak(answer_43)
         }
-        else if(forgetCard.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_44, keywords2_44)){
             robot.finishConversation()
-            speak("Visit the service counter with valid identification for assistance.")
+            speak(answer_44)
         }
-        else if(digitalAccess.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_45, keywords2_45)){
             robot.finishConversation()
-            speak("Use your NYP network ID to log into the library portal for remote access to e-resources .")
+            speak(answer_45)
         }
-        else if(nbItems.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_46, keywords2_46)){
             robot.finishConversation()
-            speak("Students may borrow up to 8 items. Staff may borrow up to 15 items .")
+            speak(answer_46)
         }
-        else if(loanDurations.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_47, keywords2_47)){
             robot.finishConversation()
-            speak("Most books have a 14-day loan period, with auto-renewal unless recalled .")
+            speak(answer_47)
         }
-        else if(renewBorrowedItem.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_48, keywords2_48)){
             robot.finishConversation()
-            speak("Renewal is automatic if the item is not reserved by another user. Manual renewal is also possible via the library portal .")
+            speak(answer_48)
         }
-        else if(returnBorrowedItem.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_49, keywords2_49)){
             robot.finishConversation()
-            speak("Use the book drop near the library entrance or return items at the service counter .")
+            speak(answer_49)
         }
-        else if(returnLate.any { word -> asrResult.contains(word, ignoreCase = true)}) {
+        else if (isIntoList(asrResult, keywords1_50, keywords2_50)){
             robot.finishConversation()
-            speak("Late returns incurs a fine. Check the fine policy on the library portal .")
+            speak(answer_50)
         }
-        else if(overdue.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_51, keywords2_51)){
             robot.finishConversation()
-            speak("Fines typically start from \$0.50 per day for books and \$1.00 per hour/day for media. Refer to the fines section online .")
+            speak(answer_51)
         }
-        else if(currently.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_52, keywords2_52)){
             robot.finishConversation()
-            speak("Yes, place a reservation online using the library catalogue .")
+            speak(answer_52)
         }
-        else if(history.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_53, keywords2_53)){
             robot.finishConversation()
-            speak("Log in to your library account to view loan history and current items .")
+            speak(answer_53)
         }
-        else if(otherLibraries.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_54, keywords2_54)){
             robot.finishConversation()
-            speak("No, materials borrowed from NYP Library must be returned to NYP .")
+            speak(answer_54)
         }
-        else if(damage.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_55, keywords2_55)){
             robot.finishConversation()
-            speak("Report it immediately. You may be charged a replacement fee and administrative cost .")
+            speak(answer_55)
         }
-        else if(eBooks.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_56, keywords2_56)){
             robot.finishConversation()
-            speak("Log into the library portal and search the online catalogue or databases section.")
+            speak(answer_56)
         }
-        else if(search.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_57, keywords2_57)){
             robot.finishConversation()
-            speak("Use the OneSearch feature on the library homepage for books, articles, and media .")
+            speak(answer_57)
         }
-        else if(download.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_58, keywords2_58)){
             robot.finishConversation()
-            speak("Yes, these are accessible through the NYP Library’s subscribed databases .")
+            speak(answer_58)
         }
-        else if(IEEE.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_59, keywords2_59)){
             robot.finishConversation()
-            speak("Yes, these are accessible through the NYP Library’s subscribed databases .")
+            speak(answer_59)
         }
-        else if(exams.any { word -> asrResult.contains(word, ignoreCase = true)}){
+        else if (isIntoList(asrResult, keywords1_60, keywords2_60)){
             robot.finishConversation()
-            speak("Yes, they are available under the Digital Repository or through your school’s LMS .")
-        }
-        else if(portal.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Use your NYP network ID and password to log in at lib.nyp.edu.sg .")
-        }
-        else if(app.any { word -> asrResult.contains(word, ignoreCase = true)}) {
-            robot.finishConversation()
-            speak("No dedicated app, but the website is mobile-friendly and supports access to all services .")
-        }
-        else if(bookRoom.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Use the online booking system via the library portal.")
-        }
-        else if(print.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, you can print, copy, and scan using your student card at various stations .")
-        }
-        else if(laptop.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Install the NYP network printer service or use WebPrint via the NYP intranet .")
-        }
-        else if(wifi.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, connect to the NYP wireless network using your credentials .")
-        }
-        else if(charge.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, charging points are available at designated study tables .")
-        }
-        else if(research.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, librarians are available for one-on-one research consultations .")
-        }
-        else if(citation.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, citation guides (APA, MLA, etc.) are available, and librarians can assist .")
-        }
-        else if(workshops.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, workshops on research skills, information literacy, and citation tools are offered each semester .")
-        }
-        else if(consultation.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, schedule a session via email or the library portal .")
-        }
-        else if(guides.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, online guides and video tutorials are available under “Research Help” on the library website .")
-        }
-        else if(turnitin.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Turnitin access is managed through NYP’s LMS, not directly via the library.")
-        }
-        else if(archives.any { word -> asrResult.contains(word, ignoreCase = true)}) {
-            robot.finishConversation()
-            speak("Yes, the library holds NYP publications, project reports, and special reference materials.")
-        }
-        else if(recommend.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, use the “Recommend a Title” form available on the library site.")
-        }
-        else if(feedback.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Submit feedback via the online form or speak to staff at the service desk.")
-        }
-        else if(support.any { word -> asrResult.contains(word, ignoreCase = true)}){
-            robot.finishConversation()
-            speak("Yes, assistive technologies and tailored services are available. Contact the library for more information.")
+            speak(answer_60)
         }
         else {
             robot.finishConversation()
