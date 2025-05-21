@@ -60,7 +60,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing."
     private val keywords1_7 = listOf("magazines", "journals", "periodicals", "journal")
     private val keywords2_7 = listOf("location", "found", "where", "placed", "situated")
-    //test
+    //testf
     private val answer_8 = "The Library of Things is a special collection of gadgets and educational kits designed to enhance learning. It includes items such as board games, robotic kits, and other interactive tools."
     private val keywords1_8 = listOf("Library of Things", "collection of gadgets", "educational kits", "learning tools")
 
