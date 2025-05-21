@@ -9,7 +9,7 @@ import com.chaquo.python.android.AndroidPlatform
 
 
 public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
-    private val locations = listOf("test point 3","johan", "jason")
+    private val locations = listOf("centrewing","cafeteria", "southwing", "northwing")
     private lateinit var robotController: RobotController
 
     override fun onCreate(savedInstanceState: Bundle?) {

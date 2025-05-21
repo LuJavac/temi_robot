@@ -54,7 +54,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords2_5 = listOf("fine", "fines", "penalties", "fees", "lost materials", "lost items")
 
     private val answer_6 = "NYP students and full-time staff can access the Library’s digital resources remotely using their NYP credentials."
-    private val keywords1_6 = listOf("access", "use", "view")
+    private val keywords1_6 = listOf("access", "use", "view", "find")
     private val keywords2_6 = listOf("e-resources", "digital resources", "online resources", "databases")
 
     private val answer_7 = "Lifestyle magazines are located at Level 4 Lifestyle Hub, while academic journals are available at Level 5 Centre Wing."
@@ -89,8 +89,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords2_14 = listOf("title", "book", "resource", "material", "titles", "books", "resources", "materials")
 
     private val answer_15 = "Lost and found items are kept at the Information Services Counter."
-    private val keywords1_15 = listOf("lost and found", "lost item", "missing item", "lost items", "missing items")
-    private val keywords2_15 = listOf("location", "where", "found")
+    private val keywords1_15 = listOf("lost", "lost item", "missing item", "lost items", "missing items")
+    private val keywords2_15 = listOf("location", "where", "found", "what")
 
     private val answer_16 = "Group study rooms come with whiteboards and power sockets."
     private val keywords1_16 = listOf("facilities", "features", "equipment")
@@ -117,7 +117,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords2_21 = listOf("books", "items", "borrowed materials", "book", "item", "borrowed item")
 
     private val answer_22 = "Late returns will incur a fine. Please check the library portal for detailed fine policies."
-    private val keywords1_22 = listOf("late return", "overdue", "not on time")
+    private val keywords1_22 = listOf("late", "overdue", "not on time")
     private val keywords2_22 = listOf("fine", "penalty", "charge")
 
     private val answer_23 = "Overdue book fines start at $0.50 per day, while media items may incur higher rates."
@@ -419,7 +419,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         descriptionId: Int,
         description: String
     ) {
-
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
             if(isMoveRequest){
                 isMoveRequest = false
