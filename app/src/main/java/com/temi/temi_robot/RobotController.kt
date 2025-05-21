@@ -7,10 +7,11 @@ import com.chaquo.python.PyObject
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
+import com.robotemi.sdk.constants.HardButton
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
-import com.robotemi.sdk.listeners.OnMovementStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
+import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>, private var module: PyObject):
@@ -19,7 +20,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     OnRobotReadyListener,
     OnDetectionStateChangedListener,
     OnGoToLocationStatusChangedListener,
-    OnMovementStatusChangedListener
+    OnDistanceToDestinationChangedListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -30,7 +31,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.addOnRobotReadyListener(this)
         robot.addOnDetectionStateChangedListener(this)
         robot.addOnGoToLocationStatusChangedListener(this)
-        robot.addOnMovementStatusChangedListener(this)
+        robot.addOnDistanceToDestinationChangedListener(this)
     }
 
     // Lists for Q&A
@@ -285,6 +286,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     fun resetInactivityTimer() {
+        println("reset")
         inactivityHandler.removeCallbacks(inactivityRunnable)
         inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
     }
@@ -319,6 +321,36 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         } else {
             return list1.any { word -> request.contains(word, ignoreCase = true) } && list2.any { word -> request.contains(word, ignoreCase = true) }
         }
+    }
+
+    fun getPathLocations(startingLocation: String){
+        val locations = getLocations()
+        val pathLocations = locations.filter { it.startsWith("patrol") }
+
+
+
+    }
+
+    // System functions
+    fun hideTopBar()
+    {
+        robot.hideTopBar()
+    }
+
+    fun setVolume(volume : Int){
+        robot.volume = volume
+    }
+
+    fun toggleWakeup(disabled : Boolean){
+        robot.toggleWakeup(disabled)
+    }
+
+    fun setTopBadgeEnabled(enabled : Boolean){
+        robot.topBadgeEnabled = enabled
+    }
+
+    fun setHardButtonMode(type : HardButton, mode : HardButton.Mode){
+        robot.setHardButtonMode(type, mode)
     }
 
     // Speech
@@ -358,6 +390,11 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     // Person Detection
     fun setDetectionModeOn(on : Boolean, distance : Float){
+        if(checkSelfPermission(Permission.SETTINGS) == 0){
+            speak("please allow the settings permission for the application to work properly")
+            requestPermissions(listOf(Permission.SETTINGS))
+            speak("please restart the application after allowing new permission")
+        }
         robot.setDetectionModeOn(on, distance)
     }
 
@@ -429,7 +466,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         }
     }
 
-    override fun onMovementStatusChanged(type: String, status: String) {
+    override fun onDistanceToDestinationChanged(location: String, distance: Float) {
+        println(isDetectionModeOn())
         resetInactivityTimer()
     }
 

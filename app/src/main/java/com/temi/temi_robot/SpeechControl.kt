@@ -6,10 +6,11 @@ import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import com.robotemi.sdk.constants.HardButton
 
 
 public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
-    private val locations = listOf("centrewing","cafeteria", "southwing", "northwing")
+    private val locations = listOf("test","jason", "johan")
     private lateinit var robotController: RobotController
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +45,14 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
     }
 
     override fun onRobotIsReady() {
+        robotController.setDetectionModeOn(true, 0.5f)
         robotController.patrol(locations)
+        robotController.hideTopBar()
+        robotController.setVolume(4)
+        robotController.toggleWakeup(true)
+        robotController.setTopBadgeEnabled(false)
+        robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.DISABLED)
+        robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
     }
 
 }
