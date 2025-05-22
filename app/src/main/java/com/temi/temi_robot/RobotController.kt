@@ -288,7 +288,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords1_64 = listOf("smart learning hub", "smart learning")
 
     private val answer_65= "Please follow me, we are going to the management collection."
-    private val keywords1_65 = listOf("management", "collection", "books")
+    private val keywords1_65 = listOf("management","management collection", "books")
 
     private val answer_66= "Please follow me, we are going to the learn for life pod."
     private val keywords1_66 = listOf("learn life pod")
@@ -423,6 +423,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     fun goTo(location: String) {
+        isMoveRequest = true
         robot.goTo(location)
     }
 
