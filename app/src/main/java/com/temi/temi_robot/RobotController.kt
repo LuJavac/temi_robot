@@ -273,6 +273,59 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     private val keywords1_60 = listOf("volunteer", "help", "assist", "volunteers")
     private val keywords2_60 = listOf("library", "apply", "how", "become")
 
+    //Go To locations
+    private val answer_61= "Please follow me, we are going to the think space."
+    private val keywords1_61 = listOf("think space")
+    private val questions = listOf("where", "go", "take me", "find")
+
+    private val answer_62= "Please follow me, we are going to the dream space."
+    private val keywords1_62 = listOf("dream space", "dreaming space")
+
+    private val answer_63= "Please follow me, we are going to the idea space."
+    private val keywords1_63 = listOf("idea space")
+
+    private val answer_64= "Please follow me, we are going to the smart learning hub."
+    private val keywords1_64 = listOf("smart learning hub", "smart learning")
+
+    private val answer_65= "Please follow me, we are going to the management collection."
+    private val keywords1_65 = listOf("management", "collection", "books")
+
+    private val answer_66= "Please follow me, we are going to the learn for life pod."
+    private val keywords1_66 = listOf("learn life pod")
+
+    private val answer_67= "Please follow me, we are going to the dvds."
+    private val keywords1_67 = listOf("dvds", "cds", "dvd", "cd")
+
+    private val answer_68= "Please follow me, we are going to the smart kiosk."
+    private val keywords1_68 = listOf("smart kiosk")
+
+    private val answer_69= "Please follow me, we are going to the exhibition."
+    private val keywords1_69 = listOf("exhibition")
+
+    private val answer_70= "Please follow me, we are going to the book recommendations."
+    private val keywords1_70 = listOf("book recommendations")
+
+    private val answer_71= "Please follow me, we are going to the magazines."
+    private val keywords1_71 = listOf("magazines", "magazines collection", "magazines books")
+
+    private val answer_72= "Please follow me, we are going to the lifestyle books."
+    private val keywords1_72 = listOf("lifestyle books")
+
+    private val answer_73= "Please follow me, we are going to the cafe."
+    private val keywords1_73 = listOf("cafe")
+
+    private val answer_74= "Please follow me, we are going to the smart space."
+    private val keywords1_74 = listOf("smart space")
+
+    private val answer_75= "Please follow me, we are going to the design collection."
+    private val keywords1_75 = listOf("design collection")
+
+    private val answer_76= "Please follow me, we are going to the health sciences."
+    private val keywords1_76 = listOf("health sciences")
+
+    private val answer_77= "Please follow me, we are going to the life sciences collection."
+    private val keywords1_77 = listOf("life sciences")
+
 
     // Time values
     private var lastRequestTime = 0L //
@@ -702,6 +755,92 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         else if (isIntoList(asrResult, keywords1_60, keywords2_60)){
             robot.finishConversation()
             speak(answer_60)
+        }
+        //Go to locations
+        else if (isIntoList(asrResult, keywords1_61, questions)){
+            robot.finishConversation()
+            speak(answer_61)
+            goTo("think space")
+        }
+        else if (isIntoList(asrResult, keywords1_62, questions)){
+            robot.finishConversation()
+            speak(answer_62)
+            goTo("dream space")
+        }
+        else if (isIntoList(asrResult, keywords1_63, questions)){
+            robot.finishConversation()
+            speak(answer_63)
+            goTo("idea space")
+        }
+        else if (isIntoList(asrResult, keywords1_64, questions)){
+            robot.finishConversation()
+            speak(answer_64)
+            goTo("smart learning hub")
+        }
+        else if (isIntoList(asrResult, keywords1_65, questions)){
+            robot.finishConversation()
+            speak(answer_65)
+            goTo("management collection")
+        }
+        else if (isIntoList(asrResult, keywords1_66, questions)){
+            robot.finishConversation()
+            speak(answer_66)
+            goTo("learn for life pod")
+        }
+        else if (isIntoList(asrResult, keywords1_67, questions)){
+            robot.finishConversation()
+            speak(answer_67)
+            goTo("dvds")
+        }
+        else if (isIntoList(asrResult, keywords1_68, questions)){
+            robot.finishConversation()
+            speak(answer_68)
+            goTo("smart kiosk")
+        }
+        else if (isIntoList(asrResult, keywords1_69, questions)){
+            robot.finishConversation()
+            speak(answer_69)
+            goTo("exhibition")
+        }
+        else if (isIntoList(asrResult, keywords1_70, questions)){
+            robot.finishConversation()
+            speak(answer_70)
+            goTo("book recommendations")
+        }
+        else if (isIntoList(asrResult, keywords1_71, questions)){
+            robot.finishConversation()
+            speak(answer_71)
+            goTo("magazines")
+        }
+        else if (isIntoList(asrResult, keywords1_72, questions)){
+            robot.finishConversation()
+            speak(answer_72)
+            goTo("lifestyle books")
+        }
+        else if (isIntoList(asrResult, keywords1_73, questions)){
+            robot.finishConversation()
+            speak(answer_73)
+            goTo("cafe")
+        }
+        else if (isIntoList(asrResult, keywords1_74, questions)){
+            robot.finishConversation()
+            speak(answer_74)
+            goTo("smart space")
+        }
+        else if (isIntoList(asrResult, keywords1_75, questions)){
+            robot.finishConversation()
+            speak(answer_75)
+            goTo("design collection")
+        }
+        else if (isIntoList(asrResult, keywords1_76, questions)){
+            robot.finishConversation()
+            speak(answer_76)
+            goTo("health sciences")
+        }
+        else if (isIntoList(asrResult, keywords1_77, questions)){
+            robot.finishConversation()
+            speak(answer_77)
+            goTo("life sciences collection")
         }
         else {
             robot.finishConversation()
