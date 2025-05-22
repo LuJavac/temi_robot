@@ -376,13 +376,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         }
     }
 
-    fun getPathLocations(startingLocation: String){
-        val locations = getLocations()
-        val pathLocations = locations.filter { it.startsWith("patrol") }
-
-
-
-    }
 
     // System functions
     fun hideTopBar()
