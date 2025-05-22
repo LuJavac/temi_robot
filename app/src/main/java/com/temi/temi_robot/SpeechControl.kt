@@ -10,7 +10,9 @@ import com.robotemi.sdk.constants.HardButton
 
 
 public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
-    private val locations = listOf("test","jason", "johan")
+    //private val locations = listOf("test","jason", "johan")
+    private val locations = listOf("patrol centerwing", "patrol south corridor", "patrol south door", "patrol southwing", "patrol southwing entry", "patrol southwing back", "patrol southwing entry", "patrol southwing", "patrol south door", "patrol south corridor", "patrol centerwing",
+                                   "patrol north corridor", "patrol north door", "patrol northwing", "patrol northwing entry", "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back", "patrol northwing1 middle", "patrol northwing1", "patrol northwing entry", "patrol northwing2", "patrol northwing2 grass", "patrol northwing2 middle", "patrol northwing2 back", "patrol northwing2 middle", "patrol northwing2 grass", "patrol northwing2", "patrol northwing entry", "patrol northwing", "patrol north door", "patrol north corridor", "patrol centerwing")
     private lateinit var robotController: RobotController
 
     override fun onCreate(savedInstanceState: Bundle?) {
