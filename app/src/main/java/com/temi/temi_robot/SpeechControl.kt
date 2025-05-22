@@ -24,6 +24,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             Python.start(AndroidPlatform(this));
         }
 
+
         // Initialize Python file module
         val py = Python.getInstance()
         val module = py.getModule("main") // nom du fichier sans .py
