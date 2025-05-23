@@ -1,5 +1,6 @@
 package com.temi.temi_robot
 
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import com.chaquo.python.PyObject
@@ -10,17 +11,19 @@ import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.constants.HardButton
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
+import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.Permission
 
-class RobotController(private var defaultLocations: List<String>, private var module: PyObject):
+class RobotController(private var defaultLocations: List<String>, private var module: PyObject, private val mediaPlayer: MediaPlayer):
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
     OnDetectionStateChangedListener,
     OnGoToLocationStatusChangedListener,
-    OnDistanceToDestinationChangedListener
+    OnDistanceToDestinationChangedListener,
+    OnRobotLiftedListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -32,6 +35,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.addOnDetectionStateChangedListener(this)
         robot.addOnGoToLocationStatusChangedListener(this)
         robot.addOnDistanceToDestinationChangedListener(this)
+        robot.addOnRobotLiftedListener(this)
     }
 
     // Lists for Q&A
@@ -376,7 +380,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         }
     }
 
-
     // System functions
     fun hideTopBar()
     {
@@ -514,10 +517,19 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     }
 
     override fun onDistanceToDestinationChanged(location: String, distance: Float) {
-        println(isDetectionModeOn())
         resetInactivityTimer()
     }
 
+    override fun onRobotLifted(isLifted: Boolean, reason: String) {
+        println("lifted")
+        if(isLifted){
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.seekTo(0)
+            } else {
+                mediaPlayer.start()
+            }
+        }
+    }
     override fun onRobotReady(isReady: Boolean) {
         if(isReady){
             readyCallback?.onRobotIsReady()

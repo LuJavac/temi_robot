@@ -1,6 +1,8 @@
 package com.temi.temi_robot
 
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import androidx.activity.ComponentActivity
@@ -15,20 +17,23 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
                                    "patrol north corridor", "patrol north door", "patrol northwing", "patrol northwing entry", "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back", "patrol northwing1 middle", "patrol northwing1", "patrol northwing entry", "patrol northwing2", "patrol northwing2 grass", "patrol northwing2 middle", "patrol northwing2 back", "patrol northwing2 middle", "patrol northwing2 grass", "patrol northwing2", "patrol northwing entry", "patrol northwing", "patrol north door", "patrol north corridor", "patrol centerwing")
     private lateinit var robotController: RobotController
 
+    private lateinit var mediaPlayer: MediaPlayer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.nga)
 
         // Initialize Chaquo Python
         if (! Python.isStarted()) {
             Python.start(AndroidPlatform(this));
         }
 
-
         // Initialize Python file module
         val py = Python.getInstance()
-        val module = py.getModule("main") // nom du fichier sans .py
-        robotController = RobotController(locations, module)
+        val module = py.getModule("main") // file name without .py
+        robotController = RobotController(locations, module, mediaPlayer)
 
         // Set Callback to listen to robot ready event
         robotController.setRobotReadyCallback(this)
@@ -56,6 +61,11 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         robotController.setTopBadgeEnabled(false)
         robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.DISABLED)
         robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer.release()
     }
 
 }
