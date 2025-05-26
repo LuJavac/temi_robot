@@ -2,21 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/nyp_background"
+    >
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_width="1046dp"
+        android:layout_height="600dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp" />
 
     <Button
         android:id="@+id/confirmButton"
-        android:layout_width="420dp"
-        android:layout_height="60dp"
-        android:layout_gravity="center_horizontal"
-        android:textSize="18sp"
-        android:layout_marginTop="100dp"
-        android:text="@string/final_order_for_the_locations"/>
+        android:layout_width="825dp"
+        android:layout_height="102dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/button_border"
+        android:shadowColor="#80000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="1"
+        android:text="@string/validate_order_for_the_locations"
+        android:textColor="@android:color/white"
+        android:textSize="40sp" />
 
 </LinearLayout>

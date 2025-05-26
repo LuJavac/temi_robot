@@ -44,6 +44,9 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         // Create robot controller instance
         robotController = RobotController(mapName, module, mediaPlayer)
 
+        // Hide top bar for choosing patrol locations
+        robotController.hideTopBar()
+
         // Set Callback to listen to robot ready event
         robotController.setRobotReadyCallback(this)
 
@@ -62,8 +65,8 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             setContentView(R.layout.activity_main)
 
             // Items of next interface
-            val nypLogo = findViewById<ImageView>(R.id.my_gif)
-            val startButton = findViewById<Button>(R.id.start_button)
+            val nypLogo = findViewById<ImageView>(R.id.nypLogo)
+            val startButton = findViewById<Button>(R.id.interactionButton)
 
             // User button behavior
             startButton.setOnClickListener{
@@ -87,6 +90,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             }
             else {
                 locations = robotController.getLocations().toMutableList()
+                robotController.setBlockMode(true)
                 adapter = SimpleAdapter(locations)
                 recyclerView.adapter = adapter
             }
@@ -100,6 +104,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
     }
 
     fun initBehavior(){
+        robotController.setBlockMode(false)
         robotController.setDetectionModeOn(true, 0.5f)
         robotController.patrol(robotController.getLocations())
         robotController.hideTopBar()

@@ -6,7 +6,7 @@
     android:orientation="vertical">
 
     <ImageView
-        android:id="@+id/my_gif"
+        android:id="@+id/nypLogo"
         android:layout_width="420dp"
         android:layout_height="151dp"
         android:background="@android:color/white"
@@ -15,7 +15,7 @@
         android:src="@drawable/nyp_logo" />
 
     <Button
-        android:id="@+id/start_button"
+        android:id="@+id/interactionButton"
         android:layout_width="1029dp"
         android:layout_height="390dp"
         android:layout_gravity="center"
