@@ -7,8 +7,9 @@
 
     <ImageView
         android:id="@+id/my_gif"
-        android:layout_width="303dp"
-        android:layout_height="107dp"
+        android:layout_width="420dp"
+        android:layout_height="151dp"
+        android:background="@android:color/white"
         android:contentDescription="@string/nyp_logo"
         android:gravity="left"
         android:src="@drawable/nyp_logo" />
@@ -19,7 +20,7 @@
         android:layout_height="390dp"
         android:layout_gravity="center"
         android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="100dp"
         android:background="@drawable/button_border"
         android:shadowColor="#80000000"
         android:shadowDx="1"
