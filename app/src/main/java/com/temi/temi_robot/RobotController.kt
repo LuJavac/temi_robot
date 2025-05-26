@@ -13,7 +13,6 @@ import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
-import com.robotemi.sdk.map.MapModel
 import com.robotemi.sdk.map.OnLoadMapStatusChangedListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener
