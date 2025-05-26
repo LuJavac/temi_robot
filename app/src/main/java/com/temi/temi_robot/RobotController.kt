@@ -14,6 +14,7 @@ import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
+import com.robotemi.sdk.permission.OnRequestPermissionResultListener
 import com.robotemi.sdk.permission.Permission
 
 class RobotController(private var defaultLocations: List<String>, private var module: PyObject, private val mediaPlayer: MediaPlayer):
@@ -23,7 +24,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     OnDetectionStateChangedListener,
     OnGoToLocationStatusChangedListener,
     OnDistanceToDestinationChangedListener,
-    OnRobotLiftedListener
+    OnRobotLiftedListener,
+    OnRequestPermissionResultListener
 {
     private val robot = Robot.getInstance() // Create robot object
 
@@ -36,6 +38,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.addOnGoToLocationStatusChangedListener(this)
         robot.addOnDistanceToDestinationChangedListener(this)
         robot.addOnRobotLiftedListener(this)
+        robot.addOnRequestPermissionResultListener(this)
     }
 
     // Lists for Q&A
@@ -338,8 +341,10 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     // Inactivity handling
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
-        patrol(defaultLocations)
-        robot.setDetectionModeOn(true, 0.5f)
+        if(!isPermissionRequest){
+            patrol(defaultLocations)
+            robot.setDetectionModeOn(true, 0.5f)
+        }
     }
 
     fun resetInactivityTimer() {
@@ -350,6 +355,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     // Own variables
     private var isMoveRequest = false
+    private var isPermissionRequest = false
+
     private var readyCallback: RobotReadyCallback? = null
 
     /////////// General functions
@@ -440,11 +447,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     // Person Detection
     fun setDetectionModeOn(on : Boolean, distance : Float){
-        if(checkSelfPermission(Permission.SETTINGS) == 0){
-            speak("please allow the settings permission for the application to work properly")
-            requestPermissions(listOf(Permission.SETTINGS))
-            speak("please restart the application after allowing new permission")
-        }
         robot.setDetectionModeOn(on, distance)
     }
 
@@ -462,6 +464,24 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.requestPermissions(permissions, requestCode)
     }
 
+    fun askRequiredPermissions(): Boolean {
+        when {
+            checkSelfPermission(Permission.SETTINGS) == 0 -> {
+                isPermissionRequest = true
+                speak("Please allow the settings permission for the application to work properly")
+                requestPermissions(listOf(Permission.SETTINGS))
+                return false
+            }
+            checkSelfPermission(Permission.MAP) == 0 -> {
+                isPermissionRequest = true
+                speak("Please allow the map permission for the application to work properly")
+                requestPermissions(listOf(Permission.MAP))
+                return false
+            }
+        }
+        return true
+    }
+
     // Own interface and callbacks
     interface RobotReadyCallback {
         fun onRobotIsReady()
@@ -473,30 +493,33 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
 
     // Overrides
-    override fun onDetectionStateChanged(state: Int) {
-    resetInactivityTimer()
-    if (state == 2) {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastRequestTime < requestCooldownMillis) {
-            return
-        }
-        lastRequestTime = currentTime
-
-        robot.stopMovement()
-        robot.setDetectionModeOn(false, 0.5f)
-        robot.askQuestion("Hi, how can I help you ?")
-    }
-}
-
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
-        if (isMoveRequest) {
+        if (isMoveRequest || isPermissionRequest) {
             return
         }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
             patrol(defaultLocations)
             robot.setDetectionModeOn(true, 0.5f)
+        }
+    }
+
+    override fun onDetectionStateChanged(state: Int) {
+        if(isPermissionRequest || isMoveRequest){
+            return
+        }
+        resetInactivityTimer()
+        if (state == 2) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastRequestTime < requestCooldownMillis) {
+                return
+            }
+            lastRequestTime = currentTime
+
+            robot.stopMovement()
+            robot.setDetectionModeOn(false, 0.5f)
+            robot.askQuestion("Hi, how can I help you ?")
         }
     }
 
@@ -520,6 +543,24 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         resetInactivityTimer()
     }
 
+    override fun onRobotReady(isReady: Boolean) {
+        if(isReady){
+            readyCallback?.onRobotIsReady()
+        }
+    }
+
+    override fun onRequestPermissionResult(
+        permission: Permission,
+        grantResult: Int,
+        requestCode: Int
+    ) {
+        if(grantResult == 0){
+            speak("You need to grant the permission to make the application work properly. Please restart the application and do it again")
+        } else {
+            speak("please restart the application after granting a new permission")
+        }
+    }
+
     override fun onRobotLifted(isLifted: Boolean, reason: String) {
         println("lifted")
         if(isLifted){
@@ -530,11 +571,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
             }
         }
     }
-    override fun onRobotReady(isReady: Boolean) {
-        if(isReady){
-            readyCallback?.onRobotIsReady()
-        }
-    }
+
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
         if(isIntoList(asrResult, keywords1_1)){

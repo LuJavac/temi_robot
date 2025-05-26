@@ -12,9 +12,9 @@ import com.robotemi.sdk.constants.HardButton
 
 
 public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
-    //private val locations = listOf("test","jason", "johan")
-    private val locations = listOf("patrol centerwing", "patrol south corridor", "patrol south door", "patrol southwing", "patrol southwing entry", "patrol southwing back", "patrol southwing entry", "patrol southwing", "patrol south door", "patrol south corridor", "patrol centerwing",
-                                   "patrol north corridor", "patrol north door", "patrol northwing", "patrol northwing entry", "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back", "patrol northwing1 middle", "patrol northwing1", "patrol northwing entry", "patrol northwing2", "patrol northwing2 grass", "patrol northwing2 middle", "patrol northwing2 back", "patrol northwing2 middle", "patrol northwing2 grass", "patrol northwing2", "patrol northwing entry", "patrol northwing", "patrol north door", "patrol north corridor", "patrol centerwing")
+    private val locations = listOf("test","jason", "johan")
+    //private val locations = listOf("patrol centerwing", "patrol south corridor", "patrol south door", "patrol southwing", "patrol southwing entry", "patrol southwing back", "patrol southwing entry", "patrol southwing", "patrol south door", "patrol south corridor", "patrol centerwing",
+    //                               "patrol north corridor", "patrol north door", "patrol northwing", "patrol northwing entry", "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back", "patrol northwing1 middle", "patrol northwing1", "patrol northwing entry", "patrol northwing2", "patrol northwing2 grass", "patrol northwing2 middle", "patrol northwing2 back", "patrol northwing2 middle", "patrol northwing2 grass", "patrol northwing2", "patrol northwing entry", "patrol northwing", "patrol north door", "patrol north corridor", "patrol centerwing")
     private lateinit var robotController: RobotController
 
     private lateinit var mediaPlayer: MediaPlayer
@@ -53,14 +53,16 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
     }
 
     override fun onRobotIsReady() {
-        robotController.setDetectionModeOn(true, 0.5f)
-        robotController.patrol(locations)
-        robotController.hideTopBar()
-        robotController.setVolume(4)
-        robotController.toggleWakeup(true)
-        robotController.setTopBadgeEnabled(false)
-        robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.DISABLED)
-        robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+        if(robotController.askRequiredPermissions()){
+            robotController.setDetectionModeOn(true, 0.5f)
+            robotController.patrol(locations)
+            robotController.hideTopBar()
+            robotController.setVolume(4)
+            robotController.toggleWakeup(true)
+            robotController.setTopBadgeEnabled(false)
+            robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.DISABLED)
+            robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+        }
     }
 
     override fun onDestroy() {
