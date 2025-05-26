@@ -13,11 +13,13 @@ import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
+import com.robotemi.sdk.map.MapModel
+import com.robotemi.sdk.map.OnLoadMapStatusChangedListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener
 import com.robotemi.sdk.permission.Permission
 
-class RobotController(private var defaultLocations: List<String>, private var module: PyObject, private val mediaPlayer: MediaPlayer):
+class RobotController(private var mapName: String, private var module: PyObject, private val mediaPlayer: MediaPlayer):
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
@@ -25,9 +27,11 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     OnGoToLocationStatusChangedListener,
     OnDistanceToDestinationChangedListener,
     OnRobotLiftedListener,
-    OnRequestPermissionResultListener
+    OnRequestPermissionResultListener,
+    OnLoadMapStatusChangedListener
 {
     private val robot = Robot.getInstance() // Create robot object
+    private var locations = emptyList<String>()
 
     // Add listeners to robot instance
     init {
@@ -39,6 +43,7 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.addOnDistanceToDestinationChangedListener(this)
         robot.addOnRobotLiftedListener(this)
         robot.addOnRequestPermissionResultListener(this)
+        robot.addOnLoadMapStatusChangedListener(this)
     }
 
     // Lists for Q&A
@@ -341,8 +346,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     // Inactivity handling
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
-        if(!isPermissionRequest){
-            patrol(defaultLocations)
+        if(!blockMode){
+            patrol(locations)
             robot.setDetectionModeOn(true, 0.5f)
         }
     }
@@ -355,24 +360,24 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     // Own variables
     private var isMoveRequest = false
-    private var isPermissionRequest = false
+    private var blockMode = false
 
     private var readyCallback: RobotReadyCallback? = null
 
     /////////// General functions
 
     // Getters and setters
-    fun getDefaultLocations() : List<String> {
-        return defaultLocations
+    fun setBlockMode(value: Boolean) {
+        blockMode = value
     }
 
-    fun setDefaultLocations(locations: List<String>) {
-        defaultLocations = locations
+    fun getLocations() : List<String> {
+        return locations
     }
 
     // Own functions
     private fun changeLocationsOrder() {
-        defaultLocations = defaultLocations.drop(1) + defaultLocations.first()
+        locations = locations.drop(1) + locations.first()
     }
 
     fun setLastRequestTimeNow(){
@@ -428,8 +433,16 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
 
     // Movements and map
-    fun getLocations() : List<String> {
-        return robot.locations
+    fun loadMap(name: String) {
+        val maps = robot.getMapList()
+        val map = maps.find { it.name == name }
+        if(map == null){
+            locations = emptyList()
+            readyCallback?.onRobotIsReady()
+        }
+        else {
+            robot.loadMap(map.id)
+        }
     }
 
     fun goTo(location: String) {
@@ -450,11 +463,6 @@ class RobotController(private var defaultLocations: List<String>, private var mo
         robot.setDetectionModeOn(on, distance)
     }
 
-    fun isDetectionModeOn() : Boolean {
-        return robot.detectionModeOn
-    }
-
-
     // Permissions
     fun checkSelfPermission(permission: Permission) : Int{
         return robot.checkSelfPermission(permission)
@@ -467,13 +475,13 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     fun askRequiredPermissions(): Boolean {
         when {
             checkSelfPermission(Permission.SETTINGS) == 0 -> {
-                isPermissionRequest = true
+                setBlockMode(true)
                 speak("Please allow the settings permission for the application to work properly")
                 requestPermissions(listOf(Permission.SETTINGS))
                 return false
             }
             checkSelfPermission(Permission.MAP) == 0 -> {
-                isPermissionRequest = true
+                setBlockMode(true)
                 speak("Please allow the map permission for the application to work properly")
                 requestPermissions(listOf(Permission.MAP))
                 return false
@@ -495,18 +503,18 @@ class RobotController(private var defaultLocations: List<String>, private var mo
     // Overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
-        if (isMoveRequest || isPermissionRequest) {
+        if (isMoveRequest || blockMode) {
             return
         }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
-            patrol(defaultLocations)
+            patrol(locations)
             robot.setDetectionModeOn(true, 0.5f)
         }
     }
 
     override fun onDetectionStateChanged(state: Int) {
-        if(isPermissionRequest || isMoveRequest){
+        if(isMoveRequest || blockMode){
             return
         }
         resetInactivityTimer()
@@ -545,8 +553,25 @@ class RobotController(private var defaultLocations: List<String>, private var mo
 
     override fun onRobotReady(isReady: Boolean) {
         if(isReady){
-            readyCallback?.onRobotIsReady()
+            loadMap(mapName)
         }
+    }
+
+    override fun onLoadMapStatusChanged(status: Int, requestId: String) {
+        when(status){
+            1 -> {
+                return
+            }
+            0 -> {
+                locations = robot.locations
+                println(locations)
+            }
+            else -> {
+                setBlockMode(true)
+                speak("Error in loading the map, please restart the application")
+            }
+        }
+        readyCallback?.onRobotIsReady()
     }
 
     override fun onRequestPermissionResult(
@@ -560,6 +585,8 @@ class RobotController(private var defaultLocations: List<String>, private var mo
             speak("please restart the application after granting a new permission")
         }
     }
+
+
 
     override fun onRobotLifted(isLifted: Boolean, reason: String) {
         println("lifted")
