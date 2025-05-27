@@ -7,23 +7,39 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.Collections
 
-class SimpleAdapter(private val items: MutableList<String>) : RecyclerView.Adapter<SimpleAdapter.ViewHolder>() {
+class SimpleAdapter(private val items: MutableList<String>) :
+    RecyclerView.Adapter<SimpleAdapter.ViewHolder>() {
+
+    // Track whether each item is included in patrol
+    private val itemStates = mutableMapOf<String, Boolean>().apply {
+        items.forEach { put(it, true) }
+    }
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById(R.id.textViewItem)
+        val checkBox: android.widget.CheckBox = view.findViewById(R.id.checkBox)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.checkbox, parent, false)
+            .inflate(R.layout.box_bar, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.textView.text = items[position]
+        val item = items[position]
+        holder.textView.text = item
+
+        // Remove previous listener to prevent triggering it when recycled
+        holder.checkBox.setOnCheckedChangeListener(null)
+        holder.checkBox.isChecked = itemStates[item] != false
+
+        holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            itemStates[item] = isChecked
+        }
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount(): Int = items.size
 
     fun moveItem(fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
@@ -38,5 +54,11 @@ class SimpleAdapter(private val items: MutableList<String>) : RecyclerView.Adapt
         notifyItemMoved(fromPosition, toPosition)
     }
 
-    fun getItems() = items.toList()
+    // Only return selected (checked) items
+    fun getItems(): List<String> {
+        return items.filter { itemStates[it] == true }
+    }
+
+    // If needed, get all items regardless of check state
+    fun getAllItems(): List<String> = items.toList()
 }
