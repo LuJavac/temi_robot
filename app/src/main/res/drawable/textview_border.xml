@@ -13,5 +13,5 @@
 
 
     <!-- White background -->
-    <solid android:color="#FFFFFF" />
+    <solid android:color="#DCFFFFFF" />
 </shape>

@@ -6,9 +6,18 @@
     android:background="@drawable/nyp_background"
     >
 
+    <ImageView
+        android:id="@+id/nypLogo"
+        android:layout_width="345dp"
+        android:layout_height="123dp"
+        android:background="@android:color/white"
+        android:contentDescription="@string/nyp_logo"
+        android:gravity="left"
+        android:src="@drawable/nyp_logo" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="1046dp"
+        android:layout_width="match_parent"
         android:layout_height="600dp"
         android:layout_gravity="center"
         android:layout_marginTop="50dp" />

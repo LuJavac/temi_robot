@@ -24,7 +24,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleAdapter
 
-    @SuppressLint("MissingInflatedId")
+    @SuppressLint("MissingInflatedId", "CutPasteId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.choose_path)
@@ -50,6 +50,9 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         // Set Callback to listen to robot ready event
         robotController.setRobotReadyCallback(this)
 
+        // Nyp logo on choose interface
+        val nypLogo = findViewById<ImageView>(R.id.nypLogo)
+
         // Define patrol path choosing interface view
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -65,7 +68,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             setContentView(R.layout.activity_main)
 
             // Items of next interface
-            val nypLogo = findViewById<ImageView>(R.id.nypLogo)
+            val nypLogo2 = findViewById<ImageView>(R.id.nypLogo)
             val startButton = findViewById<Button>(R.id.interactionButton)
 
             // User button behavior
