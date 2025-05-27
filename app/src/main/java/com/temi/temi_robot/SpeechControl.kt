@@ -13,7 +13,7 @@ import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
 import com.robotemi.sdk.constants.HardButton
 
-
+// Main interface class
 public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
     private lateinit var robotController: RobotController
     private lateinit var mediaPlayer: MediaPlayer
@@ -95,6 +95,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         }
     }
 
+    // When robot is initialized, ask permissions and load map
     override fun onRobotIsReady() {
         if(robotController.askRequiredPermissions()){
             robotController.setBlockMode(true)
@@ -110,11 +111,13 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         }
     }
 
+    // Release resources on destroy
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()
     }
 
+    // Robot behavior on start
     fun initBehavior(){
         robotController.setBlockMode(false)
         robotController.patrol(robotController.getLocations())
@@ -126,6 +129,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
     }
 
+    // Create a drag and drop manager
     fun createDragAndDrop() : ItemTouchHelper{
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0

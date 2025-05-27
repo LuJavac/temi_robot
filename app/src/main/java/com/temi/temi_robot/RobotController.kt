@@ -22,6 +22,7 @@ import com.robotemi.sdk.permission.Permission
 import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 
+// Robot control class
 class RobotController(private var mapName: String, private var module: PyObject, private val mediaPlayer: MediaPlayer):
     Robot.AsrListener,
     Robot.TtsListener,
@@ -388,7 +389,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
         locations = newLocations
     }
 
-    // Own functions
+    // Utility functions
     private fun changeLocationsOrder() {
         locations = locations.drop(1) + locations.first()
     }
@@ -488,6 +489,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
         val participant = listOf(Participant(peerId = librarianID.toString(), platform = Platform.MOBILE))
         robot.startMeeting(participant, firstParticipantJoinedAsHost = true, blockRobotInteraction = false)
     }
+
     // Permissions
     fun checkSelfPermission(permission: Permission) : Int{
         return robot.checkSelfPermission(permission)
@@ -522,7 +524,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
     }
 
 
-    // Own interface and callbacks
+    // Personal interface and callbacks for robot initialization
     interface RobotReadyCallback {
         fun onRobotIsReady()
     }
