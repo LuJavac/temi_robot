@@ -600,7 +600,6 @@ class RobotController(private var mapName: String, private var module: PyObject,
             }
             0 -> {
                 locations = robot.locations
-                println(locations)
             }
             else -> {
                 setBlockMode(true)

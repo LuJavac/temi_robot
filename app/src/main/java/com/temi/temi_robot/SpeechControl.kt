@@ -73,6 +73,10 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             }
             robotController.setLocations(patrolLocations)
 
+            // Robot behavior at initialization
+            initBehavior()
+
+            // Set new content view
             setContentView(R.layout.activity_main)
 
             // Items of next interface
@@ -88,20 +92,17 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
                 robotController.askQuestion("Hi, how can I help you ?")
             }
 
-            // Robot behavior at initialization
-            initBehavior()
         }
     }
 
     override fun onRobotIsReady() {
         if(robotController.askRequiredPermissions()){
+            robotController.setBlockMode(true)
             if(robotController.getLocations().isEmpty()){
-                robotController.setBlockMode(true)
                 robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")
             }
             else {
                 locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()
-                robotController.setBlockMode(true)
                 adapter = SimpleAdapter(locations)
                 recyclerView.adapter = adapter
             }
