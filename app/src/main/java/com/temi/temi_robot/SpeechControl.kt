@@ -66,6 +66,11 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         confirmButton.setOnClickListener {
             // Getting locations from adapter and setting them in robot controller
             val patrolLocations = adapter.getItems()
+            if(patrolLocations.size < 3){
+                robotController.setBlockMode(true)
+                robotController.speak("Please select at least 3 locations to start patrolling")
+                return@setOnClickListener
+            }
             robotController.setLocations(patrolLocations)
 
             setContentView(R.layout.activity_main)
@@ -95,7 +100,7 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
                 robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")
             }
             else {
-                locations = robotController.getLocations().toMutableList()
+                locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()
                 robotController.setBlockMode(true)
                 adapter = SimpleAdapter(locations)
                 recyclerView.adapter = adapter

@@ -56,7 +56,7 @@ class SimpleAdapter(private val items: MutableList<String>) :
 
     // Only return selected (checked) items
     fun getItems(): List<String> {
-        return items.filter { itemStates[it] == true }
+        return items.filter { itemStates[it] == true}
     }
 
     // If needed, get all items regardless of check state
