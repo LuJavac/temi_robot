@@ -64,7 +64,10 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         // Confirm button to get chosen path locations order and start patrolling
         val confirmButton = findViewById<Button>(R.id.confirmButton)
         confirmButton.setOnClickListener {
+            // Getting locations from adapter and setting them in robot controller
             val patrolLocations = adapter.getItems()
+            robotController.setLocations(patrolLocations)
+
             setContentView(R.layout.activity_main)
 
             // Items of next interface
@@ -108,7 +111,6 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
 
     fun initBehavior(){
         robotController.setBlockMode(false)
-        robotController.setDetectionModeOn(true, 0.5f)
         robotController.patrol(robotController.getLocations())
         robotController.hideTopBar()
         robotController.setVolume(4)

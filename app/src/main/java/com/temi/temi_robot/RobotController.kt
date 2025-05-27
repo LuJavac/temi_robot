@@ -9,14 +9,18 @@ import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.constants.HardButton
+import com.robotemi.sdk.constants.Platform
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
+import com.robotemi.sdk.listeners.OnTelepresenceStatusChangedListener
 import com.robotemi.sdk.map.OnLoadMapStatusChangedListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener
 import com.robotemi.sdk.permission.Permission
+import com.robotemi.sdk.telepresence.CallState
+import com.robotemi.sdk.telepresence.Participant
 
 class RobotController(private var mapName: String, private var module: PyObject, private val mediaPlayer: MediaPlayer):
     Robot.AsrListener,
@@ -27,7 +31,8 @@ class RobotController(private var mapName: String, private var module: PyObject,
     OnDistanceToDestinationChangedListener,
     OnRobotLiftedListener,
     OnRequestPermissionResultListener,
-    OnLoadMapStatusChangedListener
+    OnLoadMapStatusChangedListener,
+    OnTelepresenceStatusChangedListener(sessionId = "")
 {
     private val robot = Robot.getInstance() // Create robot object
     private var locations = emptyList<String>()
@@ -43,8 +48,11 @@ class RobotController(private var mapName: String, private var module: PyObject,
         robot.addOnRobotLiftedListener(this)
         robot.addOnRequestPermissionResultListener(this)
         robot.addOnLoadMapStatusChangedListener(this)
+        robot.addOnTelepresenceStatusChangedListener(this)
     }
 
+    // Lists for approving librarian call request
+    private val approvedKeywords = listOf("yes", "please", "of course", "sure", "ok")
     // Lists for Q&A
     private val answer_1 = "The Library is open from 8:30 AM to 8:00 PM, Mondays to Fridays, and from 8:30 AM to 12:00 noon on Saturdays. During the Mid-Semester Break, hours are reduced to 8:30 AM to 6:00 PM, Mondays to Fridays. The Library is closed on Sundays and Public Holidays."
     private val keywords1_1 = listOf("opening hours", "hours", "schedule", "timetable", "library hours", "operating hours")
@@ -360,6 +368,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
     // Own variables
     private var isMoveRequest = false
     private var blockMode = false
+    private var isAskSatisfiedRequest = false
 
     private var readyCallback: RobotReadyCallback? = null
 
@@ -368,10 +377,15 @@ class RobotController(private var mapName: String, private var module: PyObject,
     // Getters and setters
     fun setBlockMode(value: Boolean) {
         blockMode = value
+        setDetectionModeOn(!value, 0.5f)
     }
 
     fun getLocations() : List<String> {
         return locations
+    }
+
+    fun setLocations(newLocations: List<String>) {
+        locations = newLocations
     }
 
     // Own functions
@@ -462,6 +476,18 @@ class RobotController(private var mapName: String, private var module: PyObject,
         robot.setDetectionModeOn(on, distance)
     }
 
+    // Calls
+    fun callLibrarian(){
+        val contacts = robot.allContact
+        val librarianID = contacts.find { it.name == "Johan" }?.userId
+        if(librarianID == null){
+            setBlockMode(false)
+            speak("I couldn't find the librarian in the contact list")
+            return
+        }
+        val participant = listOf(Participant(peerId = librarianID.toString(), platform = Platform.MOBILE))
+        robot.startMeeting(participant, firstParticipantJoinedAsHost = true, blockRobotInteraction = false)
+    }
     // Permissions
     fun checkSelfPermission(permission: Permission) : Int{
         return robot.checkSelfPermission(permission)
@@ -485,9 +511,16 @@ class RobotController(private var mapName: String, private var module: PyObject,
                 requestPermissions(listOf(Permission.MAP))
                 return false
             }
+            checkSelfPermission(Permission.MEETINGS) == 0 -> {
+                setBlockMode(true)
+                speak("Please allow the meetings permission for the application to work properly")
+                requestPermissions(listOf(Permission.MEETINGS))
+                return false
+            }
         }
         return true
     }
+
 
     // Own interface and callbacks
     interface RobotReadyCallback {
@@ -507,6 +540,10 @@ class RobotController(private var mapName: String, private var module: PyObject,
         }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
+            if(isAskSatisfiedRequest){
+                askQuestion("Do you want me to call a librarian in case you're not satisfied with the answer ?")
+                return
+            }
             patrol(locations)
             robot.setDetectionModeOn(true, 0.5f)
         }
@@ -585,7 +622,37 @@ class RobotController(private var mapName: String, private var module: PyObject,
         }
     }
 
+    override fun onTelepresenceStatusChanged(callState: CallState) {
+        when(callState.state){
+            CallState.State.ENDED -> {
+                setBlockMode(false)
+                speak("I'm always in the library in case you need any help.")
+            }
+            CallState.State.DECLINED -> {
+                setBlockMode(false)
+                speak("The librarian denied the call")
+            }
+            CallState.State.NOT_ANSWERED -> {
+                setBlockMode(false)
+                speak("The librarian doesn't answer the call")
+            }
+            CallState.State.BUSY -> {
+                setBlockMode(false)
+                speak("The librarian is busy")
+            }
+            CallState.State.POOR_CONNECTION -> {
+                setBlockMode(false)
+                speak("Cannot establish the call due to connection issue")
+            }
+            CallState.State.CANT_JOIN -> {
+                setBlockMode(false)
+                speak("Cannot join the call")
+            }
+            else -> {
 
+            }
+        }
+    }
 
     override fun onRobotLifted(isLifted: Boolean, reason: String) {
         println("lifted")
@@ -600,7 +667,17 @@ class RobotController(private var mapName: String, private var module: PyObject,
 
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
-        if(isIntoList(asrResult, keywords1_1)){
+        if(isAskSatisfiedRequest){
+            robot.finishConversation()
+            isAskSatisfiedRequest = false
+            if(isIntoList(asrResult, approvedKeywords)){
+                setBlockMode(true)
+                callLibrarian()
+            } else {
+                speak("OK. I'm always in the library in case you need any help.")
+            }
+        }
+        else if(isIntoList(asrResult, keywords1_1)){
             robot.finishConversation()
             speak(answer_1)
         } else if(isIntoList(asrResult, keywords1_2, keywords2_2)){
@@ -914,6 +991,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
         else {
             robot.finishConversation()
             val result = module.callAttr("get_response", asrResult)
+            isAskSatisfiedRequest = true
             if (result != null) {
                 val response = result.toString()
                 speak(response)
