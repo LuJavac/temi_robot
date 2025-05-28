@@ -3,7 +3,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/nyp_background"
+    android:background="@drawable/img_nyp_background"
+    android:id="@+id/fragment_container"
     >
 
     <ImageView
@@ -13,7 +14,7 @@
         android:background="@android:color/white"
         android:contentDescription="@string/nyp_logo"
         android:gravity="left"
-        android:src="@drawable/nyp_logo" />
+        android:src="@drawable/img_nyp_logo" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -29,7 +30,7 @@
         android:layout_gravity="center"
         android:layout_marginHorizontal="50dp"
         android:layout_marginTop="30dp"
-        android:background="@drawable/button_border"
+        android:background="@drawable/button_blue_transparent"
         android:shadowColor="#80000000"
         android:shadowDx="1"
         android:shadowDy="1"

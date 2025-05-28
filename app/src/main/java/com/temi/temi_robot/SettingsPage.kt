@@ -1,48 +1,39 @@
 package com.temi.temi_robot
 
-import android.annotation.SuppressLint
-import android.media.MediaPlayer
+import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.chaquo.python.Python
-import com.chaquo.python.android.AndroidPlatform
 import com.robotemi.sdk.constants.HardButton
 
-// Main interface class
-public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCallback {
-    private lateinit var robotController: RobotController
-    private lateinit var mediaPlayer: MediaPlayer
+// Settings page class
+public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
 
-    private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
+    private lateinit var robotController: RobotController
     private lateinit var locations: MutableList<String>
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleAdapter
 
-    @SuppressLint("MissingInflatedId", "CutPasteId")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.choose_path)
+    // Recover robot controller from main activity
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        robotController = (activity as MainActivity).robotController
+    }
 
-        // Initialize Chaquo Python
-        if (! Python.isStarted()) {
-            Python.start(AndroidPlatform(this));
-        }
-
-        // Initialize Python file module
-        val py = Python.getInstance()
-        val module = py.getModule("main") // file name without .py
-
-        // Create media player
-        mediaPlayer = MediaPlayer.create(this, R.raw.nga)
-
-        // Create robot controller instance
-        robotController = RobotController(mapName, module, mediaPlayer)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.settings_layout, container, false)
 
         // Hide top bar for choosing patrol locations
         robotController.hideTopBar()
@@ -50,19 +41,19 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
         // Set Callback to listen to robot ready event
         robotController.setRobotReadyCallback(this)
 
-        // Nyp logo on choose interface
-        val nypLogo = findViewById<ImageView>(R.id.nypLogo)
+        // Nyp logo on settings interface
+        val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
         // Define patrol path choosing interface view
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView = view.findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         // Define drag and drop actions
         val itemTouchHelper = createDragAndDrop()
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
         // Confirm button to get chosen path locations order and start patrolling
-        val confirmButton = findViewById<Button>(R.id.confirmButton)
+        val confirmButton = view.findViewById<Button>(R.id.confirmButton)
         confirmButton.setOnClickListener {
             // Getting locations from adapter and setting them in robot controller
             val patrolLocations = adapter.getItems()
@@ -76,23 +67,13 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             // Robot behavior at initialization
             initBehavior()
 
-            // Set new content view
-            setContentView(R.layout.activity_main)
-
-            // Items of next interface
-            val nypLogo2 = findViewById<ImageView>(R.id.nypLogo)
-            val startButton = findViewById<Button>(R.id.interactionButton)
-
-            // User button behavior
-            startButton.setOnClickListener{
-                robotController.setDetectionModeOn(false, 0.5f)
-                robotController.setLastRequestTimeNow()
-                robotController.stopMovement()
-                robotController.resetInactivityTimer()
-                robotController.askQuestion("Hi, how can I help you ?")
-            }
-
+            // Change view to patrol page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, PatrolPage())
+                .addToBackStack(null)
+                .commit()
         }
+        return view
     }
 
     // When robot is initialized, ask permissions and load map
@@ -109,12 +90,6 @@ public class SpeechControl : ComponentActivity(), RobotController.RobotReadyCall
             }
 
         }
-    }
-
-    // Release resources on destroy
-    override fun onDestroy() {
-        super.onDestroy()
-        mediaPlayer.release()
     }
 
     // Robot behavior on start
