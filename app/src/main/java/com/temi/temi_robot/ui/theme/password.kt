@@ -1,4 +1,4 @@
-//class PAGE PASSWORD
+//class PAGE PASSWORD for config
 
 package com.temi.checkbox
 import android.annotation.SuppressLint
