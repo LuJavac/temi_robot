@@ -23,7 +23,7 @@
             android:name="com.robotemi.sdk.metadata.KIOSK"
             android:value="TRUE" />
         <activity
-            android:name=".SpeechControl"
+            android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Temi_robot">
 

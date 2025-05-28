@@ -5,4 +5,6 @@
     <string name="nyp_logo" />
     <string name="temi_robot">Temi robot</string>
     <string name="validate_order_for_the_locations">Validate order for the locations</string>
+    <string name="change_patrol_locations">Change patrol locations</string>
+    <string name="start_patrolling">Start patrolling</string>
 </resources>
