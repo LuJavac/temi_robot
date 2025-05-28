@@ -33,7 +33,7 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.settings_layout, container, false)
+        val view = inflater.inflate(R.layout.layout_settings, container, false)
 
         // Hide top bar for choosing patrol locations
         robotController.hideTopBar()
@@ -47,6 +47,11 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
         // Define patrol path choosing interface view
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        if((activity as MainActivity).adapter != null){
+            adapter = (activity as MainActivity).adapter!!
+            recyclerView.adapter = adapter
+        }
 
         // Define drag and drop actions
         val itemTouchHelper = createDragAndDrop()
@@ -87,6 +92,7 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
                 locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()
                 adapter = SimpleAdapter(locations)
                 recyclerView.adapter = adapter
+                (activity as MainActivity).adapter = adapter
             }
 
         }

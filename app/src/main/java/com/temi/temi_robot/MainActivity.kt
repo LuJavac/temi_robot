@@ -14,10 +14,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mediaPlayer: MediaPlayer
 
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
+    internal var adapter: SimpleAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity_layout)
+        setContentView(R.layout.layout_main_activity)
 
         // Initialize Chaquo Python
         if (! Python.isStarted()) {

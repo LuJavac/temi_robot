@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 
@@ -24,22 +25,43 @@ class PatrolPage : Fragment(){
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.patrol_layout, container, false)
+        val view = inflater.inflate(R.layout.layout_patrol, container, false)
+
+        // Hide top bar
+        robotController.hideTopBar()
+
+        // Start patrolling again
 
         // Nyp logo on patrol interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
-        // Items of next interface
-        val startButton = view.findViewById<Button>(R.id.interactionButton)
+        // Buttons
+        val interactionButton = view.findViewById<Button>(R.id.interactionButton)
+        val settingsButton = view.findViewById<ImageButton>(R.id.settingsButton)
 
         // User button behavior
-        startButton.setOnClickListener{
+        interactionButton.setOnClickListener{
             robotController.setDetectionModeOn(false, 0.5f)
             robotController.setLastRequestTimeNow()
             robotController.stopMovement()
             robotController.resetInactivityTimer()
             robotController.askQuestion("Hi, how can I help you ?")
         }
+
+        // Settings button behavior
+        settingsButton.setOnClickListener {
+
+            // Stop movement while on setting page
+            robotController.stopMovement()
+            robotController.setBlockMode(true)
+
+            // Change view to settings page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, SettingsPage())
+                .addToBackStack(null)
+                .commit()
+        }
+
         return view
     }
 }
