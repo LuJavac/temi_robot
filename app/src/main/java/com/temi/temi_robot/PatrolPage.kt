@@ -30,8 +30,6 @@ class PatrolPage : Fragment(){
         // Hide top bar
         robotController.hideTopBar()
 
-        // Start patrolling again
-
         // Nyp logo on patrol interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
@@ -57,7 +55,7 @@ class PatrolPage : Fragment(){
 
             // Change view to settings page
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SettingsPage())
+                .replace(R.id.fragment_container, PasswordPage())
                 .addToBackStack(null)
                 .commit()
         }
