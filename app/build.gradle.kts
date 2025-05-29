@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.chaquo.python")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
 }
 android {
     namespace = "com.temi.temi_robot"
@@ -70,6 +71,7 @@ dependencies {
     implementation(libs.robotemi.sdk)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.appcompat)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

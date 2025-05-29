@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import com.robotemi.sdk.constants.HardButton
 
 class PatrolPage : Fragment(){
 
@@ -29,6 +30,9 @@ class PatrolPage : Fragment(){
 
         // Hide top bar
         robotController.hideTopBar()
+
+        // Robot behavior at initialization
+        initBehavior()
 
         // Nyp logo on patrol interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
@@ -62,4 +66,17 @@ class PatrolPage : Fragment(){
 
         return view
     }
+
+    // Robot behavior on start
+    fun initBehavior(){
+        robotController.setBlockMode(false)
+        robotController.patrol(robotController.getLocations())
+        robotController.hideTopBar()
+        robotController.setVolume(4)
+        robotController.toggleWakeup(true)
+        robotController.setTopBadgeEnabled(false)
+        robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
+        robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+    }
+
 }

@@ -11,13 +11,14 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.robotemi.sdk.constants.HardButton
+import kotlinx.serialization.encodeToString
+import java.io.File
+import kotlinx.serialization.json.Json
 
 // Settings page class
-public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
+public class SettingsPage : Fragment() {
 
     private lateinit var robotController: RobotController
-    private lateinit var locations: MutableList<String>
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleAdapter
@@ -26,6 +27,7 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         robotController = (activity as MainActivity).robotController
+        adapter = (activity as MainActivity).adapter!!
     }
 
     override fun onCreateView(
@@ -38,20 +40,13 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
         // Hide top bar for choosing patrol locations
         robotController.hideTopBar()
 
-        // Set Callback to listen to robot ready event
-        robotController.setRobotReadyCallback(this)
-
         // Nyp logo on settings interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
         // Define patrol path choosing interface view
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        if((activity as MainActivity).adapter != null){
-            adapter = (activity as MainActivity).adapter!!
-            recyclerView.adapter = adapter
-        }
+        recyclerView.adapter = adapter
 
         // Define drag and drop actions
         val itemTouchHelper = createDragAndDrop()
@@ -69,8 +64,8 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
             }
             robotController.setLocations(patrolLocations)
 
-            // Robot behavior at initialization
-            initBehavior()
+            //Write patrolState in file
+            writeInFile(adapter, (activity as MainActivity).savePatrolStatesFileName)
 
             // Change view to patrol page
             parentFragmentManager.beginTransaction()
@@ -79,35 +74,6 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
                 .commit()
         }
         return view
-    }
-
-    // When robot is initialized, ask permissions and load map
-    override fun onRobotIsReady() {
-        if(robotController.askRequiredPermissions()){
-            robotController.setBlockMode(true)
-            if(robotController.getLocations().isEmpty()){
-                robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")
-            }
-            else {
-                locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()
-                adapter = SimpleAdapter(locations)
-                recyclerView.adapter = adapter
-                (activity as MainActivity).adapter = adapter
-            }
-
-        }
-    }
-
-    // Robot behavior on start
-    fun initBehavior(){
-        robotController.setBlockMode(false)
-        robotController.patrol(robotController.getLocations())
-        robotController.hideTopBar()
-        robotController.setVolume(4)
-        robotController.toggleWakeup(true)
-        robotController.setTopBadgeEnabled(false)
-        robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
-        robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
     }
 
     // Create a drag and drop manager
@@ -131,6 +97,13 @@ public class SettingsPage : Fragment(), RobotController.RobotReadyCallback {
             }
         })
         return itemTouchHelper
+    }
+
+    // Write patrol states in file
+    fun writeInFile(adapter: SimpleAdapter, fileName: String){
+        val patrolState = adapter.toPatrolState()
+        val json = Json.encodeToString(patrolState)
+        File(context?.filesDir, fileName).writeText(json)
     }
 
 }

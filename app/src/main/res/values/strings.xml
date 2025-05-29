@@ -11,4 +11,6 @@
     <string name="please_enter_password">Please enter password</string>
     <string name="show_password">SHOW PASSWORD</string>
     <string name="continuate">Continue</string>
+    <string name="settings_mode">Settings mode</string>
+    <string name="welcome_please_select_the_mode_you_want_to_use">Welcome, please select the mode you want to use:</string>
 </resources>

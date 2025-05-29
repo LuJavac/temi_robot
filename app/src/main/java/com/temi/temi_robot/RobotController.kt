@@ -372,6 +372,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
     private var isAskSatisfiedRequest = false
 
     private var readyCallback: RobotReadyCallback? = null
+    private var mapReadyCallback: MapReadyCallback? = null
 
     /////////// General functions
 
@@ -447,9 +448,9 @@ class RobotController(private var mapName: String, private var module: PyObject,
 
 
     // Movements and map
-    fun loadMap(name: String) {
+    fun loadMap() {
         val maps = robot.getMapList()
-        val map = maps.find { it.name == name }
+        val map = maps.find { it.name == mapName }
         if(map == null){
             locations = emptyList()
             readyCallback?.onRobotIsReady()
@@ -533,6 +534,15 @@ class RobotController(private var mapName: String, private var module: PyObject,
         this.readyCallback = callback
     }
 
+    // Personal interface and callbacks for robot initialization
+    interface MapReadyCallback {
+        fun onMapIsReady()
+    }
+
+    fun setMapReadyCallback(callback: MapReadyCallback) {
+        this.mapReadyCallback = callback
+    }
+
 
     // Overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
@@ -591,7 +601,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
 
     override fun onRobotReady(isReady: Boolean) {
         if(isReady){
-            loadMap(mapName)
+            readyCallback?.onRobotIsReady()
         }
     }
 
@@ -602,13 +612,12 @@ class RobotController(private var mapName: String, private var module: PyObject,
             }
             0 -> {
                 locations = robot.locations
+                mapReadyCallback?.onMapIsReady()
             }
             else -> {
-                setBlockMode(true)
-                speak("Error in loading the map, please restart the application")
+                mapReadyCallback?.onMapIsReady()
             }
         }
-        readyCallback?.onRobotIsReady()
     }
 
     override fun onRequestPermissionResult(

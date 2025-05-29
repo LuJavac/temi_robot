@@ -1,11 +1,20 @@
 package com.temi.temi_robot
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.serialization.Serializable
 import java.util.Collections
+
+// Class for saving patrol states
+@Serializable
+data class PatrolState(
+    val items: List<String>, // Order
+    val itemStates: Map<String, Boolean> // State of checkboxes
+)
 
 // Class for adapter objects to choose patrol locations order
 class SimpleAdapter(private val items: MutableList<String>) :
@@ -60,6 +69,15 @@ class SimpleAdapter(private val items: MutableList<String>) :
         notifyItemMoved(fromPosition, toPosition)
     }
 
+    // Put saved states into itemStates
+    @SuppressLint("NotifyDataSetChanged")
+    fun restoreStates(states: Map<String, Boolean>) {
+        itemStates.clear()
+        itemStates.putAll(states)
+        notifyDataSetChanged()
+    }
+
+
     // Only return selected (checked) items
     fun getItems(): List<String> {
         return items.filter { itemStates[it] == true}
@@ -67,4 +85,9 @@ class SimpleAdapter(private val items: MutableList<String>) :
 
     // If needed, get all items regardless of check state
     fun getAllItems(): List<String> = items.toList()
+
+    // Convert to patrol state
+    fun toPatrolState(): PatrolState {
+        return PatrolState(getAllItems(), itemStates.toMap())
+    }
 }
