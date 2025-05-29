@@ -349,7 +349,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
 
     // Time values
     private var lastRequestTime = 0L //
-    private val requestCooldownMillis = 20000L // 50 seconds
+    private val requestCooldownMillis = 20000L // 20 seconds
 
     // Inactivity handling
     private var inactivityHandler = Handler(Looper.getMainLooper())
