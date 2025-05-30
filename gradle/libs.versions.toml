@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.0"
+agp = "8.10.1"
 glide = "4.16.0"
 googleHiltAndroid = "2.51.1"
 hiltAndroid = "1.2.0"

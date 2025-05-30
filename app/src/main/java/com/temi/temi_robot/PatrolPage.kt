@@ -14,11 +14,13 @@ import com.robotemi.sdk.constants.HardButton
 class PatrolPage : Fragment(){
 
     private lateinit var robotController: RobotController
+    private lateinit var adapter: SimpleAdapter
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
         robotController = (activity as MainActivity).robotController
+        adapter = (activity as MainActivity).adapter!!
     }
 
     override fun onCreateView(
@@ -69,6 +71,7 @@ class PatrolPage : Fragment(){
 
     // Robot behavior on start
     fun initBehavior(){
+        robotController.setLocations(adapter.getItems())
         robotController.setBlockMode(false)
         robotController.patrol(robotController.getLocations())
         robotController.hideTopBar()
@@ -77,6 +80,7 @@ class PatrolPage : Fragment(){
         robotController.setTopBadgeEnabled(false)
         robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
         robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+        robotController.setLastRequestTimeNow()
     }
 
 }

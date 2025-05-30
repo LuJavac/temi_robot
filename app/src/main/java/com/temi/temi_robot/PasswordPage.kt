@@ -29,6 +29,7 @@ class PasswordPage : Fragment(){
         val editTextPassword = view.findViewById<EditText>(R.id.editTextPassword)
         val checkboxShowPassword = view.findViewById<CheckBox>(R.id.checkboxShowPassword)
         val buttonGo = view.findViewById<Button>(R.id.buttonGo)
+        val buttonCancel = view.findViewById<Button>(R.id.buttonCancel)
 
         checkboxShowPassword.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -55,6 +56,16 @@ class PasswordPage : Fragment(){
                     .show()
             }
         }
+
+        buttonCancel.setOnClickListener {
+            // Go back to patrol page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, PatrolPage())
+                .addToBackStack(null)
+                .commit()
+        }
+
+
         return view
     }
 }

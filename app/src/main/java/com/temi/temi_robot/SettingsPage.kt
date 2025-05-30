@@ -57,6 +57,7 @@ public class SettingsPage : Fragment() {
         confirmButton.setOnClickListener {
             // Getting locations from adapter and setting them in robot controller
             val patrolLocations = adapter.getItems()
+            println(patrolLocations)
             if(patrolLocations.size < 3){
                 robotController.setBlockMode(true)
                 robotController.speak("Please select at least 3 locations to start patrolling")
