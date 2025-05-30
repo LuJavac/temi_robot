@@ -72,6 +72,12 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
             if(!restoreFromFile((activity as MainActivity).savePatrolStatesFileName)){
                 robotController.loadMap()
             }
+        } else {
+            // Change view to restart page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, RestartPage())
+                .addToBackStack(null)
+                .commit()
         }
     }
 
@@ -94,7 +100,11 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
     override fun onMapIsReady() {
         if(robotController.getLocations().isEmpty()){
             robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")
-            TODO("add stop interface")
+            // Change view to restart asking page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, RestartPage())
+                .addToBackStack(null)
+                .commit()
             return
         }
         locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()

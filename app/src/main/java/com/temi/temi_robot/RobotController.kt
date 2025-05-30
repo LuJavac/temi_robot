@@ -12,7 +12,6 @@ import com.robotemi.sdk.constants.HardButton
 import com.robotemi.sdk.constants.Platform
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
-import com.robotemi.sdk.listeners.OnRobotLiftedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
 import com.robotemi.sdk.listeners.OnTelepresenceStatusChangedListener
 import com.robotemi.sdk.map.OnLoadMapStatusChangedListener
@@ -30,7 +29,6 @@ class RobotController(private var mapName: String, private var module: PyObject,
     OnDetectionStateChangedListener,
     OnGoToLocationStatusChangedListener,
     OnDistanceToDestinationChangedListener,
-    OnRobotLiftedListener,
     OnRequestPermissionResultListener,
     OnLoadMapStatusChangedListener,
     OnTelepresenceStatusChangedListener(sessionId = "")
@@ -46,7 +44,6 @@ class RobotController(private var mapName: String, private var module: PyObject,
         robot.addOnDetectionStateChangedListener(this)
         robot.addOnGoToLocationStatusChangedListener(this)
         robot.addOnDistanceToDestinationChangedListener(this)
-        robot.addOnRobotLiftedListener(this)
         robot.addOnRequestPermissionResultListener(this)
         robot.addOnLoadMapStatusChangedListener(this)
         robot.addOnTelepresenceStatusChangedListener(this)
@@ -660,17 +657,6 @@ class RobotController(private var mapName: String, private var module: PyObject,
             }
             else -> {
 
-            }
-        }
-    }
-
-    override fun onRobotLifted(isLifted: Boolean, reason: String) {
-        println("lifted")
-        if(isLifted){
-            if (mediaPlayer.isPlaying) {
-                mediaPlayer.seekTo(0)
-            } else {
-                mediaPlayer.start()
             }
         }
     }

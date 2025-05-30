@@ -14,4 +14,5 @@
     <string name="settings_mode">Settings mode</string>
     <string name="welcome_please_select_the_mode_you_want_to_use">Welcome, please select the mode you want to use:</string>
     <string name="cancel">Cancel</string>
+    <string name="please_restart_the_application">Please restart the application</string>
 </resources>
