@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         // Load SettingsPage as default
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, FirstPage())
+                .replace(R.id.fragment_container, LoadingPage())
                 .commit()
         }
     }

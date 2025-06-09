@@ -96,6 +96,14 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         }
     }
 
+    // Delete patrol states file :: FOR TESTING PURPOSES ONLY
+    private fun deleteFile(fileName: String) {
+        val file = File(context?.filesDir, fileName)
+        if (file.exists()) {
+            file.delete()
+        }
+    }
+
     // When map is loaded check if it has valid data or not
     override fun onMapIsReady() {
         if(robotController.getLocations().isEmpty()){
