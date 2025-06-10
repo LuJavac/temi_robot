@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.chaquo.python")
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
 }
 android {
@@ -43,19 +42,6 @@ android {
     buildFeatures {
         compose = true
     }
-}
-
-chaquopy {
-    defaultConfig {
-        version = "3.12"
-        buildPython("python3")
-        pip{
-            install("openai==0.27.8")
-            install("pydantic==1.10.13")
-        }
-    }
-    productFlavors { }
-    sourceSets { }
 }
 
 dependencies {
