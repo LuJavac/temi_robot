@@ -13,7 +13,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 
-class LoadingPage : Fragment() {
+class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
     private lateinit var robotController: RobotController
     private lateinit var request: String
 
@@ -40,9 +40,19 @@ class LoadingPage : Fragment() {
             LoadingScreen()
         }
 
+        robotController.setBackToPatrolCallback(this)
+
         sendRequestToServer(request)
-        println("sent request")
+
         return view
+    }
+
+    override fun onBackToPatrol() {
+        // Change view to patrol page
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, PatrolPage())
+            .addToBackStack(null)
+            .commit()
     }
 
     fun sendRequestToServer(request: String) {
@@ -58,7 +68,7 @@ class LoadingPage : Fragment() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                robotController.speak("Error sending data to server : ${e.message}")
+                robotController.speak("Error sending data to server")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -73,14 +83,9 @@ class LoadingPage : Fragment() {
                             robotController.speak("I have nothing to answer")
                         }
                     } else {
-                        robotController.speak("Server error : ${it.code}")
+                        robotController.speak("Server error")
                     }
                 }
-                // Change view to patrol page
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, PatrolPage())
-                    .addToBackStack(null)
-                    .commit()
             }
         })
     }

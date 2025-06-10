@@ -57,7 +57,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
 
         // Settings button behavior
         settingsButton.setOnClickListener {
-
             // Stop movement while on setting page
             robotController.stopMovement()
             robotController.setBlockMode(true)

@@ -1,9 +1,7 @@
 package com.temi.temi_robot
 
-import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
-import com.chaquo.python.PyObject
 
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
@@ -22,7 +20,7 @@ import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 
 // Robot control class
-class RobotController(private var mapName: String, private var module: PyObject, private val mediaPlayer: MediaPlayer):
+class RobotController(private var mapName: String):
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
@@ -355,10 +353,13 @@ class RobotController(private var mapName: String, private var module: PyObject,
             patrol(locations)
             robot.setDetectionModeOn(true, 0.5f)
         }
+        if(isAskSatisfiedRequest) {
+            isAskSatisfiedRequest = false
+            backToPatrolCallback?.onBackToPatrol()
+        }
     }
 
     fun resetInactivityTimer() {
-        println("reset")
         inactivityHandler.removeCallbacks(inactivityRunnable)
         inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
     }
@@ -371,6 +372,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
     private var requestReadyCallback: RequestReadyCallback? = null
+    private var backToPatrolCallback: BackToPatrolCallback? = null
 
     /////////// General functions
 
@@ -541,13 +543,22 @@ class RobotController(private var mapName: String, private var module: PyObject,
         this.mapReadyCallback = callback
     }
 
-    // Personal interface and callbacks for server requests
+    // Personal interface and callback for server requests
     interface RequestReadyCallback {
         fun onRequestIsReady(request: String)
     }
 
     fun setRequestReadyCallback(callback: RequestReadyCallback) {
         this.requestReadyCallback = callback
+    }
+
+    // Personal interface and callback for going back to patrol page
+    interface BackToPatrolCallback {
+        fun onBackToPatrol()
+    }
+
+    fun setBackToPatrolCallback(callback: BackToPatrolCallback) {
+        this.backToPatrolCallback = callback
     }
 
     // Overrides
@@ -643,6 +654,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
             CallState.State.ENDED -> {
                 setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
+                backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.DECLINED -> {
                 setBlockMode(false)
@@ -680,6 +692,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
                 callLibrarian()
             } else {
                 speak("OK. I'm always in the library in case you need any help.")
+                backToPatrolCallback?.onBackToPatrol()
             }
         }
         else if(isIntoList(asrResult, keywords1_1)){
@@ -997,14 +1010,6 @@ class RobotController(private var mapName: String, private var module: PyObject,
             robot.finishConversation()
             isAskSatisfiedRequest = true
             requestReadyCallback?.onRequestIsReady(asrResult)
-            /*
-            val result = module.callAttr("get_response", asrResult)
-            if (result != null) {
-                val response = result.toString()
-                speak(response)
-            } else {
-                speak("chatbot error")
-            }*/
         }
     }
 }
