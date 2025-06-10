@@ -16,6 +16,7 @@ class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var adapter: SimpleAdapter? = null
     internal var savePatrolStatesFileName = "patrolState.json"
+    internal var userRequest : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         // Load SettingsPage as default
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, LoadingPage())
+                .replace(R.id.fragment_container, FirstPage())
                 .commit()
         }
     }

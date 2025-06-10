@@ -1,5 +1,6 @@
 package com.temi.temi_robot
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +14,18 @@ import org.json.JSONObject
 import java.io.IOException
 
 class LoadingPage : Fragment() {
+    private lateinit var robotController: RobotController
+    private lateinit var request: String
+
     val client = OkHttpClient()
+
+    // Recover robot controller from main activity
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        robotController = (activity as MainActivity).robotController
+        request = (activity as MainActivity).userRequest!!
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -27,6 +39,9 @@ class LoadingPage : Fragment() {
         composeView.setContent {
             LoadingScreen()
         }
+
+        sendRequestToServer(request)
+        println("sent request")
         return view
     }
 
@@ -35,14 +50,15 @@ class LoadingPage : Fragment() {
         json.put("text", request)
 
         val body = json.toString().toRequestBody("application/json".toMediaType())
+
         val request = Request.Builder()
-            .url("http://192.168.1.10:5000/main3.py") // Replace with server URL
+            .url("http://192.168.1.20:5000/process") // Replace with server URL
             .post(body)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                println("Error : ${e.message}")
+                robotController.speak("Error sending data to server : ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -52,14 +68,19 @@ class LoadingPage : Fragment() {
                         if (bodyString != null) {
                             val jsonResponse = JSONObject(bodyString)
                             val responseText = jsonResponse.getString("response")
-                            println("Response from server: $responseText")
+                            robotController.speak(responseText)
                         } else {
-                            println("Response body is null")
+                            robotController.speak("I have nothing to answer")
                         }
                     } else {
-                        println("Server error : ${it.code}")
+                        robotController.speak("Server error : ${it.code}")
                     }
                 }
+                // Change view to patrol page
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, PatrolPage())
+                    .addToBackStack(null)
+                    .commit()
             }
         })
     }

@@ -370,6 +370,7 @@ class RobotController(private var mapName: String, private var module: PyObject,
 
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
+    private var requestReadyCallback: RequestReadyCallback? = null
 
     /////////// General functions
 
@@ -540,6 +541,14 @@ class RobotController(private var mapName: String, private var module: PyObject,
         this.mapReadyCallback = callback
     }
 
+    // Personal interface and callbacks for server requests
+    interface RequestReadyCallback {
+        fun onRequestIsReady(request: String)
+    }
+
+    fun setRequestReadyCallback(callback: RequestReadyCallback) {
+        this.requestReadyCallback = callback
+    }
 
     // Overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
@@ -986,14 +995,16 @@ class RobotController(private var mapName: String, private var module: PyObject,
         }
         else {
             robot.finishConversation()
-            val result = module.callAttr("get_response", asrResult)
             isAskSatisfiedRequest = true
+            requestReadyCallback?.onRequestIsReady(asrResult)
+            /*
+            val result = module.callAttr("get_response", asrResult)
             if (result != null) {
                 val response = result.toString()
                 speak(response)
             } else {
                 speak("chatbot error")
-            }
+            }*/
         }
     }
 }

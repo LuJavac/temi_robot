@@ -11,7 +11,7 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
 
-class PatrolPage : Fragment(){
+class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
 
     private lateinit var robotController: RobotController
     private lateinit var adapter: SimpleAdapter
@@ -32,6 +32,9 @@ class PatrolPage : Fragment(){
 
         // Hide top bar
         robotController.hideTopBar()
+
+        // Set Callback to listen to user request event
+        robotController.setRequestReadyCallback(this)
 
         // Robot behavior at initialization
         initBehavior()
@@ -81,6 +84,15 @@ class PatrolPage : Fragment(){
         robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
         robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
         robotController.setLastRequestTimeNow()
+    }
+
+    override fun onRequestIsReady(request: String) {
+        (activity as MainActivity).userRequest = request
+        // Change view to loading page
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, LoadingPage())
+            .addToBackStack(null)
+            .commit()
     }
 
 }
