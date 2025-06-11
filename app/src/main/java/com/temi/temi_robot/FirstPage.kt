@@ -24,6 +24,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         robotController = (activity as MainActivity).robotController
     }
 
+    // Creates view for page
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -104,7 +105,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         }
     }
 
-    // When map is loaded check if it has valid data or not
+    // When map is loaded check if it has valid data or not. If yes, load locations
     override fun onMapIsReady() {
         if(robotController.getLocations().isEmpty()){
             robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")

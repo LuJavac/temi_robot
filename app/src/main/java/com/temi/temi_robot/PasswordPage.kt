@@ -19,13 +19,17 @@ class PasswordPage : Fragment(){
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        //View layout
         val view = inflater.inflate(R.layout.layout_password, container, false)
 
+        // Page items
         val editTextPassword = view.findViewById<EditText>(R.id.editTextPassword)
         val checkboxShowPassword = view.findViewById<CheckBox>(R.id.checkboxShowPassword)
         val buttonGo = view.findViewById<Button>(R.id.buttonGo)
         val buttonCancel = view.findViewById<Button>(R.id.buttonCancel)
 
+        // Checkbox behavior to show or hide password
         checkboxShowPassword.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 editTextPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
@@ -35,6 +39,7 @@ class PasswordPage : Fragment(){
             editTextPassword.setSelection(editTextPassword.text.length)
         }
 
+        // When confirming the password check if it is correct or not
         buttonGo.setOnClickListener {
             val inputPassword = editTextPassword.text.toString()
             if (inputPassword == correctPassword) {
@@ -52,6 +57,7 @@ class PasswordPage : Fragment(){
             }
         }
 
+        // When cancelling go back to patrol page
         buttonCancel.setOnClickListener {
             // Go back to patrol page
             parentFragmentManager.beginTransaction()

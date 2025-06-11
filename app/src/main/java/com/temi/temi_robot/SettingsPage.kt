@@ -35,6 +35,7 @@ class SettingsPage : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // View layout
         val view = inflater.inflate(R.layout.layout_settings, container, false)
 
         // Hide top bar for choosing patrol locations

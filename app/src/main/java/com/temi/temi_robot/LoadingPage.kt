@@ -17,7 +17,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
     private lateinit var robotController: RobotController
     private lateinit var request: String
 
-    val client = OkHttpClient()
+    val client = OkHttpClient() // Client for sending requests to server
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -27,26 +27,35 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
 
     }
 
+    // Creates view for page
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
 
+        // Main layout
         val view = inflater.inflate(R.layout.layout_loading, container, false)
 
+        // Part of the view for animated loading indicator
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
         composeView.setContent {
             LoadingScreen()
         }
 
+        // Hide top bar
+        robotController.hideTopBar()
+
+        // Set Callback to listen to when going back to patrol page
         robotController.setBackToPatrolCallback(this)
 
+        // Send user request to server
         sendRequestToServer(request)
 
         return view
     }
 
+    // Callback override to go back to patrol page when triggered
     override fun onBackToPatrol() {
         // Change view to patrol page
         parentFragmentManager.beginTransaction()
@@ -55,6 +64,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
             .commit()
     }
 
+    // Sending user request to python server
     fun sendRequestToServer(request: String) {
         val json = JSONObject()
         json.put("text", request)
@@ -67,10 +77,12 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
             .build()
 
         client.newCall(request).enqueue(object : Callback {
+            // Behavior when failing to send data to server
             override fun onFailure(call: Call, e: IOException) {
                 robotController.speak("Error sending data to server")
             }
 
+            // Behavior when receiving server response
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (it.isSuccessful) {

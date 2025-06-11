@@ -85,6 +85,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
         robotController.setLastRequestTimeNow()
     }
 
+    // When user request arrived, change view to loading page
     override fun onRequestIsReady(request: String) {
         (activity as MainActivity).userRequest = request
         // Change view to loading page

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 
+// Animated loading indicator
 @Composable
 fun LoadingScreen() {
     Box(
