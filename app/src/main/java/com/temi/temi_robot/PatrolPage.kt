@@ -1,6 +1,11 @@
 package com.temi.temi_robot
 
 import android.content.Context
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
 
@@ -15,6 +21,8 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
 
     private lateinit var robotController: RobotController
     private lateinit var adapter: SimpleAdapter
+    private lateinit var connectivityManager: ConnectivityManager
+    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -29,6 +37,30 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.layout_patrol, container, false)
+
+        // Detecting system Wi-FI deconnections
+        connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onLost(network: Network) {
+                super.onLost(network)
+
+                // Disconnected
+                robotController.sendTemiToHomeBase()
+
+                // Change view to lost connection page
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, LostConnectionPage())
+                    .addToBackStack(null)
+                    .commit()
+            }
+        }
+
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+
+        connectivityManager.registerNetworkCallback(request, networkCallback)
 
         // Hide top bar
         robotController.hideTopBar()
@@ -93,6 +125,11 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
             .replace(R.id.fragment_container, LoadingPage())
             .addToBackStack(null)
             .commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
 }

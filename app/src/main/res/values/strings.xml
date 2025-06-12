@@ -15,4 +15,5 @@
     <string name="welcome_please_select_the_mode_you_want_to_use">Welcome, please select the mode you want to use:</string>
     <string name="cancel">Cancel</string>
     <string name="please_restart_the_application">Please restart the application</string>
+    <string name="i_lost_connection_please_let_me_return_to_home_base_and_restart_me">I LOST CONNECTION PLEASE LET ME RETURN TO HOME BASE AND RESTART ME</string>
 </resources>

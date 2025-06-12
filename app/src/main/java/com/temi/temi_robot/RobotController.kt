@@ -20,7 +20,7 @@ import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 
 // Robot control class
-class RobotController(private var mapName: String):
+class RobotController(private val mapName: String):
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
@@ -236,6 +236,10 @@ class RobotController(private var mapName: String):
         robot.stopMovement()
     }
 
+    fun sendTemiToHomeBase(){
+        robot.goTo("home base")
+    }
+
     // Person Detection
     fun setDetectionModeOn(on : Boolean, distance : Float){
         robot.setDetectionModeOn(on, distance)
@@ -422,22 +426,27 @@ class RobotController(private var mapName: String):
             CallState.State.DECLINED -> {
                 setBlockMode(false)
                 speak("The librarian denied the call")
+                backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.NOT_ANSWERED -> {
                 setBlockMode(false)
                 speak("The librarian doesn't answer the call")
+                backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.BUSY -> {
                 setBlockMode(false)
                 speak("The librarian is busy")
+                backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.POOR_CONNECTION -> {
                 setBlockMode(false)
                 speak("Cannot establish the call due to connection issue")
+                backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.CANT_JOIN -> {
                 setBlockMode(false)
                 speak("Cannot join the call")
+                backToPatrolCallback?.onBackToPatrol()
             }
             else -> {
 
@@ -447,6 +456,8 @@ class RobotController(private var mapName: String):
 
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
+
+        // Managing satisfied call request
         if(isAskSatisfiedRequest){
             robot.finishConversation()
             isAskSatisfiedRequest = false
@@ -460,7 +471,7 @@ class RobotController(private var mapName: String):
             }
         }
 
-        //Go to locations
+        // Go to locations
         else if (isIntoList(asrResult, keywords1_61, questions)){
             robot.finishConversation()
             speak(answer_61)

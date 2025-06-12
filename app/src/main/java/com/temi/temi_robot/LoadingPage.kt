@@ -79,7 +79,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
         client.newCall(request).enqueue(object : Callback {
             // Behavior when failing to send data to server
             override fun onFailure(call: Call, e: IOException) {
-                robotController.speak("Error sending data to server")
+                robotController.speak("Sorry I couldn't send data to the server")
             }
 
             // Behavior when receiving server response
@@ -95,7 +95,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
                             robotController.speak("I have nothing to answer")
                         }
                     } else {
-                        robotController.speak("Server error")
+                        robotController.speak("The server has an error")
                     }
                 }
             }
