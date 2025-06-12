@@ -1,7 +1,7 @@
 package com.temi.temi_robot
 
 
-import android.media.MediaPlayer
+import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 
@@ -14,9 +14,13 @@ class MainActivity : AppCompatActivity() {
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var userRequest : String? = null
 
+    internal lateinit var connectivityManager: ConnectivityManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main_activity)
+
+        connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
         // Load SettingsPage as default
         if (savedInstanceState == null) {

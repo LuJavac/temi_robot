@@ -29,6 +29,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
         super.onAttach(context)
         robotController = (activity as MainActivity).robotController
         adapter = (activity as MainActivity).adapter!!
+        connectivityManager = (activity as MainActivity).connectivityManager
     }
 
     override fun onCreateView(
@@ -38,9 +39,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
     ): View? {
         val view = inflater.inflate(R.layout.layout_patrol, container, false)
 
-        // Detecting system Wi-FI deconnections
-        connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
+        // Adding network callback to detect system Wi-FI deconnections
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
                 super.onLost(network)
@@ -59,7 +58,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
-
         connectivityManager.registerNetworkCallback(request, networkCallback)
 
         // Hide top bar
