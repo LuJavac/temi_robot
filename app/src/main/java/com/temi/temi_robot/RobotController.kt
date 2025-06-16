@@ -75,7 +75,7 @@ class RobotController(private val mapName: String):
     private val keywords1_67 = listOf("dvds", "cds", "dvd", "cd")
 
     private val answer_68= "Please follow me, we are going to the smart kiosk."
-    private val keywords1_68 = listOf("smart kiosk")
+    private val keywords1_68 = listOf("kiosk")
 
     private val answer_69= "Please follow me, we are going to the exhibition."
     private val keywords1_69 = listOf("exhibition")
@@ -90,7 +90,7 @@ class RobotController(private val mapName: String):
     private val keywords1_72 = listOf("lifestyle books")
 
     private val answer_73= "Please follow me, we are going to the cafe."
-    private val keywords1_73 = listOf("cafe")
+    private val keywords1_73 = listOf("cafe", "cafeteria")
 
     private val answer_74= "Please follow me, we are going to the smart space."
     private val keywords1_74 = listOf("smart space")

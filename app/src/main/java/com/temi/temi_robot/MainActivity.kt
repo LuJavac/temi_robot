@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main_activity)
 
+        // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
         // Load SettingsPage as default
