@@ -32,7 +32,7 @@ class RobotController(private val mapName: String):
     OnTelepresenceStatusChangedListener(sessionId = "")
 {
     private val robot = Robot.getInstance() // Create robot object
-    private var locations = emptyList<String>()
+    private lateinit var patrolStates: PatrolStates
 
     // Add listeners to robot instance
     init {
@@ -113,7 +113,7 @@ class RobotController(private val mapName: String):
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
         if(!blockMode){
-            patrol(locations)
+            patrol()
             robot.setDetectionModeOn(true, 0.5f)
         }
         if(isAskSatisfiedRequest) {
@@ -145,17 +145,12 @@ class RobotController(private val mapName: String):
         setDetectionModeOn(!value, 0.5f)
     }
 
-    fun getLocations() : List<String> {
-        return locations
+    fun setPatrolStates(patrolStates: PatrolStates){
+        this.patrolStates = patrolStates
     }
 
-    fun setLocations(newLocations: List<String>) {
-        locations = newLocations
-    }
-
-    // Utility functions
-    private fun changeLocationsOrder() {
-        locations = locations.drop(1) + locations.first()
+    fun getPatrolStates(): PatrolStates{
+        return this.patrolStates
     }
 
     fun setLastRequestTimeNow(){
@@ -215,7 +210,7 @@ class RobotController(private val mapName: String):
         val maps = robot.getMapList()
         val map = maps.find { it.name == mapName }
         if(map == null){
-            locations = emptyList()
+            patrolStates.setLocations(emptyList())
             readyCallback?.onRobotIsReady()
         }
         else {
@@ -228,8 +223,8 @@ class RobotController(private val mapName: String):
         robot.goTo(location)
     }
 
-    fun patrol(locations : List<String>){
-        robot.patrol(locations, times = 0)
+    fun patrol(){
+        robot.patrol(patrolStates.getPatrolLocations(), times = 0)
     }
 
     fun stopMovement(){
@@ -246,7 +241,7 @@ class RobotController(private val mapName: String):
     }
 
     // Calls
-    fun callLibrarian(){
+    private fun callLibrarian(){
         val contacts = robot.allContact
         val librarianID = contacts.find { it.name == "Johan" }?.userId
         if(librarianID == null){
@@ -259,11 +254,11 @@ class RobotController(private val mapName: String):
     }
 
     // Permissions
-    fun checkSelfPermission(permission: Permission) : Int{
+    private fun checkSelfPermission(permission: Permission) : Int{
         return robot.checkSelfPermission(permission)
     }
 
-    fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
+    private fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
         robot.requestPermissions(permissions, requestCode)
     }
 
@@ -340,7 +335,7 @@ class RobotController(private val mapName: String):
                 askQuestion("Do you want me to call a librarian in case you're not satisfied with the answer ?")
                 return
             }
-            patrol(locations)
+            patrol()
             robot.setDetectionModeOn(true, 0.5f)
         }
     }
@@ -374,7 +369,7 @@ class RobotController(private val mapName: String):
                 isMoveRequest = false
                 speak("We arrived")
             } else {
-                changeLocationsOrder()
+                patrolStates.appendFirstPatrolLocation()
             }
         }
     }
@@ -395,7 +390,8 @@ class RobotController(private val mapName: String):
                 return
             }
             0 -> {
-                locations = robot.locations
+                val locationsWithoutHome = robot.locations.filter{it.lowercase() != "home base"}
+                patrolStates = PatrolStates(locationsWithoutHome, locationsWithoutHome.associateWith { true }.toMutableMap())
                 mapReadyCallback?.onMapIsReady()
             }
             else -> {
@@ -418,6 +414,12 @@ class RobotController(private val mapName: String):
 
     override fun onTelepresenceStatusChanged(callState: CallState) {
         when(callState.state){
+            CallState.State.STARTED -> {
+
+            }
+            CallState.State.INITIALIZED -> {
+
+            }
             CallState.State.ENDED -> {
                 setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
@@ -449,7 +451,8 @@ class RobotController(private val mapName: String):
                 backToPatrolCallback?.onBackToPatrol()
             }
             else -> {
-
+                setBlockMode(false)
+                backToPatrolCallback?.onBackToPatrol()
             }
         }
     }

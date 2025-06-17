@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.pages
 
 import android.os.Bundle
 import android.text.InputType
@@ -10,6 +10,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.temi.temi_robot.R
 
 class PasswordPage : Fragment(){
     private val correctPassword = "nyp123"

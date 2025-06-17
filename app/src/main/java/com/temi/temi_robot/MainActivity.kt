@@ -4,14 +4,14 @@ package com.temi.temi_robot
 import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.temi.temi_robot.pages.FirstPage
 
 // Activity class
 class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
+    internal var savePatrolStatesFileName = "patrolState.json"
 
     internal var robotController: RobotController = RobotController(mapName)
-    internal var adapter: SimpleAdapter? = null
-    internal var savePatrolStatesFileName = "patrolState.json"
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager

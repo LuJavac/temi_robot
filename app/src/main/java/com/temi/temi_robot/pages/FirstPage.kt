@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.pages
 
 import android.content.Context
 import android.os.Bundle
@@ -6,17 +6,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import com.temi.temi_robot.MainActivity
+import com.temi.temi_robot.PatrolStates
+import com.temi.temi_robot.R
+import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.SimpleAdapter
 import kotlinx.serialization.json.Json
 import java.io.File
 
 class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback{
 
     private lateinit var robotController: RobotController
-    private lateinit var adapter: SimpleAdapter
-    private lateinit var locations: MutableList<String>
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -87,10 +89,8 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         val file = File(context?.filesDir, fileName)
         if (file.exists()) {
             val json = file.readText()
-            val savedState = Json.decodeFromString<PatrolState>(json)
-            val adapter = SimpleAdapter(savedState.items.toMutableList())
-            adapter.restoreStates(savedState.itemStates)
-            (activity as MainActivity).adapter = adapter
+            val savedState = Json.decodeFromString<PatrolStates>(json)
+            robotController.setPatrolStates(savedState)
             return true
         } else {
             return false
@@ -107,7 +107,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
 
     // When map is loaded check if it has valid data or not. If yes, load locations
     override fun onMapIsReady() {
-        if(robotController.getLocations().isEmpty()){
+        if(robotController.getPatrolStates().getAllLocations().isEmpty()){
             robotController.speak("I couldn't find the map or it has no locations. Please check the map name or add locations to your map.")
             // Change view to restart asking page
             parentFragmentManager.beginTransaction()
@@ -116,9 +116,6 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
                 .commit()
             return
         }
-        locations = robotController.getLocations().filter{it.lowercase() != "home base"}.toMutableList()
-        adapter = SimpleAdapter(locations)
-        (activity as MainActivity).adapter = adapter
     }
 
 

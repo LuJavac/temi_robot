@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.pages
 
 import android.content.Context
 import android.os.Bundle
@@ -11,6 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.temi.temi_robot.MainActivity
+import com.temi.temi_robot.PatrolStates
+import com.temi.temi_robot.R
+import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.SimpleAdapter
 import kotlinx.serialization.encodeToString
 import java.io.File
 import kotlinx.serialization.json.Json
@@ -19,7 +24,6 @@ import kotlinx.serialization.json.Json
 class SettingsPage : Fragment() {
 
     private lateinit var robotController: RobotController
-
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleAdapter
 
@@ -27,7 +31,7 @@ class SettingsPage : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         robotController = (activity as MainActivity).robotController
-        adapter = (activity as MainActivity).adapter!!
+        adapter = SimpleAdapter(robotController.getPatrolStates())
     }
 
     override fun onCreateView(
@@ -56,17 +60,20 @@ class SettingsPage : Fragment() {
         // Confirm button to get chosen path locations order and start patrolling
         val confirmButton = view.findViewById<Button>(R.id.confirmButton)
         confirmButton.setOnClickListener {
+
             // Getting locations from adapter and setting them in robot controller
-            val patrolLocations = adapter.getItems()
-            if(patrolLocations.size < 3){
+            val patrolStates = adapter.updatePatrolStates()
+
+            if(patrolStates.getPatrolLocations().size < 3){
                 robotController.setBlockMode(true)
                 robotController.speak("Please select at least 3 locations to start patrolling")
                 return@setOnClickListener
             }
-            robotController.setLocations(patrolLocations)
+
+            robotController.setPatrolStates(patrolStates)
 
             //Write patrolState in file
-            writeInFile(adapter, (activity as MainActivity).savePatrolStatesFileName)
+            writeInFile(patrolStates, (activity as MainActivity).savePatrolStatesFileName)
 
             // Change view to patrol page
             parentFragmentManager.beginTransaction()
@@ -101,9 +108,8 @@ class SettingsPage : Fragment() {
     }
 
     // Write patrol states in file
-    fun writeInFile(adapter: SimpleAdapter, fileName: String){
-        val patrolState = adapter.toPatrolState()
-        val json = Json.encodeToString(patrolState)
+    fun writeInFile(patrolStates: PatrolStates, fileName: String){
+        val json = Json.encodeToString(patrolStates)
         File(context?.filesDir, fileName).writeText(json)
     }
 

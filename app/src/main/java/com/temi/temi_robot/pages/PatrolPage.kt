@@ -1,7 +1,6 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.pages
 
 import android.content.Context
-import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -13,14 +12,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
+import com.temi.temi_robot.MainActivity
+import com.temi.temi_robot.R
+import com.temi.temi_robot.RobotController
 
 class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
 
     private lateinit var robotController: RobotController
-    private lateinit var adapter: SimpleAdapter
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
 
@@ -28,7 +28,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
     override fun onAttach(context: Context) {
         super.onAttach(context)
         robotController = (activity as MainActivity).robotController
-        adapter = (activity as MainActivity).adapter!!
         connectivityManager = (activity as MainActivity).connectivityManager
     }
 
@@ -58,6 +57,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
+
         connectivityManager.registerNetworkCallback(request, networkCallback)
 
         // Hide top bar
@@ -97,15 +97,13 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
                 .addToBackStack(null)
                 .commit()
         }
-
         return view
     }
 
     // Robot behavior on start
     fun initBehavior(){
-        robotController.setLocations(adapter.getItems())
         robotController.setBlockMode(false)
-        robotController.patrol(robotController.getLocations())
+        robotController.patrol()
         robotController.hideTopBar()
         robotController.setVolume(4)
         robotController.toggleWakeup(true)

@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.pages
 
 import android.content.Context
 import android.os.Bundle
@@ -7,6 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
+import com.temi.temi_robot.LoadingScreen
+import com.temi.temi_robot.MainActivity
+import com.temi.temi_robot.R
+import com.temi.temi_robot.RobotController
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -72,7 +76,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
         val body = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("http://192.168.1.20:5000/process") // Replace with server URL
+            .url("http://192.168.198.124:5000/process") // Replace with server URL
             .post(body)
             .build()
 
