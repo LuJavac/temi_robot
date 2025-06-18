@@ -188,12 +188,12 @@ class RobotController(private val mapName: String):
     }
 
     // Speech
-    fun speak(speech: String, haveFace: Boolean = true) { // Make the robot speak
+    fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
         // Creating TTS request before speaking
         val request = TtsRequest.create(
             speech = speech,
-            isShowOnConversationLayer = false,
-            showAnimationOnly = haveFace,
+            isShowOnConversationLayer = subtitles,
+            showAnimationOnly = !subtitles,
             language = TtsRequest.Language.EN_US
         )
         // Speaking with sdk function
@@ -250,7 +250,7 @@ class RobotController(private val mapName: String):
             return
         }
         val participant = listOf(Participant(peerId = librarianID.toString(), platform = Platform.MOBILE))
-        robot.startMeeting(participant, firstParticipantJoinedAsHost = true, blockRobotInteraction = false)
+        robot.startMeeting(participant, firstParticipantJoinedAsHost = false, blockRobotInteraction = true)
     }
 
     // Permissions
@@ -414,12 +414,6 @@ class RobotController(private val mapName: String):
 
     override fun onTelepresenceStatusChanged(callState: CallState) {
         when(callState.state){
-            CallState.State.STARTED -> {
-
-            }
-            CallState.State.INITIALIZED -> {
-
-            }
             CallState.State.ENDED -> {
                 setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
@@ -451,8 +445,7 @@ class RobotController(private val mapName: String):
                 backToPatrolCallback?.onBackToPatrol()
             }
             else -> {
-                setBlockMode(false)
-                backToPatrolCallback?.onBackToPatrol()
+
             }
         }
     }

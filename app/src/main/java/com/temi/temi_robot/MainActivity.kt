@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.temi.temi_robot.pages.FirstPage
+import com.temi.temi_robot.pages.PatrolPage
 
 // Activity class
 class MainActivity : AppCompatActivity() {

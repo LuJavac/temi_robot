@@ -13,7 +13,7 @@ os.environ["OPENAI_API_KEY"] = config.apikey
 
 def construct_index(directory_path):
     max_input_size = 4096
-    num_outputs = 512
+    num_outputs = 490
     max_chunk_overlap = 0.2
     chunk_size_limit = 600
 
