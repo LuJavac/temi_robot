@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.R
 
+// Page to enter password to access the setting page
 class PasswordPage : Fragment(){
     private val correctPassword = "nyp123"
 
@@ -60,7 +61,6 @@ class PasswordPage : Fragment(){
 
         // When cancelling go back to patrol page
         buttonCancel.setOnClickListener {
-            // Go back to patrol page
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, PatrolPage())
                 .addToBackStack(null)

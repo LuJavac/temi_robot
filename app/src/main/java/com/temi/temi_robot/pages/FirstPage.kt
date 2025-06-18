@@ -16,6 +16,7 @@ import com.temi.temi_robot.SimpleAdapter
 import kotlinx.serialization.json.Json
 import java.io.File
 
+// Class for FirstPage when app is just opened
 class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback{
 
     private lateinit var robotController: RobotController
@@ -76,7 +77,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
                 robotController.loadMap()
             }
         } else {
-            // Change view to restart page
+            // Change view to restart page if need to ask new permissions
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, RestartPage())
                 .addToBackStack(null)

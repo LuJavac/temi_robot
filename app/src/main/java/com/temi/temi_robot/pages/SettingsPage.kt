@@ -64,12 +64,14 @@ class SettingsPage : Fragment() {
             // Getting locations from adapter and setting them in robot controller
             val patrolStates = adapter.updatePatrolStates()
 
+            // Checking if the number of locations is sufficient, otherwise ask to choose again
             if(patrolStates.getPatrolLocations().size < 3){
                 robotController.setBlockMode(true)
                 robotController.speak("Please select at least 3 locations to start patrolling")
                 return@setOnClickListener
             }
 
+            // Set the patrol states to the robot
             robotController.setPatrolStates(patrolStates)
 
             //Write patrolState in file

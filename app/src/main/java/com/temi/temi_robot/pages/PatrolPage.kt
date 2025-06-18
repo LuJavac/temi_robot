@@ -19,6 +19,7 @@ import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
 
+// Page to display when the robot is patrolling
 class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback{
 
     private lateinit var robotController: RobotController
@@ -39,12 +40,12 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
     ): View? {
         val view = inflater.inflate(R.layout.layout_patrol, container, false)
 
-        // Adding network callback to detect system Wi-FI deconnections
+        // Going to lost connection page when Wi-Fi is disconnected and moving the robot to home base
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
                 super.onLost(network)
 
-                // Disconnected
+                // Sending temi to home base
                 robotController.sendTemiToHomeBase()
 
                 // Change view to lost connection page
@@ -55,10 +56,10 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
             }
         }
 
+        // Registering callback to detect system Wi-FI changes
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
-
         connectivityManager.registerNetworkCallback(request, networkCallback)
 
 
@@ -128,6 +129,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
             .commit()
     }
 
+    // When meeting started, save last page before leaving for call
     override fun onMeetingStarted() {
         // Save last page before leaving for call
         val prefs = requireActivity().getSharedPreferences("temi_state", Context.MODE_PRIVATE)
@@ -137,6 +139,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         }
     }
 
+    // Unregistering callback to prevent memory leaks
     override fun onDestroy() {
         super.onDestroy()
         connectivityManager.unregisterNetworkCallback(networkCallback)

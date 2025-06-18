@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 
+// Class for lost connection page when Wi-Fi is disconnected
 class LostConnectionPage : Fragment(){
 
     private lateinit var connectivityManager: ConnectivityManager
@@ -35,7 +36,7 @@ class LostConnectionPage : Fragment(){
         // View layout
         val view = inflater.inflate(R.layout.layout_lost_connection, container, false)
 
-        // Adding network callback to detect system Wi-FI deconnections
+        // Going back to patrol page when Wi-Fi is reconnected
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
@@ -47,6 +48,8 @@ class LostConnectionPage : Fragment(){
                     .commit()
             }
         }
+
+        // Registering callback to detect system Wi-FI changes
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
@@ -56,14 +59,16 @@ class LostConnectionPage : Fragment(){
         // Nyp logo on patrol interface and red button to write the restart message
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
+        // Adding button just for decoration in that case
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
-
         interactionButton.setOnClickListener{
 
         }
+
         return view
     }
 
+    // Unregistering callback to prevent memory leaks
     override fun onDestroy() {
         super.onDestroy()
         connectivityManager.unregisterNetworkCallback(networkCallback)

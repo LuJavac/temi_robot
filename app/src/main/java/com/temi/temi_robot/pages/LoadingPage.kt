@@ -17,6 +17,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 
+// Class for loading page when sending requests to python server
 class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
     private lateinit var robotController: RobotController
     private lateinit var request: String
@@ -31,7 +32,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
 
     }
 
-    // Creates view for page
+    // Creates the view for the page
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -86,7 +87,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
                 robotController.speak("Sorry I couldn't send data to the server")
             }
 
-            // Behavior when receiving server response
+            // Speaking server response or the error message
             override fun onResponse(call: Call, response: Response) {
                 response.use {
                     if (it.isSuccessful) {

@@ -9,6 +9,7 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.R
 
+// Class for restart page when robot needs to restart after granting new permissions
 class RestartPage : Fragment(){
 
     override fun onCreateView(
@@ -22,8 +23,8 @@ class RestartPage : Fragment(){
         // Nyp logo on patrol interface and red button to write the restart message
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
+        // Adding button just for decoration in that case
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
-
         interactionButton.setOnClickListener{
 
         }

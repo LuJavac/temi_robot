@@ -37,10 +37,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        // Getting last fragment saved and if needed to load it
         val prefs = getSharedPreferences("temi_state", MODE_PRIVATE)
         val shouldRestore = prefs.getBoolean("should_restore_fragment", false)
         val fragmentName = prefs.getString("last_fragment", null)
 
+        // If needed, load the last fragment saved
         if (shouldRestore && fragmentName != null) {
             try {
                 val fragmentClass = Class.forName(fragmentName).asSubclass(Fragment::class.java)
@@ -59,12 +61,15 @@ class MainActivity : AppCompatActivity() {
                     .commit()
             }
         }
+
+        // Deactivate the flag after use, so that we load the last saved fragment only once after starting a meeting
         prefs.edit { putBoolean("should_restore_fragment", false) }
     }
 
     // Release resources on destroy
     override fun onDestroy() {
         super.onDestroy()
+        // Do not need to restore last fragment saved after restarting/destroying the app
         getSharedPreferences("temi_state", MODE_PRIVATE).edit {
             putBoolean("should_restore_fragment", false)
                 .remove("last_fragment")

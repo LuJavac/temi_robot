@@ -1,6 +1,5 @@
 package com.temi.temi_robot
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,6 +58,7 @@ class SimpleAdapter(private var patrolStates: PatrolStates) :
         notifyItemMoved(fromPosition, toPosition)
     }
 
+    // Updating the patrol states after choosing a new order with the adapter
     fun updatePatrolStates(): PatrolStates {
         patrolStates.setLocations(items)
         patrolStates.setStates(itemStates)

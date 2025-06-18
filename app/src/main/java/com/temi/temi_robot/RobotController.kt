@@ -19,7 +19,7 @@ import com.robotemi.sdk.permission.Permission
 import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 
-// Robot control class
+// Robot controller class
 class RobotController(private val mapName: String):
     Robot.AsrListener,
     Robot.TtsListener,
@@ -173,6 +173,7 @@ class RobotController(private val mapName: String):
         lastRequestTime = System.currentTimeMillis()
     }
 
+    // Custom functions
     private fun isIntoList(request: String, list1: List<String>, list2: List<String> = emptyList()): Boolean {
         if(list2.isEmpty()){
             return list1.any { word -> request.contains(word, ignoreCase = true) }
