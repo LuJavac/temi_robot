@@ -151,6 +151,7 @@ class RobotController(private val mapName: String):
     private var mapReadyCallback: MapReadyCallback? = null
     private var requestReadyCallback: RequestReadyCallback? = null
     private var backToPatrolCallback: BackToPatrolCallback? = null
+    private var meetingStartedCallback: MeetingStartedCallback? = null
 
     /////////// General functions
 
@@ -338,6 +339,15 @@ class RobotController(private val mapName: String):
         this.backToPatrolCallback = callback
     }
 
+    // Personal interface and callback for when a meeting is started
+    interface MeetingStartedCallback {
+        fun onMeetingStarted()
+    }
+
+    fun setMeetingStartedCallback(callback: MeetingStartedCallback) {
+        this.meetingStartedCallback = callback
+    }
+
     // Robot SDK overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
@@ -478,6 +488,7 @@ class RobotController(private val mapName: String):
             }
             else {
                 setBlockMode(true)
+                meetingStartedCallback?.onMeetingStarted()
                 callLibrarian()
             }
         }

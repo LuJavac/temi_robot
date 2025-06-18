@@ -4,8 +4,10 @@ package com.temi.temi_robot
 import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.PatrolPage
+import androidx.core.content.edit
 
 // Activity class
 class MainActivity : AppCompatActivity() {
@@ -32,8 +34,40 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        val prefs = getSharedPreferences("temi_state", MODE_PRIVATE)
+        val shouldRestore = prefs.getBoolean("should_restore_fragment", false)
+        val fragmentName = prefs.getString("last_fragment", null)
+
+        if (shouldRestore && fragmentName != null) {
+            try {
+                val fragmentClass = Class.forName(fragmentName).asSubclass(Fragment::class.java)
+                val fragment = fragmentClass.getDeclaredConstructor().newInstance()
+
+                // Replace by last displayed fragment
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .commit()
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Load First Page in case of error
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, PatrolPage())
+                    .commit()
+            }
+        }
+        prefs.edit { putBoolean("should_restore_fragment", false) }
+    }
+
     // Release resources on destroy
     override fun onDestroy() {
         super.onDestroy()
+        getSharedPreferences("temi_state", MODE_PRIVATE).edit {
+            putBoolean("should_restore_fragment", false)
+                .remove("last_fragment")
+        }
     }
 }

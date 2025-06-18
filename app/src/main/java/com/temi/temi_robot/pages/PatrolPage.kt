@@ -17,8 +17,9 @@ import com.robotemi.sdk.constants.HardButton
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import androidx.core.content.edit
 
-class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
+class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback{
 
     private lateinit var robotController: RobotController
     private lateinit var connectivityManager: ConnectivityManager
@@ -60,11 +61,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
 
         connectivityManager.registerNetworkCallback(request, networkCallback)
 
+
         // Hide top bar
         robotController.hideTopBar()
 
         // Set Callback to listen to user request event
         robotController.setRequestReadyCallback(this)
+
+        // Set Callback to listen to meeting started event
+        robotController.setMeetingStartedCallback(this)
 
         // Robot behavior at initialization
         initBehavior()
@@ -121,6 +126,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback{
             .replace(R.id.fragment_container, LoadingPage())
             .addToBackStack(null)
             .commit()
+    }
+
+    override fun onMeetingStarted() {
+        // Save last page before leaving for call
+        val prefs = requireActivity().getSharedPreferences("temi_state", Context.MODE_PRIVATE)
+        prefs.edit {
+            putString("last_fragment", this::class.java.name)
+                .putBoolean("should_restore_fragment", true)
+        }
     }
 
     override fun onDestroy() {
