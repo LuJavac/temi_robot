@@ -63,13 +63,13 @@ class RobotController(private val mapName: String):
     private val keywords1_63 = listOf("idea space")
 
     private val answer_64= "Please follow me, we are going to the smart learning hub."
-    private val keywords1_64 = listOf("smart learning hub", "smart learning")
+    private val keywords1_64 = listOf("smart learning hub", "smart learning", "learning hub")
 
     private val answer_65= "Please follow me, we are going to the management collection."
-    private val keywords1_65 = listOf("management","management collection", "books")
+    private val keywords1_65 = listOf("management")
 
     private val answer_66= "Please follow me, we are going to the learn for life pod."
-    private val keywords1_66 = listOf("learn life pod")
+    private val keywords1_66 = listOf("learn life pod", "learn for life")
 
     private val answer_67= "Please follow me, we are going to the dvds."
     private val keywords1_67 = listOf("dvds", "cds", "dvd", "cd")
@@ -87,7 +87,7 @@ class RobotController(private val mapName: String):
     private val keywords1_71 = listOf("magazines", "magazines collection", "magazines books")
 
     private val answer_72= "Please follow me, we are going to the lifestyle books."
-    private val keywords1_72 = listOf("lifestyle books")
+    private val keywords1_72 = listOf("lifestyle books", "lifestyle book", "life style")
 
     private val answer_73= "Please follow me, we are going to the cafe."
     private val keywords1_73 = listOf("cafe", "cafeteria")
@@ -96,13 +96,28 @@ class RobotController(private val mapName: String):
     private val keywords1_74 = listOf("smart space")
 
     private val answer_75= "Please follow me, we are going to the design collection."
-    private val keywords1_75 = listOf("design collection")
+    private val keywords1_75 = listOf("design")
 
     private val answer_76= "Please follow me, we are going to the health sciences."
-    private val keywords1_76 = listOf("health sciences")
+    private val keywords1_76 = listOf("health sciences", "health science")
 
     private val answer_77= "Please follow me, we are going to the life sciences collection."
-    private val keywords1_77 = listOf("life sciences")
+    private val keywords1_77 = listOf("life sciences", "health science")
+
+    private val answer_78= "Please follow me, we are going to the fiction books."
+    private val keywords1_78 = listOf("fiction")
+
+    private val answer_79= "Please follow me, we are going to the project reports."
+    private val keywords1_79 = listOf("project reports", "project papers", "project report", "project paper")
+
+    private val answer_80= "Please follow me, we are going to the photocopying stations."
+    private val keywords1_80 = listOf("photocopy", "copy", "photocopying", "print", "printing")
+
+    private val answer_81= "Please follow me, we are going to the performance stage."
+    private val keywords1_81 = listOf("performance", "performances")
+
+    private val answer_82= "Please follow me, we are going to the lifestyle media."
+    private val keywords1_82 = listOf("lifestyle media")
 
 
     // Time values
@@ -553,6 +568,32 @@ class RobotController(private val mapName: String):
             speak(answer_77)
             goTo("life sciences collection")
         }
+        else if (isIntoList(asrResult, keywords1_78, questions)){
+            robot.finishConversation()
+            speak(answer_78)
+            goTo("fiction books")
+        }
+        else if (isIntoList(asrResult, keywords1_79, questions)){
+            robot.finishConversation()
+            speak(answer_79)
+            goTo("project reports")
+        }
+        else if (isIntoList(asrResult, keywords1_80, questions)){
+            robot.finishConversation()
+            speak(answer_80)
+            goTo("photocopying stations")
+        }
+        else if (isIntoList(asrResult, keywords1_81, questions)){
+            robot.finishConversation()
+            speak(answer_81)
+            goTo("performance stage")
+        }
+        else if (isIntoList(asrResult, keywords1_82, questions)){
+            robot.finishConversation()
+            speak(answer_82)
+            goTo("lifestyle media")
+        }
+
         else {
             robot.finishConversation()
             isAskSatisfiedRequest = true
