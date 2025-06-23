@@ -45,11 +45,22 @@ class PasswordPage : Fragment(){
         buttonGo.setOnClickListener {
             val inputPassword = editTextPassword.text.toString()
             if (inputPassword == correctPassword) {
-                // Change view to settings page
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, SettingsPage())
-                    .addToBackStack(null)
-                    .commit()
+
+                // Know where we came from
+                val from = arguments?.getString("from")
+                if (from == "patrolSettings") {
+                    // Change view to settings page
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, SettingsPage())
+                        .addToBackStack(null)
+                        .commit()
+                } else {
+                    // Change view to time page
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, TimePage())
+                        .addToBackStack(null)
+                        .commit()
+                }
             } else {
                 AlertDialog.Builder(requireContext())
                     .setTitle("Access Denied")

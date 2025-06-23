@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Main centered content -->
+    <LinearLayout
+        android:id="@+id/mainContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_centerInParent="true"
+        android:paddingHorizontal="24dp">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/textSelectMode"
+            android:layout_width="203dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_brown_transparent"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Time slot"
+            android:textColor="@color/white"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <!-- Ligne for two vertical columns for Starting / Ending + CheckBox on the right -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <!-- Column : Starting hour + HH:MM -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textStartLabel"
+                    android:layout_width="147dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_beige_transparent"
+                    android:text="Starting hour"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <EditText
+                        android:id="@+id/editTextHoursStart"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="@string/hour"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:background="@drawable/drawable_password_background"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text=":"
+                        android:textSize="24sp"
+                        android:layout_marginHorizontal="4dp"
+                        android:textStyle="bold"
+                        />
+
+                    <EditText
+                        android:id="@+id/editTextMinutesStart"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="@string/minute"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:background="@drawable/drawable_password_background"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="24sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Horizontal space between the two columns -->
+            <Space
+                android:layout_width="50dp"
+                android:layout_height="match_parent" />
+
+            <!-- Column : Ending hour + HH:MM -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/textEndLabel"
+                    android:layout_width="152dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_beige_transparent"
+                    android:gravity="center"
+                    android:text="Ending hour"
+                    android:textColor="#000000"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <EditText
+                        android:id="@+id/editTextHoursEnd"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="@string/hour"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:background="@drawable/drawable_password_background"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="24sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text=":"
+                        android:textSize="24sp"
+                        android:layout_marginHorizontal="4dp"
+                        android:textStyle="bold"/>
+
+                    <EditText
+                        android:id="@+id/editTextMinutesEnd"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:hint="@string/minute"
+                        android:inputType="number"
+                        android:maxLength="2"
+                        android:background="@drawable/drawable_password_background"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="24sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Checkbox -->
+            <CheckBox
+                android:id="@+id/checkBoxActive"
+                android:layout_width="67dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="16dp"
+                android:button="@drawable/checkbox_selector"
+                android:checked="true"
+                android:text="@string/active" />
+        </LinearLayout>
+    </LinearLayout>
+</merge>

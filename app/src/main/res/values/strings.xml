@@ -16,4 +16,10 @@
     <string name="cancel">Cancel</string>
     <string name="please_restart_the_application">Please restart the application</string>
     <string name="i_lost_connection_please_let_me_return_to_home_base_and_restart_me">I LOST CONNECTION PLEASE LET ME RETURN TO HOME BASE AND RESTART ME</string>
+    <string name="time_settings">Time settings</string>
+    <string name="hour">Hour</string>
+    <string name="minute">Minute</string>
+    <string name="active">Active</string>
+    <string name="validate_time">Validate Time</string>
+    <string name="add_new_time_slot">Add new time slot</string>
 </resources>

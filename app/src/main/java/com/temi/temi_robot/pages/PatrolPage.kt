@@ -81,6 +81,11 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         // Buttons
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
         val settingsButton = view.findViewById<ImageButton>(R.id.settingsButton)
+        val timeButton = view.findViewById<ImageButton>(R.id.timeButton)
+
+        // Defining arguments for navigation
+        val passwordPage = PasswordPage()
+        val args = Bundle()
 
         // User button behavior
         interactionButton.setOnClickListener{
@@ -97,12 +102,36 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
             robotController.stopMovement()
             robotController.setBlockMode(true)
 
+            // Passing argument to password page to know where we come from
+            args.putString("from", "patrolSettings")
+            passwordPage.arguments = args
+
             // Change view to settings page
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, PasswordPage())
                 .addToBackStack(null)
                 .commit()
         }
+
+        // Time button behavior
+        timeButton.setOnClickListener {
+            // Stop movement while on time page
+            robotController.stopMovement()
+            robotController.setBlockMode(true)
+
+            // Passing argument to password page to know where we come from
+            args.putString("from", "timeSettings")
+            passwordPage.arguments = args
+
+            // Change view to settings page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, PasswordPage())
+                .addToBackStack(null)
+                .commit()
+        }
+
+
+
         return view
     }
 
