@@ -44,7 +44,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
                 super.onLost(network)
 
                 // Sending temi to home base
-                RobotController.sendTemiToHomeBase()
+                RobotController.goToHomeBase()
 
                 // Change view to lost connection page
                 parentFragmentManager.beginTransaction()

@@ -261,7 +261,7 @@ object RobotController:
         getRobot()?.stopMovement()
     }
 
-    fun sendTemiToHomeBase(){
+    fun goToHomeBase(){
         getRobot()?.goTo("home base")
     }
 
@@ -403,6 +403,9 @@ object RobotController:
         descriptionId: Int,
         description: String
     ) {
+        if(location == "home base"){
+            setBlockMode(true)
+        }
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
             if(isMoveRequest){
                 isMoveRequest = false

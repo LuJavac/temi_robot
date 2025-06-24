@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -64,8 +65,9 @@ class TimeSettingsPage : Fragment() {
                 val minutesStart = slotView.findViewById<EditText>(R.id.editTextMinutesStart).text.toString()
                 val hoursEnd = slotView.findViewById<EditText>(R.id.editTextHoursEnd).text.toString()
                 val minutesEnd = slotView.findViewById<EditText>(R.id.editTextMinutesEnd).text.toString()
+                val isActive = slotView.findViewById<CheckBox>(R.id.checkBoxActive).isChecked
 
-                val timeSlot = TimeSlot(hoursStart, minutesStart, hoursEnd, minutesEnd)
+                val timeSlot = TimeSlot(hoursStart, minutesStart, hoursEnd, minutesEnd, isActive)
 
                 if (wrongValues(timeSlot)) {
                     return@setOnClickListener
@@ -82,7 +84,9 @@ class TimeSettingsPage : Fragment() {
 
             // Plan an alarm for each time slot
             timeSlots.forEachIndexed  { index, slot ->
-                alarmScheduler.scheduleTimeSlotAlarm(slot, index)
+                if(slot.getState()){
+                    alarmScheduler.scheduleTimeSlotAlarm(slot, index)
+                }
             }
 
             // Change view to patrol page

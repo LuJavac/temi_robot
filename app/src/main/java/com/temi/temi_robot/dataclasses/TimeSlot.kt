@@ -1,6 +1,6 @@
 package com.temi.temi_robot.dataclasses
 
-data class TimeSlot (private val hoursStart: String, private val minutesStart: String, private val hoursEnd: String, private val minutesEnd: String){
+data class TimeSlot (private val hoursStart: String, private val minutesStart: String, private val hoursEnd: String, private val minutesEnd: String, private val isActive: Boolean){
 
     // Returns if one of the values of the time slots has not been filled by the user
     fun oneIsBlank(): Boolean{
@@ -45,5 +45,17 @@ data class TimeSlot (private val hoursStart: String, private val minutesStart: S
 
     fun getStartingMinute(): String{
         return minutesStart
+    }
+
+    fun getEndingHour(): String{
+        return hoursEnd
+    }
+
+    fun getEndingMinute(): String{
+        return minutesEnd
+    }
+
+    fun getState(): Boolean{
+        return isActive
     }
 }

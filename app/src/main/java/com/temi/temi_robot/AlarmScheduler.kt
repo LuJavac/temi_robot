@@ -17,15 +17,6 @@ class AlarmScheduler(private var context: Context){
         // Get android alarm planning service
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        // Starting TimeListener service even when app not currently executed
-        val intent = Intent(context, TimeListener::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            requestCode,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
         // Converting time slot into Unix calendar unit time
         val startMillis = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
@@ -35,13 +26,54 @@ class AlarmScheduler(private var context: Context){
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
-        // Check if time slot start time is not in the past. If in the past don't do anything.
-        if (startMillis > System.currentTimeMillis()) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                startMillis,
-                pendingIntent
-            )
+        /// Alarm for start
+        // Starting TimeListener service even when app not currently executed
+        val startIntent = Intent(context, TimeListener::class.java).apply {
+            putExtra("type", "start")
+            putExtra("requestCode", requestCode)
+            putExtra("timestamp", startMillis)
         }
+
+        val startPendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            startIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+
+        // Alarm for end
+        val endMillis = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, slot.getEndingHour().toInt())
+            set(Calendar.MINUTE, slot.getEndingMinute().toInt())
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+        val endIntent = Intent(context, TimeListener::class.java).apply {
+            putExtra("type", "end")
+            putExtra("requestCode", requestCode + 1000)// offset to avoid conflicts
+            putExtra("timestamp", endMillis)
+        }
+
+        val endPendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode + 1000,
+            endIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            startMillis,
+            startPendingIntent
+        )
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            endMillis,
+            endPendingIntent
+        )
+
     }
 }
