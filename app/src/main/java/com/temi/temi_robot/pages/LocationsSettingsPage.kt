@@ -12,16 +12,16 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.temi.temi_robot.MainActivity
-import com.temi.temi_robot.PatrolStates
+import com.temi.temi_robot.dataclasses.PatrolStates
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
-import com.temi.temi_robot.SimpleAdapter
+import com.temi.temi_robot.ui_utils.SimpleAdapter
 import kotlinx.serialization.encodeToString
 import java.io.File
 import kotlinx.serialization.json.Json
 
 // Settings page class
-class SettingsPage : Fragment() {
+class LocationsSettingsPage : Fragment() {
 
     private lateinit var robotController: RobotController
     private lateinit var recyclerView: RecyclerView

@@ -51,13 +51,13 @@ class PasswordPage : Fragment(){
                 if (from == "patrolSettings") {
                     // Change view to settings page
                     parentFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, SettingsPage())
+                        .replace(R.id.fragment_container, LocationsSettingsPage())
                         .addToBackStack(null)
                         .commit()
                 } else {
                     // Change view to time page
                     parentFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, TimePage())
+                        .replace(R.id.fragment_container, TimeSettingsPage())
                         .addToBackStack(null)
                         .commit()
                 }

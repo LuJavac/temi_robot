@@ -18,6 +18,8 @@ import com.robotemi.sdk.permission.OnRequestPermissionResultListener
 import com.robotemi.sdk.permission.Permission
 import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
+import com.temi.temi_robot.dataclasses.PatrolStates
+import com.temi.temi_robot.dataclasses.TimeSlot
 
 // Robot controller class
 class RobotController(private val mapName: String):
@@ -33,6 +35,7 @@ class RobotController(private val mapName: String):
 {
     private val robot = Robot.getInstance() // Create robot object
     private lateinit var patrolStates: PatrolStates
+    private lateinit var timeSlots: List<TimeSlot>
 
     // Add listeners to robot instance
     init {
@@ -165,8 +168,12 @@ class RobotController(private val mapName: String):
         this.patrolStates = patrolStates
     }
 
-    fun getPatrolStates(): PatrolStates{
+    fun getPatrolStates(): PatrolStates {
         return this.patrolStates
+    }
+
+    fun setTimeSlots(timeSlots: List<TimeSlot>){
+        this.timeSlots = timeSlots
     }
 
     fun setLastRequestTimeNow(){
@@ -417,7 +424,10 @@ class RobotController(private val mapName: String):
             }
             0 -> {
                 val locationsWithoutHome = robot.locations.filter{it.lowercase() != "home base"}
-                patrolStates = PatrolStates(locationsWithoutHome, locationsWithoutHome.associateWith { true }.toMutableMap())
+                patrolStates = PatrolStates(
+                    locationsWithoutHome,
+                    locationsWithoutHome.associateWith { true }.toMutableMap()
+                )
                 mapReadyCallback?.onMapIsReady()
             }
             else -> {

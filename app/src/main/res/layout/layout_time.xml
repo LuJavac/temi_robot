@@ -35,7 +35,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
     </LinearLayout>
-    <!-- Validation button -->
+
+    <!-- Add slot button -->
     <Button
         android:id="@+id/btnAddSlot"
         android:layout_width="match_parent"

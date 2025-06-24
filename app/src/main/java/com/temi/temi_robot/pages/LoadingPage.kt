@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
-import com.temi.temi_robot.LoadingScreen
+import com.temi.temi_robot.ui_utils.LoadingScreen
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController

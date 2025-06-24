@@ -1,12 +1,14 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.ui_utils
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.temi.temi_robot.R
+import com.temi.temi_robot.dataclasses.PatrolStates
 import java.util.Collections
-
 
 // Class for adapter objects to choose patrol locations order
 class SimpleAdapter(private var patrolStates: PatrolStates) :
@@ -17,7 +19,7 @@ class SimpleAdapter(private var patrolStates: PatrolStates) :
     // Item view holder with text view and checkbox
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById(R.id.textViewItem)
-        val checkBox: android.widget.CheckBox = view.findViewById(R.id.checkBox)
+        val checkBox: CheckBox = view.findViewById(R.id.checkBox)
     }
 
     // Create a view holder box

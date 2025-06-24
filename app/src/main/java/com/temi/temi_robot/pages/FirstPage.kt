@@ -9,10 +9,10 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
-import com.temi.temi_robot.PatrolStates
+import com.temi.temi_robot.dataclasses.PatrolStates
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
-import com.temi.temi_robot.SimpleAdapter
+import com.temi.temi_robot.ui_utils.SimpleAdapter
 import kotlinx.serialization.json.Json
 import java.io.File
 

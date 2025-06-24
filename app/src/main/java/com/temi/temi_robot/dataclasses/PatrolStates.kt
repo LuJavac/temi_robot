@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.dataclasses
 
 import kotlinx.serialization.Serializable
 

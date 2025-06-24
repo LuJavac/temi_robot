@@ -18,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
+    internal lateinit var timeListener: TimeListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
 
         // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // Monitors time and activates wake-up for patrolling
+        timeListener = TimeListener()
 
         // Load SettingsPage as default
         if (savedInstanceState == null) {

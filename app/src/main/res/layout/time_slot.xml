@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- Main centered content -->
     <LinearLayout
         android:id="@+id/mainContent"
@@ -49,7 +50,7 @@
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:gravity="center"/>
+                    android:gravity="center" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -77,8 +78,7 @@
                         android:text=":"
                         android:textSize="24sp"
                         android:layout_marginHorizontal="4dp"
-                        android:textStyle="bold"
-                        />
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/editTextMinutesStart"
@@ -146,7 +146,7 @@
                         android:text=":"
                         android:textSize="24sp"
                         android:layout_marginHorizontal="4dp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/editTextMinutesEnd"
@@ -172,6 +172,17 @@
                 android:button="@drawable/checkbox_selector"
                 android:checked="true"
                 android:text="@string/active" />
+
+            <!-- Delete button -->
+            <ImageButton
+                android:id="@+id/btnRemoveSlot"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/trash2"
+                android:contentDescription="@string/delete_slot"
+                app:tint="@android:color/black" />
         </LinearLayout>
     </LinearLayout>
 </merge>
