@@ -22,12 +22,10 @@ class TimeSettingsPage : Fragment() {
     private var timeslotCounter = 0
     private val timeSlotsMaxNumber = 3 // Max time slots number
     private lateinit var alarmScheduler: AlarmScheduler
-    private lateinit var robotController: RobotController
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        robotController = (activity as MainActivity).robotController
         alarmScheduler = AlarmScheduler(context)
     }
 
@@ -87,8 +85,12 @@ class TimeSettingsPage : Fragment() {
                 alarmScheduler.scheduleTimeSlotAlarm(slot, index)
             }
 
-            // Add time slots to robot memory
-            robotController.setTimeSlots(timeSlots.toList())
+            // Change view to patrol page
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, PatrolPage())
+                .addToBackStack(null)
+                .commit()
+
         }
     }
 

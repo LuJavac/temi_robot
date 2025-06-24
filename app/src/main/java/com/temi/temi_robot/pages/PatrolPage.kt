@@ -21,15 +21,13 @@ import androidx.core.content.edit
 
 // Page to display when the robot is patrolling
 class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback{
-
-    private lateinit var robotController: RobotController
+    
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        robotController = (activity as MainActivity).robotController
         connectivityManager = (activity as MainActivity).connectivityManager
     }
 
@@ -46,7 +44,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
                 super.onLost(network)
 
                 // Sending temi to home base
-                robotController.sendTemiToHomeBase()
+                RobotController.sendTemiToHomeBase()
 
                 // Change view to lost connection page
                 parentFragmentManager.beginTransaction()
@@ -64,13 +62,13 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
 
         // Hide top bar
-        robotController.hideTopBar()
+        RobotController.hideTopBar()
 
         // Set Callback to listen to user request event
-        robotController.setRequestReadyCallback(this)
+        RobotController.setRequestReadyCallback(this)
 
         // Set Callback to listen to meeting started event
-        robotController.setMeetingStartedCallback(this)
+        RobotController.setMeetingStartedCallback(this)
 
         // Robot behavior at initialization
         initBehavior()
@@ -89,18 +87,18 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
         // User button behavior
         interactionButton.setOnClickListener{
-            robotController.setDetectionModeOn(false, 0.5f)
-            robotController.setLastRequestTimeNow()
-            robotController.stopMovement()
-            robotController.resetInactivityTimer()
-            robotController.askQuestion("Hi, how can I help you ?")
+            RobotController.setDetectionModeOn(false, 0.5f)
+            RobotController.setLastRequestTimeNow()
+            RobotController.stopMovement()
+            RobotController.resetInactivityTimer()
+            RobotController.askQuestion("Hi, how can I help you ?")
         }
 
         // Settings button behavior
         settingsButton.setOnClickListener {
             // Stop movement while on setting page
-            robotController.stopMovement()
-            robotController.setBlockMode(true)
+            RobotController.stopMovement()
+            RobotController.setBlockMode(true)
 
             // Passing argument to password page to know where we come from
             args.putString("from", "patrolSettings")
@@ -108,7 +106,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
             // Change view to settings page
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PasswordPage())
+                .replace(R.id.fragment_container, passwordPage)
                 .addToBackStack(null)
                 .commit()
         }
@@ -116,8 +114,8 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         // Time button behavior
         timeButton.setOnClickListener {
             // Stop movement while on time page
-            robotController.stopMovement()
-            robotController.setBlockMode(true)
+            RobotController.stopMovement()
+            RobotController.setBlockMode(true)
 
             // Passing argument to password page to know where we come from
             args.putString("from", "timeSettings")
@@ -125,7 +123,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
             // Change view to settings page
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PasswordPage())
+                .replace(R.id.fragment_container, passwordPage)
                 .addToBackStack(null)
                 .commit()
         }
@@ -137,15 +135,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
     // Robot behavior on start
     fun initBehavior(){
-        robotController.setBlockMode(false)
-        robotController.patrol()
-        robotController.hideTopBar()
-        robotController.setVolume(4)
-        robotController.toggleWakeup(true)
-        robotController.setTopBadgeEnabled(false)
-        robotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
-        robotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
-        robotController.setLastRequestTimeNow()
+        RobotController.setBlockMode(false)
+        RobotController.patrol()
+        RobotController.hideTopBar()
+        RobotController.setVolume(4)
+        RobotController.toggleWakeup(true)
+        RobotController.setTopBadgeEnabled(false)
+        RobotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
+        RobotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
+        RobotController.setLastRequestTimeNow()
     }
 
     // When user request arrived, change view to loading page

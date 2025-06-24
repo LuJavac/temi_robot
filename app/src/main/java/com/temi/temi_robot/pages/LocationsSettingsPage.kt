@@ -22,16 +22,14 @@ import kotlinx.serialization.json.Json
 
 // Settings page class
 class LocationsSettingsPage : Fragment() {
-
-    private lateinit var robotController: RobotController
+    
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: SimpleAdapter
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        robotController = (activity as MainActivity).robotController
-        adapter = SimpleAdapter(robotController.getPatrolStates())
+        adapter = SimpleAdapter(RobotController.getPatrolStates())
     }
 
     override fun onCreateView(
@@ -43,7 +41,7 @@ class LocationsSettingsPage : Fragment() {
         val view = inflater.inflate(R.layout.layout_settings, container, false)
 
         // Hide top bar for choosing patrol locations
-        robotController.hideTopBar()
+        RobotController.hideTopBar()
 
         // Nyp logo on settings interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
@@ -66,13 +64,13 @@ class LocationsSettingsPage : Fragment() {
 
             // Checking if the number of locations is sufficient, otherwise ask to choose again
             if(patrolStates.getPatrolLocations().size < 3){
-                robotController.setBlockMode(true)
-                robotController.speak("Please select at least 3 locations to start patrolling")
+                RobotController.setBlockMode(true)
+                RobotController.speak("Please select at least 3 locations to start patrolling")
                 return@setOnClickListener
             }
 
             // Set the patrol states to the robot
-            robotController.setPatrolStates(patrolStates)
+            RobotController.setPatrolStates(patrolStates)
 
             //Write patrolState in file
             writeInFile(patrolStates, (activity as MainActivity).savePatrolStatesFileName)

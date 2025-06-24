@@ -19,10 +19,10 @@ import com.robotemi.sdk.permission.Permission
 import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 import com.temi.temi_robot.dataclasses.PatrolStates
-import com.temi.temi_robot.dataclasses.TimeSlot
+import java.lang.ref.WeakReference
 
 // Robot controller class
-class RobotController(private val mapName: String):
+object RobotController:
     Robot.AsrListener,
     Robot.TtsListener,
     OnRobotReadyListener,
@@ -33,21 +33,21 @@ class RobotController(private val mapName: String):
     OnLoadMapStatusChangedListener,
     OnTelepresenceStatusChangedListener(sessionId = "")
 {
-    private val robot = Robot.getInstance() // Create robot object
+    private var robotRef: WeakReference<Robot>? = null
+    private var mapName: String? = null
     private lateinit var patrolStates: PatrolStates
-    private lateinit var timeSlots: List<TimeSlot>
 
     // Add listeners to robot instance
-    init {
-        robot.addAsrListener(this)
-        robot.addTtsListener(this)
-        robot.addOnRobotReadyListener(this)
-        robot.addOnDetectionStateChangedListener(this)
-        robot.addOnGoToLocationStatusChangedListener(this)
-        robot.addOnDistanceToDestinationChangedListener(this)
-        robot.addOnRequestPermissionResultListener(this)
-        robot.addOnLoadMapStatusChangedListener(this)
-        robot.addOnTelepresenceStatusChangedListener(this)
+    fun setListeners(){
+        getRobot()?.addAsrListener(this)
+        getRobot()?.addTtsListener(this)
+        getRobot()?.addOnRobotReadyListener(this)
+        getRobot()?.addOnDetectionStateChangedListener(this)
+        getRobot()?.addOnGoToLocationStatusChangedListener(this)
+        getRobot()?.addOnDistanceToDestinationChangedListener(this)
+        getRobot()?.addOnRequestPermissionResultListener(this)
+        getRobot()?.addOnLoadMapStatusChangedListener(this)
+        getRobot()?.addOnTelepresenceStatusChangedListener(this)   
     }
 
     // Lists of keywords for approving or denying librarian call request
@@ -132,7 +132,7 @@ class RobotController(private val mapName: String):
     private val inactivityRunnable = Runnable {
         if(!blockMode){
             patrol()
-            robot.setDetectionModeOn(true, 0.5f)
+            getRobot()?.setDetectionModeOn(true, 0.5f)
         }
         if(isAskSatisfiedRequest) {
             isAskSatisfiedRequest = false
@@ -159,6 +159,16 @@ class RobotController(private val mapName: String):
     /////////// General functions
 
     // Getters and setters
+    fun setRobot(robot: Robot) {
+        robotRef = WeakReference(robot)
+    }
+
+    fun getRobot(): Robot? = robotRef?.get()
+
+    fun setMapName(name: String) {
+        mapName = name
+    }
+
     fun setBlockMode(value: Boolean) {
         blockMode = value
         setDetectionModeOn(!value, 0.5f)
@@ -170,10 +180,6 @@ class RobotController(private val mapName: String):
 
     fun getPatrolStates(): PatrolStates {
         return this.patrolStates
-    }
-
-    fun setTimeSlots(timeSlots: List<TimeSlot>){
-        this.timeSlots = timeSlots
     }
 
     fun setLastRequestTimeNow(){
@@ -192,23 +198,23 @@ class RobotController(private val mapName: String):
     // System functions
     fun hideTopBar()
     {
-        robot.hideTopBar()
+        getRobot()?.hideTopBar()
     }
 
     fun setVolume(volume : Int){
-        robot.volume = volume
+        getRobot()?.volume = volume
     }
 
     fun toggleWakeup(disabled : Boolean){
-        robot.toggleWakeup(disabled)
+        getRobot()?.toggleWakeup(disabled)
     }
 
     fun setTopBadgeEnabled(enabled : Boolean){
-        robot.topBadgeEnabled = enabled
+        getRobot()?.topBadgeEnabled = enabled
     }
 
     fun setHardButtonMode(type : HardButton, mode : HardButton.Mode){
-        robot.setHardButtonMode(type, mode)
+        getRobot()?.setHardButtonMode(type, mode)
     }
 
     // Speech
@@ -221,69 +227,69 @@ class RobotController(private val mapName: String):
             language = TtsRequest.Language.EN_US
         )
         // Speaking with sdk function
-        robot.speak(request)
+        getRobot()?.speak(request)
     }
 
     fun askQuestion(question: String) {
-        robot.askQuestion(question)
+        getRobot()?.askQuestion(question)
     }
 
 
     // Movements and map
     fun loadMap() {
-        val maps = robot.getMapList()
-        val map = maps.find { it.name == mapName }
+        val maps = getRobot()?.getMapList()
+        val map = maps?.find { it.name == mapName }
         if(map == null){
             patrolStates.setLocations(emptyList())
             readyCallback?.onRobotIsReady()
         }
         else {
-            robot.loadMap(map.id)
+            getRobot()?.loadMap(map.id)
         }
     }
 
     fun goTo(location: String) {
         isMoveRequest = true
-        robot.goTo(location)
+        getRobot()?.goTo(location)
     }
 
     fun patrol(){
-        robot.patrol(patrolStates.getPatrolLocations(), times = 0)
+        getRobot()?.patrol(patrolStates.getPatrolLocations(), times = 0)
     }
 
     fun stopMovement(){
-        robot.stopMovement()
+        getRobot()?.stopMovement()
     }
 
     fun sendTemiToHomeBase(){
-        robot.goTo("home base")
+        getRobot()?.goTo("home base")
     }
 
     // Person Detection
     fun setDetectionModeOn(on : Boolean, distance : Float){
-        robot.setDetectionModeOn(on, distance)
+        getRobot()?.setDetectionModeOn(on, distance)
     }
 
     // Calls
     private fun callLibrarian(){
-        val contacts = robot.allContact
-        val librarianID = contacts.find { it.name == "Johan" }?.userId
+        val contacts = getRobot()?.allContact
+        val librarianID = contacts?.find { it.name == "Johan" }?.userId
         if(librarianID == null){
             setBlockMode(false)
             speak("I couldn't find the librarian in the contact list")
             return
         }
         val participant = listOf(Participant(peerId = librarianID.toString(), platform = Platform.MOBILE))
-        robot.startMeeting(participant, firstParticipantJoinedAsHost = false, blockRobotInteraction = true)
+        getRobot()?.startMeeting(participant, firstParticipantJoinedAsHost = false, blockRobotInteraction = true)
     }
 
     // Permissions
-    private fun checkSelfPermission(permission: Permission) : Int{
-        return robot.checkSelfPermission(permission)
+    private fun checkSelfPermission(permission: Permission) : Int? {
+        return getRobot()?.checkSelfPermission(permission)
     }
 
     private fun requestPermissions(permissions: List<Permission>, requestCode: Int = 4){
-        robot.requestPermissions(permissions, requestCode)
+        getRobot()?.requestPermissions(permissions, requestCode)
     }
 
     fun askRequiredPermissions(): Boolean {
@@ -369,7 +375,7 @@ class RobotController(private val mapName: String):
                 return
             }
             patrol()
-            robot.setDetectionModeOn(true, 0.5f)
+            getRobot()?.setDetectionModeOn(true, 0.5f)
         }
     }
 
@@ -385,9 +391,9 @@ class RobotController(private val mapName: String):
             }
             lastRequestTime = currentTime
 
-            robot.stopMovement()
-            robot.setDetectionModeOn(false, 0.5f)
-            robot.askQuestion("Hi, how can I help you ?")
+            getRobot()?.stopMovement()
+            getRobot()?.setDetectionModeOn(false, 0.5f)
+            getRobot()?.askQuestion("Hi, how can I help you ?")
         }
     }
 
@@ -423,12 +429,14 @@ class RobotController(private val mapName: String):
                 return
             }
             0 -> {
-                val locationsWithoutHome = robot.locations.filter{it.lowercase() != "home base"}
-                patrolStates = PatrolStates(
-                    locationsWithoutHome,
-                    locationsWithoutHome.associateWith { true }.toMutableMap()
-                )
-                mapReadyCallback?.onMapIsReady()
+                val locationsWithoutHome = getRobot()?.locations?.filter{it.lowercase() != "home base"}
+                if (locationsWithoutHome != null){
+                    patrolStates = PatrolStates(
+                        locationsWithoutHome,
+                        locationsWithoutHome.associateWith { true }.toMutableMap()
+                    )
+                    mapReadyCallback?.onMapIsReady()
+                }
             }
             else -> {
                 mapReadyCallback?.onMapIsReady()
@@ -491,7 +499,7 @@ class RobotController(private val mapName: String):
 
         // Managing satisfied call request
         if(isAskSatisfiedRequest){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             isAskSatisfiedRequest = false
             if(isIntoList(asrResult, deniedKeywords) or !isIntoList(asrResult, approvedKeywords)){
                 speak("OK. I'm always in the library in case you need any help.")
@@ -506,118 +514,118 @@ class RobotController(private val mapName: String):
 
         // Go to locations
         else if (isIntoList(asrResult, keywords1_61, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_61)
             goTo("think space")
         }
         else if (isIntoList(asrResult, keywords1_62, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_62)
             goTo("dream space")
         }
         else if (isIntoList(asrResult, keywords1_63, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_63)
             goTo("idea space")
         }
         else if (isIntoList(asrResult, keywords1_64, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_64)
             goTo("smart learning hub")
         }
         else if (isIntoList(asrResult, keywords1_65, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_65)
             goTo("management collection")
         }
         else if (isIntoList(asrResult, keywords1_66, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_66)
             goTo("learn for life pod")
         }
         else if (isIntoList(asrResult, keywords1_67, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_67)
             goTo("dvds")
         }
         else if (isIntoList(asrResult, keywords1_68, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_68)
             goTo("smart kiosk")
         }
         else if (isIntoList(asrResult, keywords1_69, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_69)
             goTo("exhibition")
         }
         else if (isIntoList(asrResult, keywords1_70, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_70)
             goTo("book recommendations")
         }
         else if (isIntoList(asrResult, keywords1_71, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_71)
             goTo("magazines")
         }
         else if (isIntoList(asrResult, keywords1_72, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_72)
             goTo("lifestyle books")
         }
         else if (isIntoList(asrResult, keywords1_73, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_73)
             goTo("cafe")
         }
         else if (isIntoList(asrResult, keywords1_74, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_74)
             goTo("smart space")
         }
         else if (isIntoList(asrResult, keywords1_75, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_75)
             goTo("design collection")
         }
         else if (isIntoList(asrResult, keywords1_76, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_76)
             goTo("health sciences")
         }
         else if (isIntoList(asrResult, keywords1_77, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_77)
             goTo("life sciences collection")
         }
         else if (isIntoList(asrResult, keywords1_78, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_78)
             goTo("fiction books")
         }
         else if (isIntoList(asrResult, keywords1_79, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_79)
             goTo("project reports")
         }
         else if (isIntoList(asrResult, keywords1_80, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_80)
             goTo("photocopying stations")
         }
         else if (isIntoList(asrResult, keywords1_81, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_81)
             goTo("performance stage")
         }
         else if (isIntoList(asrResult, keywords1_82, questions)){
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             speak(answer_82)
             goTo("lifestyle media")
         }
 
         else {
-            robot.finishConversation()
+            getRobot()?.finishConversation()
             isAskSatisfiedRequest = true
             requestReadyCallback?.onRequestIsReady(asrResult)
         }

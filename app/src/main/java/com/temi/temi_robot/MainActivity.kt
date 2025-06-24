@@ -8,13 +8,13 @@ import androidx.fragment.app.Fragment
 import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.PatrolPage
 import androidx.core.content.edit
+import com.robotemi.sdk.Robot
 
 // Activity class
 class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
 
-    internal var robotController: RobotController = RobotController(mapName)
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
@@ -23,6 +23,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main_activity)
+
+        // Initializing robot instance
+        RobotController.setRobot(Robot.getInstance())
+        RobotController.setMapName(mapName)
+        RobotController.setListeners()
 
         // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager

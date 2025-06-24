@@ -19,7 +19,6 @@ import java.io.IOException
 
 // Class for loading page when sending requests to python server
 class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
-    private lateinit var robotController: RobotController
     private lateinit var request: String
 
     val client = OkHttpClient() // Client for sending requests to server
@@ -27,7 +26,6 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        robotController = (activity as MainActivity).robotController
         request = (activity as MainActivity).userRequest!!
 
     }
@@ -49,10 +47,10 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
         }
 
         // Hide top bar
-        robotController.hideTopBar()
+        RobotController.hideTopBar()
 
         // Set Callback to listen to when going back to patrol page
-        robotController.setBackToPatrolCallback(this)
+        RobotController.setBackToPatrolCallback(this)
 
         // Send user request to server
         sendRequestToServer(request)
@@ -84,7 +82,7 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
         client.newCall(request).enqueue(object : Callback {
             // Behavior when failing to send data to server
             override fun onFailure(call: Call, e: IOException) {
-                robotController.speak("Sorry I couldn't send data to the server")
+                RobotController.speak("Sorry I couldn't send data to the server")
             }
 
             // Speaking server response or the error message
@@ -95,12 +93,12 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
                         if (bodyString != null) {
                             val jsonResponse = JSONObject(bodyString)
                             val responseText = jsonResponse.getString("response")
-                            robotController.speak(responseText)
+                            RobotController.speak(responseText)
                         } else {
-                            robotController.speak("I have nothing to answer")
+                            RobotController.speak("I have nothing to answer")
                         }
                     } else {
-                        robotController.speak("The server has an error")
+                        RobotController.speak("The server has an error")
                     }
                 }
             }

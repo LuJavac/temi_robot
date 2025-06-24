@@ -8,8 +8,7 @@ class TimeListener : BroadcastReceiver(){
 
     override fun onReceive(context: Context, intent: Intent) {
         // Tu peux exécuter n'importe quelle logique ici
-        Toast.makeText(context, "TimeSlot started !", Toast.LENGTH_LONG).show()
-
+        RobotController.speak("hello")
         // Exemple : appeler une fonction du robot, démarrer un service, etc.
     }
 }

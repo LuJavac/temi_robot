@@ -48,6 +48,8 @@ class PasswordPage : Fragment(){
 
                 // Know where we came from
                 val from = arguments?.getString("from")
+                println(from)
+
                 if (from == "patrolSettings") {
                     // Change view to settings page
                     parentFragmentManager.beginTransaction()
