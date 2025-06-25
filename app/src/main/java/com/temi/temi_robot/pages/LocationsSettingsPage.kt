@@ -11,14 +11,11 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
-import com.temi.temi_robot.dataclasses.PatrolStates
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import com.temi.temi_robot.ui_utils.SimpleAdapter
-import kotlinx.serialization.encodeToString
-import java.io.File
-import kotlinx.serialization.json.Json
 
 // Settings page class
 class LocationsSettingsPage : Fragment() {
@@ -73,7 +70,7 @@ class LocationsSettingsPage : Fragment() {
             RobotController.setPatrolStates(patrolStates)
 
             //Write patrolState in file
-            writeInFile(patrolStates, (activity as MainActivity).savePatrolStatesFileName)
+            JsonManager.writeToFile(requireContext(), patrolStates, (activity as MainActivity).savePatrolStatesFileName)
 
             // Change view to patrol page
             parentFragmentManager.beginTransaction()
@@ -106,11 +103,4 @@ class LocationsSettingsPage : Fragment() {
         })
         return itemTouchHelper
     }
-
-    // Write patrol states in file
-    fun writeInFile(patrolStates: PatrolStates, fileName: String){
-        val json = Json.encodeToString(patrolStates)
-        File(context?.filesDir, fileName).writeText(json)
-    }
-
 }

@@ -74,6 +74,21 @@ class AlarmScheduler(private var context: Context){
             endMillis,
             endPendingIntent
         )
-
     }
+
+    // Cancel an alarm
+    fun cancelAlarm(requestCode: Int) {
+        val intent = Intent(context, TimeListener::class.java)
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmManager.cancel(pendingIntent)
+    }
+
 }

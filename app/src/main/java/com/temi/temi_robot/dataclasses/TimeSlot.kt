@@ -1,5 +1,8 @@
 package com.temi.temi_robot.dataclasses
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class TimeSlot (private val hoursStart: String, private val minutesStart: String, private val hoursEnd: String, private val minutesEnd: String, private val isActive: Boolean){
 
     // Returns if one of the values of the time slots has not been filled by the user

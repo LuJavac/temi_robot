@@ -37,6 +37,11 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.layout_patrol, container, false)
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Going to lost connection page when Wi-Fi is disconnected and moving the robot to home base
         networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -128,9 +133,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
                 .commit()
         }
 
-
-
-        return view
     }
 
     // Robot behavior on start

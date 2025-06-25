@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.AlarmScheduler
+import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
@@ -43,6 +44,18 @@ class TimeSettingsPage : Fragment() {
 
     @androidx.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        // Kill all alarms before setting new ones
+        for (i in 0 until timeSlotsMaxNumber) {
+            alarmScheduler.cancelAlarm(i)
+            alarmScheduler.cancelAlarm(i + 1000)
+        }
+
+        // Restore saved slots from file
+        val savedSlots = JsonManager.restoreFromFile<List<TimeSlot>>(requireContext(), (activity as MainActivity).saveTimeSlotsFileName)
+        savedSlots?.forEach { slot ->
+            addTimeSlotView(slot)
+        }
 
         // Defining buttons
         val addSlotButton = view.findViewById<Button>(R.id.btnAddSlot)
@@ -89,6 +102,9 @@ class TimeSettingsPage : Fragment() {
                 }
             }
 
+            // Write time slots in file
+            JsonManager.writeToFile(requireContext(), timeSlots, (activity as MainActivity).saveTimeSlotsFileName)
+
             // Change view to patrol page
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, PatrolPage())
@@ -99,8 +115,7 @@ class TimeSettingsPage : Fragment() {
     }
 
     // Adds a new time slot to the view
-    private fun addTimeSlotView(){
-
+    private fun addTimeSlotView(slot: TimeSlot? = null){
         timeslotCounter++
 
         // Adding new time slot view
@@ -110,6 +125,15 @@ class TimeSettingsPage : Fragment() {
 
         // Get the view just added
         val addedView = container?.getChildAt(container.childCount - 1)
+
+        // If a slot is passed, fill it
+        if (slot != null && addedView != null) {
+            addedView.findViewById<EditText>(R.id.editTextHoursStart).setText(slot.getStartingHour())
+            addedView.findViewById<EditText>(R.id.editTextMinutesStart).setText(slot.getStartingMinute())
+            addedView.findViewById<EditText>(R.id.editTextHoursEnd).setText(slot.getEndingHour())
+            addedView.findViewById<EditText>(R.id.editTextMinutesEnd).setText(slot.getEndingMinute())
+            addedView.findViewById<CheckBox>(R.id.checkBoxActive).isChecked = slot.getState()
+        }
 
         // Setup delete button
         val removeButton = addedView?.findViewById<ImageButton>(R.id.btnRemoveSlot)

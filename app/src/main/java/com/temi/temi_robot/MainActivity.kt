@@ -1,6 +1,7 @@
 package com.temi.temi_robot
 
 
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +15,7 @@ import com.robotemi.sdk.Robot
 class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
+    internal var saveTimeSlotsFileName = "timeSlots.json"
 
     internal var userRequest : String? = null
 
@@ -73,6 +75,19 @@ class MainActivity : AppCompatActivity() {
 
         // Deactivate the flag after use, so that we load the last saved fragment only once after starting a meeting
         prefs.edit { putBoolean("should_restore_fragment", false) }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra("fragment_to_open")?.let {
+            when (it) {
+                "PatrolPage" -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, PatrolPage())
+                        .commit()
+                }
+            }
+        }
     }
 
     // Release resources on destroy

@@ -130,7 +130,11 @@ object RobotController:
     // Inactivity handling
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
+        println(blockMode)
+        println(isAskSatisfiedRequest)
+        println(isMoveRequest)
         if(!blockMode){
+            println("inactivity triggered")
             patrol()
             getRobot()?.setDetectionModeOn(true, 0.5f)
         }
@@ -403,10 +407,12 @@ object RobotController:
         descriptionId: Int,
         description: String
     ) {
-        if(location == "home base"){
-            setBlockMode(true)
-        }
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
+            if(location == "home base"){
+                println("home base reached")
+                isMoveRequest = false
+                setBlockMode(true)
+            }
             if(isMoveRequest){
                 isMoveRequest = false
                 speak("We arrived")

@@ -7,12 +7,11 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
+import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.dataclasses.PatrolStates
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
-import kotlinx.serialization.json.Json
-import java.io.File
 
 // Class for FirstPage when app is just opened
 class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback{
@@ -75,8 +74,11 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
     override fun onRobotIsReady() {
         if(RobotController.askRequiredPermissions()){
             RobotController.setBlockMode(true)
-            if(!restoreFromFile((activity as MainActivity).savePatrolStatesFileName)){
+            val savedState = JsonManager.restoreFromFile<PatrolStates>(requireContext(), (activity as MainActivity).savePatrolStatesFileName)
+            if(savedState == null){
                 RobotController.loadMap()
+            } else {
+                RobotController.setPatrolStates(savedState)
             }
         } else {
             // Change view to restart page if need to ask new permissions
@@ -87,26 +89,6 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         }
     }
 
-    // Restore patrol states from saved file
-    private fun restoreFromFile(fileName: String): Boolean {
-        val file = File(context?.filesDir, fileName)
-        if (file.exists()) {
-            val json = file.readText()
-            val savedState = Json.decodeFromString<PatrolStates>(json)
-            RobotController.setPatrolStates(savedState)
-            return true
-        } else {
-            return false
-        }
-    }
-
-    // Delete patrol states file :: FOR TESTING PURPOSES ONLY
-    private fun deleteFile(fileName: String) {
-        val file = File(context?.filesDir, fileName)
-        if (file.exists()) {
-            file.delete()
-        }
-    }
 
     // When map is loaded check if it has valid data or not. If yes, load locations
     override fun onMapIsReady() {
