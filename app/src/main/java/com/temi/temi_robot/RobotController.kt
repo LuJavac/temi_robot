@@ -130,9 +130,7 @@ object RobotController:
     // Inactivity handling
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
-        println(blockMode)
-        println(isAskSatisfiedRequest)
-        println(isMoveRequest)
+
         if(!blockMode){
             println("inactivity triggered")
             patrol()
@@ -176,6 +174,10 @@ object RobotController:
     fun setBlockMode(value: Boolean) {
         blockMode = value
         setDetectionModeOn(!value, 0.5f)
+    }
+
+    fun getBlockState(): Boolean {
+        return blockMode
     }
 
     fun setPatrolStates(patrolStates: PatrolStates){

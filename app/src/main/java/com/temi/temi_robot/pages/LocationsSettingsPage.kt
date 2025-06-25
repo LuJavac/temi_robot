@@ -69,6 +69,9 @@ class LocationsSettingsPage : Fragment() {
             // Set the patrol states to the robot
             RobotController.setPatrolStates(patrolStates)
 
+            // Don't erase : avoids staying stuck for calculations
+            RobotController.patrol()
+
             //Write patrolState in file
             JsonManager.writeToFile(requireContext(), patrolStates, (activity as MainActivity).savePatrolStatesFileName)
 

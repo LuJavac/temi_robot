@@ -27,7 +27,6 @@ data class PatrolStates(private var locations: List<String>, private var states:
         val inactive = locations.filter { states[it] != true }
         locations = active + inactive
 
-        println(locations)
         reorderStates()
     }
 

@@ -138,11 +138,13 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
     // Robot behavior on start
     fun initBehavior(){
         RobotController.setBlockMode(false)
+        println(RobotController.getPatrolStates())
+        println(RobotController.getBlockState())
         RobotController.patrol()
         RobotController.hideTopBar()
         RobotController.setVolume(4)
         RobotController.toggleWakeup(true)
-        RobotController.setTopBadgeEnabled(false)
+        RobotController.setTopBadgeEnabled(true) // CHANGE TO FALSE
         RobotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
         RobotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
         RobotController.setLastRequestTimeNow()

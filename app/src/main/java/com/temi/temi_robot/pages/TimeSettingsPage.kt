@@ -102,6 +102,9 @@ class TimeSettingsPage : Fragment() {
                 }
             }
 
+            // Don't erase : avoids staying stuck for calculations
+            RobotController.patrol()
+
             // Write time slots in file
             JsonManager.writeToFile(requireContext(), timeSlots, (activity as MainActivity).saveTimeSlotsFileName)
 
