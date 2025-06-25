@@ -131,7 +131,7 @@ object RobotController:
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
 
-        if(!blockMode){
+        if(!blockMode && !isMoveRequest){
             println("inactivity triggered")
             patrol()
             getRobot()?.setDetectionModeOn(true, 0.5f)
@@ -268,7 +268,7 @@ object RobotController:
     }
 
     fun goToHomeBase(){
-        getRobot()?.goTo("home base")
+        goTo("home base")
     }
 
     // Person Detection
