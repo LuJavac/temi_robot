@@ -131,14 +131,18 @@ object RobotController:
     private var inactivityHandler = Handler(Looper.getMainLooper())
     private val inactivityRunnable = Runnable {
 
+        // If user not answering to ask satisfied request, turn it off and restart patrolling
+        if(isAskSatisfiedRequest) {
+            isAskSatisfiedRequest = false
+            backToPatrolCallback?.onBackToPatrol()
+            return@Runnable
+        }
+
+        // Do not trigger inactivity when on block mode or when going to a place
         if(!blockMode && !isMoveRequest){
             println("inactivity triggered")
             patrol()
             getRobot()?.setDetectionModeOn(true, 0.5f)
-        }
-        if(isAskSatisfiedRequest) {
-            isAskSatisfiedRequest = false
-            backToPatrolCallback?.onBackToPatrol()
         }
     }
 
@@ -385,29 +389,36 @@ object RobotController:
     // Robot SDK overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
+        // Don't react when on moveRequest or blockMode
         if (isMoveRequest || blockMode) {
             return
         }
 
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
+            // If the robot was saying an answer, ask if satisfied then
             if(isAskSatisfiedRequest){
                 askQuestion("Do you want me to call a librarian in case you're not satisfied with the answer ?")
                 return
             }
+            // If the robot talked due to periodical speech, restart it again
             if(isDoNotEatSpeech){
                 isDoNotEatSpeech = false
                 startPeriodicSpeech(1)
                 return
             }
+            // Otherwise start patrolling
             patrol()
             getRobot()?.setDetectionModeOn(true, 0.5f)
         }
     }
 
     override fun onDetectionStateChanged(state: Int) {
+        // Don't react when on moveRequest or blockMode
         if(isMoveRequest || blockMode){
             return
         }
+
+        // Ask question when detected and reset inactivity
         resetInactivityTimer()
         if (state == 2) {
             val currentTime = System.currentTimeMillis()
@@ -429,15 +440,18 @@ object RobotController:
         description: String
     ) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
-            println(location)
+            // When arriving at home base set into block mode
             if(location == "home base"){
                 isMoveRequest = false
                 setBlockMode(true)
             }
+            // When a move request, do not trigger the patrolling appending
             else if(isMoveRequest){
                 isMoveRequest = false
                 speak("We arrived")
-            } else {
+            }
+            // When arriving at a location when patrolling, append it to the list
+            else {
                 patrolStates.appendFirstPatrolLocation()
             }
         }
@@ -482,7 +496,7 @@ object RobotController:
         if(grantResult == 0){
             speak("You need to grant the permission to make the application work properly. Please restart the application and do it again")
         } else {
-            speak("please restart the application after granting a new permission")
+            speak("Please restart the application after granting a new permission")
         }
     }
 
@@ -660,6 +674,7 @@ object RobotController:
             goTo("lifestyle media")
         }
 
+        // Start chatbot request if not a goTo request
         else {
             getRobot()?.finishConversation()
             isAskSatisfiedRequest = true

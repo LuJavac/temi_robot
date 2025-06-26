@@ -11,6 +11,7 @@ import java.util.Calendar
 
 class AlarmScheduler(private var context: Context){
 
+    // Schedule a new alarm
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     fun scheduleTimeSlotAlarm(slot: TimeSlot, requestCode: Int) {
 

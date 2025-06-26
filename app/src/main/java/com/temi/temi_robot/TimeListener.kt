@@ -30,6 +30,7 @@ class TimeListener : BroadcastReceiver(){
         val type = intent.getStringExtra("type")
         when (type) {
             "start" -> {
+                // Start patrolling on time slots starts
                 println("start patrol")
                 println(RobotController.getPatrolStates().getAllLocations())
 
@@ -44,6 +45,7 @@ class TimeListener : BroadcastReceiver(){
                 context.startActivity(launchIntent)
             }
             "end" -> {
+                // Going back to home base on time slots ends
                 println("home base")
                 RobotController.stopMovement()
                 RobotController.setBlockMode(false)
