@@ -147,10 +147,24 @@ object RobotController:
         inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
     }
 
+    // Speech handler to speak every x minutes
+    private var speechHandler = Handler(Looper.getMainLooper())
+    private val speechRunnable = Runnable {
+        isDoNotEatSpeech = true
+        speak("Please do not eat in the library. If you want to eat, go to the cafe. Thank you")
+    }
+
+    fun startPeriodicSpeech(minutes: Int){
+        speechHandler.removeCallbacks(speechRunnable)
+        speechHandler.postDelayed(speechRunnable, minutes * 60 * 1000L)
+    }
+
+
     // Own variables
     private var isMoveRequest = false
     private var blockMode = false
     private var isAskSatisfiedRequest = false
+    private var isDoNotEatSpeech = false
 
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
@@ -380,6 +394,11 @@ object RobotController:
                 askQuestion("Do you want me to call a librarian in case you're not satisfied with the answer ?")
                 return
             }
+            if(isDoNotEatSpeech){
+                isDoNotEatSpeech = false
+                startPeriodicSpeech(1)
+                return
+            }
             patrol()
             getRobot()?.setDetectionModeOn(true, 0.5f)
         }
@@ -410,12 +429,12 @@ object RobotController:
         description: String
     ) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
+            println(location)
             if(location == "home base"){
-                println("home base reached")
                 isMoveRequest = false
                 setBlockMode(true)
             }
-            if(isMoveRequest){
+            else if(isMoveRequest){
                 isMoveRequest = false
                 speak("We arrived")
             } else {
@@ -472,31 +491,37 @@ object RobotController:
             CallState.State.ENDED -> {
                 setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.DECLINED -> {
                 setBlockMode(false)
                 speak("The librarian denied the call")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.NOT_ANSWERED -> {
                 setBlockMode(false)
                 speak("The librarian doesn't answer the call")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.BUSY -> {
                 setBlockMode(false)
                 speak("The librarian is busy")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.POOR_CONNECTION -> {
                 setBlockMode(false)
                 speak("Cannot establish the call due to connection issue")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.CANT_JOIN -> {
                 setBlockMode(false)
                 speak("Cannot join the call")
+                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             else -> {

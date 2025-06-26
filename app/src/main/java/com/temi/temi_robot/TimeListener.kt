@@ -31,11 +31,21 @@ class TimeListener : BroadcastReceiver(){
         when (type) {
             "start" -> {
                 println("start patrol")
-                RobotController.setBlockMode(false)
+                println(RobotController.getPatrolStates().getAllLocations())
+
+                // Don't erase : avoids staying stuck for calculations
                 RobotController.patrol()
+
+                // Start main activity and open patrol page
+                val launchIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    putExtra("fragment_to_open", "PatrolPage")
+                }
+                context.startActivity(launchIntent)
             }
             "end" -> {
                 println("home base")
+                RobotController.stopMovement()
                 RobotController.setBlockMode(false)
                 RobotController.goToHomeBase()
             }
@@ -43,13 +53,5 @@ class TimeListener : BroadcastReceiver(){
 
             }
         }
-
-        // Start main activity and open patrol page
-        val launchIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra("fragment_to_open", "PatrolPage")
-        }
-        context.startActivity(launchIntent)
-
     }
 }

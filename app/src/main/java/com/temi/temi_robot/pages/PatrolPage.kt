@@ -18,6 +18,7 @@ import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
+import com.robotemi.sdk.Robot
 
 // Page to display when the robot is patrolling
 class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback{
@@ -138,9 +139,8 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
     // Robot behavior on start
     fun initBehavior(){
         RobotController.setBlockMode(false)
-        println(RobotController.getPatrolStates())
-        println(RobotController.getBlockState())
         RobotController.patrol()
+        RobotController.startPeriodicSpeech(1)
         RobotController.hideTopBar()
         RobotController.setVolume(4)
         RobotController.toggleWakeup(true)

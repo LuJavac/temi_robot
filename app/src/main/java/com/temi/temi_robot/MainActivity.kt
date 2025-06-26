@@ -3,7 +3,9 @@ package com.temi.temi_robot
 
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.pages.FirstPage
@@ -22,9 +24,14 @@ class MainActivity : AppCompatActivity() {
     internal lateinit var connectivityManager: ConnectivityManager
     internal lateinit var timeListener: TimeListener
 
+    @RequiresApi(Build.VERSION_CODES.O_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main_activity)
+
+        // Turn on screen when locked
+        setTurnScreenOn(true)
+        setShowWhenLocked(true)
 
         // Initializing robot instance
         RobotController.setRobot(Robot.getInstance())
@@ -77,6 +84,7 @@ class MainActivity : AppCompatActivity() {
         prefs.edit { putBoolean("should_restore_fragment", false) }
     }
 
+    // When waking up the application, go directly to patrol page
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra("fragment_to_open")?.let {
