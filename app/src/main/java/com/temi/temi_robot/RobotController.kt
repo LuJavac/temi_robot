@@ -57,7 +57,7 @@ object RobotController:
     //Go To locations
     private val answer_61= "Please follow me, we are going to the think space."
     private val keywords1_61 = listOf("think space")
-    private val questions = listOf("where", "go", "take me", "find")
+    private val questions = listOf("where", "go", "take me", "find", "bring me")
 
     private val answer_62= "Please follow me, we are going to the dream space."
     private val keywords1_62 = listOf("dream space", "dreaming space")
@@ -177,6 +177,7 @@ object RobotController:
     private var mapReadyCallback: MapReadyCallback? = null
     private var requestReadyCallback: RequestReadyCallback? = null
     private var backToPatrolCallback: BackToPatrolCallback? = null
+    private var backToBaseCallback: BackToBaseCallback? = null
     private var meetingStartedCallback: MeetingStartedCallback? = null
 
     /////////// General functions
@@ -390,6 +391,15 @@ object RobotController:
         this.backToPatrolCallback = callback
     }
 
+    // Personal interface and callback for going back to go base page
+    interface BackToBaseCallback {
+        fun onBackToBase()
+    }
+
+    fun setBackToBaseCallback(callback: BackToBaseCallback) {
+        this.backToBaseCallback = callback
+    }
+
     // Personal interface and callback for when a meeting is started
     interface MeetingStartedCallback {
         fun onMeetingStarted()
@@ -402,11 +412,6 @@ object RobotController:
     // Robot SDK overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
-        // Don't react when on moveRequest or blockMode
-        if (isMoveRequest || blockMode) {
-            return
-        }
-
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
             // If the robot was saying an answer, ask if satisfied then
             if(isAskSatisfiedRequest){
@@ -452,7 +457,6 @@ object RobotController:
         description: String
     ) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
-            setDetectionModeOn(true, 0.5f)
             // When arriving at home base set into block mode
             if(location == "home base"){
                 isMoveRequest = false
@@ -464,6 +468,10 @@ object RobotController:
             else if(isMoveRequest){
                 isMoveRequest = false
                 speak("We arrived")
+                // Send temi back to home base after showing a location while being on home base
+                if(isAtHomeBase){
+                    backToBaseCallback?.onBackToBase()
+                }
             }
             // When arriving at a location when patrolling, append it to the list
             else {

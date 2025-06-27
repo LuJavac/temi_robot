@@ -21,7 +21,7 @@ import androidx.core.content.edit
 import com.robotemi.sdk.Robot
 
 // Page to display when the robot is patrolling
-class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback{
+class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback{
     
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
@@ -75,6 +75,9 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
         // Set Callback to listen to meeting started event
         RobotController.setMeetingStartedCallback(this)
+
+        // Set Callback to listen to back to base event
+        RobotController.setBackToBaseCallback(this)
 
         // Robot behavior at initialization
         initBehavior()
@@ -150,6 +153,8 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         RobotController.setLastRequestTimeNow()
     }
 
+
+
     // When user request arrived, change view to loading page
     override fun onRequestIsReady(request: String) {
         (activity as MainActivity).userRequest = request
@@ -168,6 +173,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
             putString("last_fragment", this::class.java.name)
                 .putBoolean("should_restore_fragment", true)
         }
+    }
+
+    // Callback to go back to base page when needed
+    override fun onBackToBase() {
+        // Change view to go back base page
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, LoadingPage())
+            .addToBackStack(null)
+            .commit()
     }
 
     // Unregistering callback to prevent memory leaks
