@@ -23,6 +23,10 @@ class MainActivity : AppCompatActivity() {
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
+
+    private val timeSlotsMaxNumber = 3 // Max time slots number
+    internal lateinit var alarmScheduler: AlarmScheduler
+
     internal lateinit var timeListener: TimeListener
 
     @RequiresApi(Build.VERSION_CODES.O_MR1)
@@ -41,6 +45,9 @@ class MainActivity : AppCompatActivity() {
 
         // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // Schedules alarms
+        alarmScheduler = AlarmScheduler(this, timeSlotsMaxNumber)
 
         // Monitors time and activates wake-up for patrolling
         timeListener = TimeListener()

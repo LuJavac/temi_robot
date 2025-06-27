@@ -1,5 +1,7 @@
 package com.temi.temi_robot.pages
 
+import android.Manifest
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,15 +9,26 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
+import com.temi.temi_robot.AlarmScheduler
 import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import com.temi.temi_robot.dataclasses.PatrolStates
+import com.temi.temi_robot.dataclasses.TimeSlot
 
 // Class for FirstPage when app is just opened
 class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback {
+
+    private lateinit var alarmScheduler: AlarmScheduler
+
+    // Recover Alarm scheduler from main activity
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        alarmScheduler = (activity as MainActivity).alarmScheduler
+    }
 
     // Creates view for page
     override fun onCreateView(
@@ -64,10 +77,15 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
     }
 
     // When robot is initialized, load saved patrol states if file exists or load map
+    @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onRobotIsReady() {
         if(RobotController.askRequiredPermissions()){
             RobotController.setBlockMode(true)
             val savedState = JsonManager.restoreFromFile<PatrolStates>(requireContext(), (activity as MainActivity).savePatrolStatesFileName)
+            val savedSlots = JsonManager.restoreFromFile<List<TimeSlot>>(requireContext(), (activity as MainActivity).saveTimeSlotsFileName)
+            if(savedSlots != null){
+                alarmScheduler.setAllAlarms(savedSlots)
+            }
             if(savedState == null){
                 RobotController.loadMap()
             } else {

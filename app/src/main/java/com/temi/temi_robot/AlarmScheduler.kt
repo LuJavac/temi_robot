@@ -9,7 +9,7 @@ import androidx.annotation.RequiresPermission
 import com.temi.temi_robot.dataclasses.TimeSlot
 import java.util.Calendar
 
-class AlarmScheduler(private var context: Context){
+class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumber: Int){
 
     // Schedule a new alarm
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
@@ -90,6 +90,26 @@ class AlarmScheduler(private var context: Context){
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
+    }
+
+    @androidx.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
+    fun setAllAlarms(timeSlots: List<TimeSlot>){
+        // Kill all alarms before setting new ones
+        for (i in 0 until timeSlotsMaxNumber) {
+            cancelAlarm(i)
+            cancelAlarm(i + 1000)
+        }
+
+        // Plan an alarm for each time slot
+        timeSlots.forEachIndexed { index, slot ->
+            if(slot.getState()){
+                scheduleTimeSlotAlarm(slot, index)
+            }
+        }
+    }
+
+    fun getMaxTimeSlotsNumber(): Int {
+        return timeSlotsMaxNumber
     }
 
 }

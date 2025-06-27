@@ -22,13 +22,12 @@ import com.temi.temi_robot.dataclasses.TimeSlot
 class TimeSettingsPage : Fragment() {
 
     private var timeslotCounter = 0
-    private val timeSlotsMaxNumber = 3 // Max time slots number
     private lateinit var alarmScheduler: AlarmScheduler
 
-    // Recover robot controller from main activity
+    // Recover Alarm scheduler from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        alarmScheduler = AlarmScheduler(context)
+        alarmScheduler = (activity as MainActivity).alarmScheduler
     }
 
     // Creates main view
@@ -96,18 +95,7 @@ class TimeSettingsPage : Fragment() {
                 return@setOnClickListener
             }
 
-            // Kill all alarms before setting new ones
-            for (i in 0 until timeSlotsMaxNumber) {
-                alarmScheduler.cancelAlarm(i)
-                alarmScheduler.cancelAlarm(i + 1000)
-            }
-
-            // Plan an alarm for each time slot
-            timeSlots.forEachIndexed  { index, slot ->
-                if(slot.getState()){
-                    alarmScheduler.scheduleTimeSlotAlarm(slot, index)
-                }
-            }
+            alarmScheduler.setAllAlarms(timeSlots)
 
             // Don't erase : avoids staying stuck for calculations
             if(!RobotController.isAtHomeBase()){
@@ -158,7 +146,7 @@ class TimeSettingsPage : Fragment() {
         }
 
         // Disable add button if over limit
-        if (timeslotCounter >= timeSlotsMaxNumber) {
+        if (timeslotCounter >= alarmScheduler.getMaxTimeSlotsNumber()) {
             view?.findViewById<Button>(R.id.btnAddSlot)?.visibility = View.GONE
         }
     }
