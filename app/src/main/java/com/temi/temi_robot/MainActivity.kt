@@ -13,6 +13,7 @@ import androidx.core.content.edit
 import com.robotemi.sdk.Robot
 import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.GoToBasePage
+import com.temi.temi_robot.pages.PasswordPage
 
 // Activity class
 class MainActivity : AppCompatActivity() {
@@ -98,8 +99,16 @@ class MainActivity : AppCompatActivity() {
         intent.getStringExtra("fragment_to_open")?.let {
             when (it) {
                 "PatrolPage" -> {
+                    // Defining arguments for navigation
+                    val patrolPage = PatrolPage()
+                    val args = Bundle()
+
+                    // Passing argument to patrol page to know that we came from an alarm so he doesn't to re-patrol (avoiding bugs)
+                    args.putString("isAlarm", "true")
+                    patrolPage.arguments = args
+
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, PatrolPage())
+                        .replace(R.id.fragment_container, patrolPage)
                         .commit()
                 }
                 "GoToBasePage" -> {

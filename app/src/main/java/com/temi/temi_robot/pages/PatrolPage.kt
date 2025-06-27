@@ -131,9 +131,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
     // Robot behavior on start
     fun initBehavior(){
+        // To know if we got triggered by an alarm or not
+        val isAlarm = arguments?.getString("isAlarm")
+
         if(!RobotController.isAtHomeBase()){
             RobotController.setBlockMode(false)
-            RobotController.patrol()
+            // If we got triggered by an alarm we don't need to patrol again (avoiding bugs)
+            if(isAlarm != "true"){
+                RobotController.patrol()
+            }
             RobotController.startPeriodicSpeech(1)
         }
         RobotController.setVolume(4)

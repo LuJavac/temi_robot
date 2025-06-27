@@ -116,6 +116,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         changeItemsVisibility(View.VISIBLE)
     }
 
+    // Change the visibility of the page's items
     fun changeItemsVisibility(visibility: Int) {
         val yesButton = view?.findViewById<Button>(R.id.yesButton)
         val noButton = view?.findViewById<Button>(R.id.noButton)
