@@ -6,15 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
-import com.temi.temi_robot.dataclasses.PatrolStates
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.dataclasses.PatrolStates
 
 // Class for FirstPage when app is just opened
-class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback{
+class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotController.MapReadyCallback {
 
     // Creates view for page
     override fun onCreateView(
@@ -22,7 +23,12 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.layout_start, container, false)
+        val view = inflater.inflate(R.layout.layout_first, container, false)
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Hide top bar
         RobotController.hideTopBar()
@@ -34,40 +40,27 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         // Nyp logo on patrol interface
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
-        // Buttons
-        val startButton = view.findViewById<Button>(R.id.startButton)
-        val settingsButton = view.findViewById<Button>(R.id.settingsButton)
+        // Buttons (not visible until everything is loaded)
+        val yesButton = view.findViewById<Button>(R.id.yesButton)
+        val noButton = view.findViewById<Button>(R.id.noButton)
+        changeItemsVisibility(View.GONE)
 
-        // Defining arguments for navigation
-        val passwordPage = PasswordPage()
-        val args = Bundle()
-
-        // User button behavior
-        startButton.setOnClickListener{
-            // Change view to settings page
+        yesButton.setOnClickListener {
+            // Change view to patrol page if robot at home base
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, PatrolPage())
                 .addToBackStack(null)
                 .commit()
         }
 
-        // Settings button behavior
-        settingsButton.setOnClickListener {
-            // Stop movement while on setting page
-            RobotController.stopMovement()
-            RobotController.setBlockMode(true)
-
-            // Passing argument to password page to know where we come from
-            args.putString("from", "patrolSettings")
-            passwordPage.arguments = args
-
-            // Change view to settings page
+        noButton.setOnClickListener {
+            RobotController.speak("I need to go to home base to initialize")
+            // Go to base if not at home base
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, passwordPage)
+                .replace(R.id.fragment_container, GoToBasePage())
                 .addToBackStack(null)
                 .commit()
         }
-        return view
     }
 
     // When robot is initialized, load saved patrol states if file exists or load map
@@ -79,6 +72,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
                 RobotController.loadMap()
             } else {
                 RobotController.setPatrolStates(savedState)
+                changeItemsVisibility(View.VISIBLE)
             }
         } else {
             // Change view to restart page if need to ask new permissions
@@ -101,8 +95,15 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
                 .commit()
             return
         }
+        changeItemsVisibility(View.VISIBLE)
     }
 
-
-
+    fun changeItemsVisibility(visibility: Int) {
+        val yesButton = view?.findViewById<Button>(R.id.yesButton)
+        val noButton = view?.findViewById<Button>(R.id.noButton)
+        val text = view?.findViewById<TextView>(R.id.yesOrNoText)
+        yesButton?.visibility = visibility
+        noButton?.visibility = visibility
+        text?.visibility = visibility
+    }
 }

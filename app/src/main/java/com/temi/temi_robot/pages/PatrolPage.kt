@@ -102,12 +102,8 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
         // Settings button behavior
         settingsButton.setOnClickListener {
-            // Stop movement while on setting page
-            RobotController.stopMovement()
-            RobotController.setBlockMode(true)
-
             // Passing argument to password page to know where we come from
-            args.putString("from", "patrolSettings")
+            args.putString("from", "locationsSettings")
             passwordPage.arguments = args
 
             // Change view to settings page
@@ -119,9 +115,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
         // Time button behavior
         timeButton.setOnClickListener {
-            // Stop movement while on time page
-            RobotController.stopMovement()
-            RobotController.setBlockMode(true)
 
             // Passing argument to password page to know where we come from
             args.putString("from", "timeSettings")
@@ -138,10 +131,11 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
 
     // Robot behavior on start
     fun initBehavior(){
-        RobotController.setBlockMode(false)
-        RobotController.patrol()
-        RobotController.startPeriodicSpeech(1)
-        RobotController.hideTopBar()
+        if(!RobotController.isAtHomeBase()){
+            RobotController.setBlockMode(false)
+            RobotController.patrol()
+            RobotController.startPeriodicSpeech(1)
+        }
         RobotController.setVolume(4)
         RobotController.toggleWakeup(true)
         RobotController.setTopBadgeEnabled(true) // CHANGE TO FALSE

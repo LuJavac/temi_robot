@@ -37,6 +37,16 @@ class LocationsSettingsPage : Fragment() {
         // View layout
         val view = inflater.inflate(R.layout.layout_settings, container, false)
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Stop movement while on setting page
+        RobotController.stopMovement()
+        RobotController.setBlockMode(true)
+
         // Hide top bar for choosing patrol locations
         RobotController.hideTopBar()
 
@@ -70,7 +80,9 @@ class LocationsSettingsPage : Fragment() {
             RobotController.setPatrolStates(patrolStates)
 
             // Don't erase : avoids staying stuck for calculations
-            RobotController.patrol()
+            if(!RobotController.isAtHomeBase()){
+                RobotController.patrol()
+            }
 
             //Write patrolState in file
             JsonManager.writeToFile(requireContext(), patrolStates, (activity as MainActivity).savePatrolStatesFileName)
@@ -81,7 +93,7 @@ class LocationsSettingsPage : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
-        return view
+
     }
 
     // Create a drag and drop manager

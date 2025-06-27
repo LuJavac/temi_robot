@@ -154,8 +154,11 @@ object RobotController:
     // Speech handler to speak every x minutes
     private var speechHandler = Handler(Looper.getMainLooper())
     private val speechRunnable = Runnable {
-        isDoNotEatSpeech = true
-        speak("Please do not eat in the library. If you want to eat, go to the cafe. Thank you")
+        // Do not trigger speech when on block mode
+        if(!blockMode){
+            isDoNotEatSpeech = true
+            speak("Please do not eat in the library. If you want to eat, go to the cafe. Thank you")
+        }
     }
 
     fun startPeriodicSpeech(minutes: Int){
@@ -163,12 +166,12 @@ object RobotController:
         speechHandler.postDelayed(speechRunnable, minutes * 60 * 1000L)
     }
 
-
     // Own variables
     private var isMoveRequest = false
     private var blockMode = false
     private var isAskSatisfiedRequest = false
     private var isDoNotEatSpeech = false
+    private var isAtHomeBase = true
 
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
@@ -204,6 +207,15 @@ object RobotController:
 
     fun getPatrolStates(): PatrolStates {
         return this.patrolStates
+    }
+
+    fun isAtHomeBase(): Boolean{
+        return isAtHomeBase
+
+    }
+
+    fun setAtHomeBase(value: Boolean){
+        isAtHomeBase = value
     }
 
     fun setLastRequestTimeNow(){
@@ -274,6 +286,7 @@ object RobotController:
 
     fun goTo(location: String) {
         isMoveRequest = true
+        setDetectionModeOn(false, 0.5f)
         getRobot()?.goTo(location)
     }
 
@@ -406,9 +419,8 @@ object RobotController:
                 startPeriodicSpeech(1)
                 return
             }
-            // Otherwise start patrolling
-            patrol()
-            getRobot()?.setDetectionModeOn(true, 0.5f)
+
+            // Otherwise don't change his current behavior
         }
     }
 
@@ -440,10 +452,13 @@ object RobotController:
         description: String
     ) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
+            setDetectionModeOn(true, 0.5f)
             // When arriving at home base set into block mode
             if(location == "home base"){
                 isMoveRequest = false
                 setBlockMode(true)
+                isAtHomeBase = true
+                backToPatrolCallback?.onBackToPatrol()
             }
             // When a move request, do not trigger the patrolling appending
             else if(isMoveRequest){
@@ -505,37 +520,31 @@ object RobotController:
             CallState.State.ENDED -> {
                 setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.DECLINED -> {
                 setBlockMode(false)
                 speak("The librarian denied the call")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.NOT_ANSWERED -> {
                 setBlockMode(false)
                 speak("The librarian doesn't answer the call")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.BUSY -> {
                 setBlockMode(false)
                 speak("The librarian is busy")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.POOR_CONNECTION -> {
                 setBlockMode(false)
                 speak("Cannot establish the call due to connection issue")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             CallState.State.CANT_JOIN -> {
                 setBlockMode(false)
                 speak("Cannot join the call")
-                stopMovement()
                 backToPatrolCallback?.onBackToPatrol()
             }
             else -> {

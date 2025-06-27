@@ -29,10 +29,11 @@ class TimeListener : BroadcastReceiver(){
         // Identify if alarm is start or end or time slot
         val type = intent.getStringExtra("type")
         when (type) {
+            // Start patrolling on time slots starts
             "start" -> {
-                // Start patrolling on time slots starts
-                println("start patrol")
-                println(RobotController.getPatrolStates().getAllLocations())
+
+                // Going out of home base
+                RobotController.setAtHomeBase(false)
 
                 // Don't erase : avoids staying stuck for calculations
                 RobotController.patrol()
@@ -44,12 +45,20 @@ class TimeListener : BroadcastReceiver(){
                 }
                 context.startActivity(launchIntent)
             }
+
+            // Going back to home base on time slots ends
             "end" -> {
-                // Going back to home base on time slots ends
-                println("home base")
                 RobotController.stopMovement()
                 RobotController.setBlockMode(false)
                 RobotController.goToHomeBase()
+
+                // Change to go to base page
+                val launchIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    putExtra("fragment_to_open", "GoToBasePage")
+                }
+                context.startActivity(launchIntent)
+
             }
             else -> {
 

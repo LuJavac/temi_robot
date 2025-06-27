@@ -11,6 +11,7 @@ import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.R
+import com.temi.temi_robot.RobotController
 
 // Page to enter password to access the setting page
 class PasswordPage : Fragment(){
@@ -24,6 +25,13 @@ class PasswordPage : Fragment(){
 
         //View layout
         val view = inflater.inflate(R.layout.layout_password, container, false)
+
+        // Stop movement while on setting page
+        RobotController.stopMovement()
+        RobotController.setBlockMode(true)
+
+        // Hide top bar
+        RobotController.hideTopBar()
 
         // Page items
         val editTextPassword = view.findViewById<EditText>(R.id.editTextPassword)
@@ -48,9 +56,8 @@ class PasswordPage : Fragment(){
 
                 // Know where we came from
                 val from = arguments?.getString("from")
-                println(from)
 
-                if (from == "patrolSettings") {
+                if (from == "locationsSettings") {
                     // Change view to settings page
                     parentFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, LocationsSettingsPage())

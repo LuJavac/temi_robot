@@ -45,11 +45,12 @@ class TimeSettingsPage : Fragment() {
     @androidx.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        // Kill all alarms before setting new ones
-        for (i in 0 until timeSlotsMaxNumber) {
-            alarmScheduler.cancelAlarm(i)
-            alarmScheduler.cancelAlarm(i + 1000)
-        }
+        // Stop movement while on setting page
+        RobotController.stopMovement()
+        RobotController.setBlockMode(true)
+
+        // Hide top bar
+        RobotController.hideTopBar()
 
         // Restore saved slots from file
         val savedSlots = JsonManager.restoreFromFile<List<TimeSlot>>(requireContext(), (activity as MainActivity).saveTimeSlotsFileName)
@@ -95,6 +96,12 @@ class TimeSettingsPage : Fragment() {
                 return@setOnClickListener
             }
 
+            // Kill all alarms before setting new ones
+            for (i in 0 until timeSlotsMaxNumber) {
+                alarmScheduler.cancelAlarm(i)
+                alarmScheduler.cancelAlarm(i + 1000)
+            }
+
             // Plan an alarm for each time slot
             timeSlots.forEachIndexed  { index, slot ->
                 if(slot.getState()){
@@ -103,7 +110,9 @@ class TimeSettingsPage : Fragment() {
             }
 
             // Don't erase : avoids staying stuck for calculations
-            RobotController.patrol()
+            if(!RobotController.isAtHomeBase()){
+                RobotController.patrol()
+            }
 
             // Write time slots in file
             JsonManager.writeToFile(requireContext(), timeSlots, (activity as MainActivity).saveTimeSlotsFileName)

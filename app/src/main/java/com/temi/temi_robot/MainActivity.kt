@@ -8,10 +8,11 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.PatrolPage
 import androidx.core.content.edit
 import com.robotemi.sdk.Robot
+import com.temi.temi_robot.pages.FirstPage
+import com.temi.temi_robot.pages.GoToBasePage
 
 // Activity class
 class MainActivity : AppCompatActivity() {
@@ -92,6 +93,11 @@ class MainActivity : AppCompatActivity() {
                 "PatrolPage" -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, PatrolPage())
+                        .commit()
+                }
+                "GoToBasePage" -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, GoToBasePage())
                         .commit()
                 }
             }
