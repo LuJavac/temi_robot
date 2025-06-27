@@ -179,7 +179,7 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
     override fun onBackToBase() {
         // Change view to go back base page
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, LoadingPage())
+            .replace(R.id.fragment_container, GoToBasePage())
             .addToBackStack(null)
             .commit()
     }
