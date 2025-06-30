@@ -44,7 +44,7 @@ class TimeSettingsPage : Fragment() {
     @androidx.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        // Stop movement while on setting page
+        // Stop movement while on settings page
         RobotController.stopMovement()
         RobotController.setBlockMode(true)
 
@@ -105,9 +105,15 @@ class TimeSettingsPage : Fragment() {
             // Write time slots in file
             JsonManager.writeToFile(requireContext(), timeSlots, (activity as MainActivity).saveTimeSlotsFileName)
 
-            // Change view to patrol page
+            // Passing argument to main page so he doesn't to re-patrol (avoiding bugs)
+            val mainPage = MainPage()
+            val args = Bundle()
+            args.putString("notPatrolAgain", "true")
+            mainPage.arguments = args
+
+            // Change view to main page
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PatrolPage())
+                .replace(R.id.fragment_container, mainPage)
                 .addToBackStack(null)
                 .commit()
 

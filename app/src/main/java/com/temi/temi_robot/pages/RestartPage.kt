@@ -20,9 +20,6 @@ class RestartPage : Fragment(){
         // View layout
         val view = inflater.inflate(R.layout.layout_restart, container, false)
 
-        // Nyp logo on patrol interface and red button to write the restart message
-        val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
-
         // Adding button just for decoration in that case
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
         interactionButton.setOnClickListener{

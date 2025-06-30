@@ -43,15 +43,21 @@ class TimeListener : BroadcastReceiver(){
                 // Start main activity and open patrol page
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    putExtra("fragment_to_open", "PatrolPage")
+                    putExtra("fragment_to_open", "MainPage")
                 }
                 context.startActivity(launchIntent)
             }
 
             // Going back to home base on time slots ends
             "end" -> {
+
+                // To end any conversation going on before going to home base
                 RobotController.finishConversation()
+
+                // Stop any patrolling
                 RobotController.stopMovement()
+
+                // Go to home base
                 RobotController.setBlockMode(false)
                 RobotController.speak("I finished my work bye bye")
                 RobotController.goToHomeBase()

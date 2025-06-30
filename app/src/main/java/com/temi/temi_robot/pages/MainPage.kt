@@ -11,17 +11,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
-import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
-import com.robotemi.sdk.Robot
 
-// Page to display when the robot is patrolling
-class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback{
+// Page to display to ask questions to the robot. It's his main page
+class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback{
     
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
@@ -79,11 +77,15 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         // Set Callback to listen to back to base event
         RobotController.setBackToBaseCallback(this)
 
-        // Robot behavior at initialization
-        initBehavior()
+        // To know if we got triggered by an alarm or not
+        val notPatrolAgain = arguments?.getString("notPatrolAgain")
+        // If we got triggered by an alarm we don't need to patrol again (avoiding bugs)
+        if(notPatrolAgain != "true"){
+            RobotController.patrol()
+        }
 
-        // Nyp logo on patrol interface
-        val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
+        // Set last request time now to not trigger detection automatically when going on main page
+        RobotController.setLastRequestTimeNow()
 
         // Buttons
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
@@ -131,31 +133,6 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
         }
 
     }
-
-    // Robot behavior on start
-    fun initBehavior(){
-        // To know if we got triggered by an alarm or not
-        val isAlarm = arguments?.getString("isAlarm")
-
-        if(!RobotController.isAtHomeBase()){
-            RobotController.setBlockMode(false)
-            // If we got triggered by an alarm we don't need to patrol again (avoiding bugs)
-            if(isAlarm != "true"){
-                RobotController.patrol()
-            }
-            RobotController.startPeriodicSpeech(15)
-        } else {
-            RobotController.setBlockMode(true)
-        }
-        RobotController.setVolume(4)
-        RobotController.toggleWakeup(true)
-        RobotController.setTopBadgeEnabled(true) // CHANGE TO FALSE
-        RobotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
-        RobotController.setHardButtonMode(HardButton.VOLUME, HardButton.Mode.DISABLED)
-        RobotController.setLastRequestTimeNow()
-    }
-
-
 
     // When user request arrived, change view to loading page
     override fun onRequestIsReady(request: String) {

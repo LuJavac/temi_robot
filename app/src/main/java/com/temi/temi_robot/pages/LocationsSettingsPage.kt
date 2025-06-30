@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,9 +49,6 @@ class LocationsSettingsPage : Fragment() {
         // Hide top bar for choosing patrol locations
         RobotController.hideTopBar()
 
-        // Nyp logo on settings interface
-        val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
-
         // Define patrol path choosing interface view
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -87,9 +83,15 @@ class LocationsSettingsPage : Fragment() {
             //Write patrolState in file
             JsonManager.writeToFile(requireContext(), patrolStates, (activity as MainActivity).savePatrolStatesFileName)
 
-            // Change view to patrol page
+            // Passing argument to main page so he doesn't to re-patrol (avoiding bugs)
+            val mainPage = MainPage()
+            val args = Bundle()
+            args.putString("notPatrolAgain", "true")
+            mainPage.arguments = args
+
+            // Change view to main page
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PatrolPage())
+                .replace(R.id.fragment_container, mainPage)
                 .addToBackStack(null)
                 .commit()
         }

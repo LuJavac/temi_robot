@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
@@ -41,9 +40,9 @@ class LostConnectionPage : Fragment(){
             override fun onAvailable(network: Network) {
                 super.onAvailable(network)
 
-                // Change view back to patrol page
+                // Change view back to main page
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, PatrolPage())
+                    .replace(R.id.fragment_container, MainPage())
                     .addToBackStack(null)
                     .commit()
             }
@@ -54,10 +53,6 @@ class LostConnectionPage : Fragment(){
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
         connectivityManager.registerNetworkCallback(request, networkCallback)
-
-
-        // Nyp logo on patrol interface and red button to write the restart message
-        val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
         // Adding button just for decoration in that case
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)

@@ -18,7 +18,7 @@ import org.json.JSONObject
 import java.io.IOException
 
 // Class for loading page when sending requests to python server
-class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
+class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
     private lateinit var request: String
 
     val client = OkHttpClient() // Client for sending requests to server
@@ -46,23 +46,27 @@ class LoadingPage : Fragment(), RobotController.BackToPatrolCallback {
             LoadingScreen()
         }
 
-        // Hide top bar
-        RobotController.hideTopBar()
-
-        // Set Callback to listen to when going back to patrol page
-        RobotController.setBackToPatrolCallback(this)
-
-        // Send user request to server
-        sendRequestToServer(request)
-
         return view
     }
 
-    // Callback override to go back to patrol page when triggered
-    override fun onBackToPatrol() {
-        // Change view to patrol page
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Hide top bar
+        RobotController.hideTopBar()
+
+        // Set Callback to listen to when going back to main page
+        RobotController.setBackToMainPageCallback(this)
+
+        // Send user request to server
+        sendRequestToServer(request)
+    }
+
+    // Callback override to go back to main page when triggered
+    override fun onBackToMainPage() {
+        // Change view to main page
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, PatrolPage())
+            .replace(R.id.fragment_container, MainPage())
             .addToBackStack(null)
             .commit()
     }

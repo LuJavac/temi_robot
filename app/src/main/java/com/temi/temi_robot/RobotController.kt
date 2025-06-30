@@ -127,45 +127,6 @@ object RobotController:
     private var lastRequestTime = 0L //
     private val requestCooldownMillis = 20000L // 20 seconds
 
-    // Inactivity handling
-    private var inactivityHandler = Handler(Looper.getMainLooper())
-    private val inactivityRunnable = Runnable {
-
-        // If user not answering to ask satisfied request, turn it off and restart patrolling
-        if(isAskSatisfiedRequest) {
-            isAskSatisfiedRequest = false
-            backToPatrolCallback?.onBackToPatrol()
-            return@Runnable
-        }
-
-        // Do not trigger inactivity when on block mode or when going to a place
-        if(!blockMode && !isMoveRequest){
-            println("inactivity triggered")
-            patrol()
-            getRobot()?.setDetectionModeOn(true, 0.5f)
-        }
-    }
-
-    fun resetInactivityTimer() {
-        inactivityHandler.removeCallbacks(inactivityRunnable)
-        inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
-    }
-
-    // Speech handler to speak every x minutes
-    private var speechHandler = Handler(Looper.getMainLooper())
-    private val speechRunnable = Runnable {
-        // Do not trigger speech when on block mode
-        if(!blockMode){
-            isDoNotEatSpeech = true
-            speak("Please do not eat in the library. If you want to eat, go to the cafe. Thank you")
-        }
-    }
-
-    fun startPeriodicSpeech(minutes: Int){
-        speechHandler.removeCallbacks(speechRunnable)
-        speechHandler.postDelayed(speechRunnable, minutes * 60 * 1000L)
-    }
-
     // Own variables
     private var isMoveRequest = false
     private var blockMode = false
@@ -176,7 +137,7 @@ object RobotController:
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
     private var requestReadyCallback: RequestReadyCallback? = null
-    private var backToPatrolCallback: BackToPatrolCallback? = null
+    private var backToMainPageCallback: BackToMainPageCallback? = null
     private var backToBaseCallback: BackToBaseCallback? = null
     private var meetingStartedCallback: MeetingStartedCallback? = null
 
@@ -196,10 +157,6 @@ object RobotController:
     fun setBlockMode(value: Boolean) {
         blockMode = value
         setDetectionModeOn(!value, 0.5f)
-    }
-
-    fun getBlockState(): Boolean {
-        return blockMode
     }
 
     fun setPatrolStates(patrolStates: PatrolStates){
@@ -290,13 +247,18 @@ object RobotController:
     }
 
     fun goTo(location: String) {
-        isMoveRequest = true
         setDetectionModeOn(false, 0.5f)
+        isMoveRequest = true
         getRobot()?.goTo(location)
     }
 
     fun patrol(){
-        getRobot()?.patrol(patrolStates.getPatrolLocations(), times = 0)
+        // Trigger patrolling only if robot is not at home base
+        if(!isAtHomeBase){
+            setBlockMode(false)
+            getRobot()?.patrol(patrolStates.getPatrolLocations(), times = 0)
+            startPeriodicSpeech(15)
+        }
     }
 
     fun stopMovement(){
@@ -387,12 +349,12 @@ object RobotController:
     }
 
     // Personal interface and callback for going back to patrol page
-    interface BackToPatrolCallback {
-        fun onBackToPatrol()
+    interface BackToMainPageCallback {
+        fun onBackToMainPage()
     }
 
-    fun setBackToPatrolCallback(callback: BackToPatrolCallback) {
-        this.backToPatrolCallback = callback
+    fun setBackToMainPageCallback(callback: BackToMainPageCallback) {
+        this.backToMainPageCallback = callback
     }
 
     // Personal interface and callback for going back to go base page
@@ -413,6 +375,45 @@ object RobotController:
         this.meetingStartedCallback = callback
     }
 
+    // Inactivity handling
+    private var inactivityHandler = Handler(Looper.getMainLooper())
+    private val inactivityRunnable = Runnable {
+
+        // If user not answering to ask satisfied request, turn it off and restart patrolling
+        if(isAskSatisfiedRequest) {
+            isAskSatisfiedRequest = false
+            backToMainPageCallback?.onBackToMainPage()
+            return@Runnable
+        }
+
+        // Do not trigger inactivity when on block mode or when going to a place
+        if(!blockMode && !isMoveRequest){
+            println("inactivity triggered")
+            // Otherwise start patrolling again and
+            patrol()
+        }
+    }
+
+    fun resetInactivityTimer() {
+        inactivityHandler.removeCallbacks(inactivityRunnable)
+        inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
+    }
+
+    // Speech handler to speak every x minutes
+    private var speechHandler = Handler(Looper.getMainLooper())
+    private val speechRunnable = Runnable {
+        // Do not trigger speech when on block mode
+        if(!blockMode){
+            isDoNotEatSpeech = true
+            speak("Please do not eat in the library. If you want to eat, go to the cafe. Thank you")
+        }
+    }
+
+    fun startPeriodicSpeech(minutes: Int){
+        speechHandler.removeCallbacks(speechRunnable)
+        speechHandler.postDelayed(speechRunnable, minutes * 60 * 1000L)
+    }
+
     // Robot SDK overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
@@ -425,7 +426,7 @@ object RobotController:
             // If the robot talked due to periodical speech, restart it again
             if(isDoNotEatSpeech){
                 isDoNotEatSpeech = false
-                startPeriodicSpeech(1)
+                startPeriodicSpeech(15)
                 return
             }
 
@@ -434,11 +435,6 @@ object RobotController:
     }
 
     override fun onDetectionStateChanged(state: Int) {
-        // Don't react when on moveRequest or blockMode
-        if(isMoveRequest || blockMode){
-            return
-        }
-
         // Ask question when detected and reset inactivity
         resetInactivityTimer()
         if (state == 2) {
@@ -466,7 +462,7 @@ object RobotController:
                 isMoveRequest = false
                 setBlockMode(true)
                 isAtHomeBase = true
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             // When a move request, do not trigger the patrolling appending
             else if(isMoveRequest){
@@ -530,34 +526,28 @@ object RobotController:
     override fun onTelepresenceStatusChanged(callState: CallState) {
         when(callState.state){
             CallState.State.ENDED -> {
-                setBlockMode(false)
                 speak("I'm always in the library in case you need any help.")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.DECLINED -> {
-                setBlockMode(false)
                 speak("The librarian denied the call")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.NOT_ANSWERED -> {
-                setBlockMode(false)
                 speak("The librarian doesn't answer the call")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.BUSY -> {
-                setBlockMode(false)
                 speak("The librarian is busy")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.POOR_CONNECTION -> {
-                setBlockMode(false)
                 speak("Cannot establish the call due to connection issue")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.CANT_JOIN -> {
-                setBlockMode(false)
                 speak("Cannot join the call")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             else -> {
 
@@ -567,17 +557,16 @@ object RobotController:
 
     override fun onAsrResult(asrResult: String, sttLanguage: SttLanguage) {
         resetInactivityTimer()
+        finishConversation()
 
         // Managing satisfied call request
         if(isAskSatisfiedRequest){
-            finishConversation()
             isAskSatisfiedRequest = false
             if(isIntoList(asrResult, deniedKeywords) or !isIntoList(asrResult, approvedKeywords)){
                 speak("OK. I'm always in the library in case you need any help.")
-                backToPatrolCallback?.onBackToPatrol()
+                backToMainPageCallback?.onBackToMainPage()
             }
             else {
-                setBlockMode(true)
                 meetingStartedCallback?.onMeetingStarted()
                 callLibrarian()
             }
@@ -585,119 +574,95 @@ object RobotController:
 
         // Go to locations
         else if (isIntoList(asrResult, keywords1_61, questions)){
-            finishConversation()
             speak(answer_61)
             goTo("think space")
         }
         else if (isIntoList(asrResult, keywords1_62, questions)){
-            finishConversation()
             speak(answer_62)
             goTo("dream space")
         }
         else if (isIntoList(asrResult, keywords1_63, questions)){
-            finishConversation()
             speak(answer_63)
             goTo("idea space")
         }
         else if (isIntoList(asrResult, keywords1_64, questions)){
-            finishConversation()
             speak(answer_64)
             goTo("smart learning hub")
         }
         else if (isIntoList(asrResult, keywords1_65, questions)){
-            finishConversation()
             speak(answer_65)
             goTo("management collection")
         }
         else if (isIntoList(asrResult, keywords1_66, questions)){
-            finishConversation()
             speak(answer_66)
             goTo("learn for life pod")
         }
         else if (isIntoList(asrResult, keywords1_67, questions)){
-            finishConversation()
             speak(answer_67)
             goTo("dvds")
         }
         else if (isIntoList(asrResult, keywords1_68, questions)){
-            finishConversation()
             speak(answer_68)
             goTo("smart kiosk")
         }
         else if (isIntoList(asrResult, keywords1_69, questions)){
-            finishConversation()
             speak(answer_69)
             goTo("exhibition")
         }
         else if (isIntoList(asrResult, keywords1_70, questions)){
-            finishConversation()
             speak(answer_70)
             goTo("book recommendations")
         }
         else if (isIntoList(asrResult, keywords1_71, questions)){
-            finishConversation()
             speak(answer_71)
             goTo("magazines")
         }
         else if (isIntoList(asrResult, keywords1_72, questions)){
-            finishConversation()
             speak(answer_72)
             goTo("lifestyle books")
         }
         else if (isIntoList(asrResult, keywords1_73, questions)){
-            finishConversation()
             speak(answer_73)
             goTo("cafe")
         }
         else if (isIntoList(asrResult, keywords1_74, questions)){
-            finishConversation()
             speak(answer_74)
             goTo("smart space")
         }
         else if (isIntoList(asrResult, keywords1_75, questions)){
-            finishConversation()
             speak(answer_75)
             goTo("design collection")
         }
         else if (isIntoList(asrResult, keywords1_76, questions)){
-            finishConversation()
             speak(answer_76)
             goTo("health sciences")
         }
         else if (isIntoList(asrResult, keywords1_77, questions)){
-            finishConversation()
             speak(answer_77)
             goTo("life sciences collection")
         }
         else if (isIntoList(asrResult, keywords1_78, questions)){
-            finishConversation()
             speak(answer_78)
             goTo("fiction books")
         }
         else if (isIntoList(asrResult, keywords1_79, questions)){
-            finishConversation()
             speak(answer_79)
             goTo("project reports")
         }
         else if (isIntoList(asrResult, keywords1_80, questions)){
-            finishConversation()
             speak(answer_80)
             goTo("photocopying stations")
         }
         else if (isIntoList(asrResult, keywords1_81, questions)){
-            finishConversation()
             speak(answer_81)
             goTo("performance stage")
         }
         else if (isIntoList(asrResult, keywords1_82, questions)){
-            finishConversation()
             speak(answer_82)
             goTo("lifestyle media")
         }
-
         // Start chatbot request if not a goTo request
         else {
-            finishConversation()
             isAskSatisfiedRequest = true
             requestReadyCallback?.onRequestIsReady(asrResult)
         }

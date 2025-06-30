@@ -25,8 +25,13 @@ class PasswordPage : Fragment(){
 
         //View layout
         val view = inflater.inflate(R.layout.layout_password, container, false)
+        return view
+    }
 
-        // Stop movement while on setting page
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Stop movement while on settings page
         RobotController.stopMovement()
         RobotController.setBlockMode(true)
 
@@ -79,15 +84,13 @@ class PasswordPage : Fragment(){
             }
         }
 
-        // When cancelling go back to patrol page
+        // When cancelling go back to main page
         buttonCancel.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PatrolPage())
+                .replace(R.id.fragment_container, MainPage())
                 .addToBackStack(null)
                 .commit()
         }
 
-
-        return view
     }
 }
