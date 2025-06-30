@@ -13,7 +13,7 @@ object JsonManager {
         return if (file.exists()) {
             try {
                 val json = file.readText()
-                Json.decodeFromString<T>(json)
+                Json.Default.decodeFromString<T>(json)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -23,7 +23,7 @@ object JsonManager {
 
     // Write data to file
     inline fun <reified T> writeToFile(context: Context, data: T, fileName: String) {
-        val json = Json.encodeToString(serializer(), data)
+        val json = Json.Default.encodeToString(serializer(), data)
         File(context.filesDir, fileName).writeText(json)
     }
 

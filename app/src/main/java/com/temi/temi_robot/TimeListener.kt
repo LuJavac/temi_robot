@@ -35,6 +35,8 @@ class TimeListener : BroadcastReceiver(){
                 // Going out of home base
                 RobotController.setAtHomeBase(false)
 
+                RobotController.speak("Starting my daily jogging routine")
+
                 // Don't erase : avoids staying stuck for calculations
                 RobotController.patrol()
 
@@ -48,8 +50,10 @@ class TimeListener : BroadcastReceiver(){
 
             // Going back to home base on time slots ends
             "end" -> {
+                RobotController.finishConversation()
                 RobotController.stopMovement()
                 RobotController.setBlockMode(false)
+                RobotController.speak("I finished my work bye bye")
                 RobotController.goToHomeBase()
 
                 // Change to go to base page

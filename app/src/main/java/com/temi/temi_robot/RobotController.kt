@@ -270,6 +270,10 @@ object RobotController:
     fun askQuestion(question: String) {
         getRobot()?.askQuestion(question)
     }
+    
+    fun finishConversation(){
+        getRobot()?.finishConversation()
+    }
 
 
     // Movements and map
@@ -566,7 +570,7 @@ object RobotController:
 
         // Managing satisfied call request
         if(isAskSatisfiedRequest){
-            getRobot()?.finishConversation()
+            finishConversation()
             isAskSatisfiedRequest = false
             if(isIntoList(asrResult, deniedKeywords) or !isIntoList(asrResult, approvedKeywords)){
                 speak("OK. I'm always in the library in case you need any help.")
@@ -581,119 +585,119 @@ object RobotController:
 
         // Go to locations
         else if (isIntoList(asrResult, keywords1_61, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_61)
             goTo("think space")
         }
         else if (isIntoList(asrResult, keywords1_62, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_62)
             goTo("dream space")
         }
         else if (isIntoList(asrResult, keywords1_63, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_63)
             goTo("idea space")
         }
         else if (isIntoList(asrResult, keywords1_64, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_64)
             goTo("smart learning hub")
         }
         else if (isIntoList(asrResult, keywords1_65, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_65)
             goTo("management collection")
         }
         else if (isIntoList(asrResult, keywords1_66, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_66)
             goTo("learn for life pod")
         }
         else if (isIntoList(asrResult, keywords1_67, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_67)
             goTo("dvds")
         }
         else if (isIntoList(asrResult, keywords1_68, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_68)
             goTo("smart kiosk")
         }
         else if (isIntoList(asrResult, keywords1_69, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_69)
             goTo("exhibition")
         }
         else if (isIntoList(asrResult, keywords1_70, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_70)
             goTo("book recommendations")
         }
         else if (isIntoList(asrResult, keywords1_71, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_71)
             goTo("magazines")
         }
         else if (isIntoList(asrResult, keywords1_72, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_72)
             goTo("lifestyle books")
         }
         else if (isIntoList(asrResult, keywords1_73, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_73)
             goTo("cafe")
         }
         else if (isIntoList(asrResult, keywords1_74, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_74)
             goTo("smart space")
         }
         else if (isIntoList(asrResult, keywords1_75, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_75)
             goTo("design collection")
         }
         else if (isIntoList(asrResult, keywords1_76, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_76)
             goTo("health sciences")
         }
         else if (isIntoList(asrResult, keywords1_77, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_77)
             goTo("life sciences collection")
         }
         else if (isIntoList(asrResult, keywords1_78, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_78)
             goTo("fiction books")
         }
         else if (isIntoList(asrResult, keywords1_79, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_79)
             goTo("project reports")
         }
         else if (isIntoList(asrResult, keywords1_80, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_80)
             goTo("photocopying stations")
         }
         else if (isIntoList(asrResult, keywords1_81, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_81)
             goTo("performance stage")
         }
         else if (isIntoList(asrResult, keywords1_82, questions)){
-            getRobot()?.finishConversation()
+            finishConversation()
             speak(answer_82)
             goTo("lifestyle media")
         }
 
         // Start chatbot request if not a goTo request
         else {
-            getRobot()?.finishConversation()
+            finishConversation()
             isAskSatisfiedRequest = true
             requestReadyCallback?.onRequestIsReady(asrResult)
         }

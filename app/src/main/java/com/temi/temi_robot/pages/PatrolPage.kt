@@ -143,7 +143,9 @@ class PatrolPage : Fragment(), RobotController.RequestReadyCallback, RobotContro
             if(isAlarm != "true"){
                 RobotController.patrol()
             }
-            RobotController.startPeriodicSpeech(1)
+            RobotController.startPeriodicSpeech(15)
+        } else {
+            RobotController.setBlockMode(true)
         }
         RobotController.setVolume(4)
         RobotController.toggleWakeup(true)

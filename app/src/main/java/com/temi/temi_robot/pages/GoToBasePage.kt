@@ -26,6 +26,9 @@ class GoToBasePage : Fragment(), RobotController.BackToPatrolCallback {
         // Hide top bar
         RobotController.hideTopBar()
 
+        // Set Callback to listen to back to patrol page event
+        RobotController.setBackToPatrolCallback(this)
+
         // Nyp logo on patrol interface and red button to write the restart message
         val nypLogo = view.findViewById<ImageView>(R.id.nypLogo)
 
@@ -33,9 +36,6 @@ class GoToBasePage : Fragment(), RobotController.BackToPatrolCallback {
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
         interactionButton.setOnClickListener{
         }
-
-        RobotController.setBlockMode(false)
-        RobotController.goToHomeBase()
     }
 
     override fun onBackToPatrol() {
