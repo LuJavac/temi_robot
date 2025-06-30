@@ -180,6 +180,13 @@ object RobotController:
         lastRequestTime = System.currentTimeMillis()
     }
 
+    fun setSatisfiedRequest(value: Boolean){
+        isAskSatisfiedRequest = value
+    }
+    fun setMoveRequest(value: Boolean){
+        isMoveRequest = value
+    }
+
     // Custom functions
     private fun isIntoList(request: String, list1: List<String>, list2: List<String> = emptyList()): Boolean {
         if(list2.isEmpty()){
@@ -248,6 +255,7 @@ object RobotController:
 
     fun goTo(location: String) {
         setDetectionModeOn(false, 0.5f)
+        println(getRobot()?.detectionModeOn)
         isMoveRequest = true
         getRobot()?.goTo(location)
     }
@@ -267,6 +275,7 @@ object RobotController:
 
     fun goToHomeBase(){
         goTo("home base")
+        println(getRobot()?.detectionModeOn)
     }
 
     // Person Detection

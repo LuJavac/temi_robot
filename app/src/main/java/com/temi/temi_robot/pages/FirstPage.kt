@@ -67,7 +67,6 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         // If not at home base, initialize by going to home base
         noButton.setOnClickListener {
             RobotController.speak("I need to go to home base to initialize")
-            RobotController.setBlockMode(false)
             RobotController.goToHomeBase()
             // Go to base if not at home base
             parentFragmentManager.beginTransaction()

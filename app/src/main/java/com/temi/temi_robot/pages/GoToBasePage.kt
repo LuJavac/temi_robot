@@ -28,6 +28,9 @@ class GoToBasePage : Fragment(), RobotController.BackToMainPageCallback {
         // Set Callback to listen to back to main page event
         RobotController.setBackToMainPageCallback(this)
 
+        // Disable detection mode when going home
+        RobotController.setDetectionModeOn(false, 0.5f)
+
         // Adding button just for decoration in that case
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
         interactionButton.setOnClickListener{

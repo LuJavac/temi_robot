@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
+import androidx.core.content.edit
+import com.temi.temi_robot.pages.GoToBasePage
 
 class TimeListener : BroadcastReceiver(){
 
@@ -32,6 +34,11 @@ class TimeListener : BroadcastReceiver(){
             // Start patrolling on time slots starts
             "start" -> {
 
+                // To end any conversation going on before going to home base
+                RobotController.finishConversation()
+                RobotController.setSatisfiedRequest(false)
+                RobotController.setMoveRequest(false)
+
                 // Going out of home base
                 RobotController.setAtHomeBase(false)
 
@@ -53,14 +60,22 @@ class TimeListener : BroadcastReceiver(){
 
                 // To end any conversation going on before going to home base
                 RobotController.finishConversation()
+                RobotController.setSatisfiedRequest(false)
+                RobotController.setMoveRequest(false)
 
                 // Stop any patrolling
                 RobotController.stopMovement()
 
                 // Go to home base
-                RobotController.setBlockMode(false)
                 RobotController.speak("I finished my work bye bye")
                 RobotController.goToHomeBase()
+
+                // Restore GoToBase page when return to home base triggered during a call
+                val prefs = context.getSharedPreferences("temi_state", Context.MODE_PRIVATE)
+                prefs.edit {
+                    putString("last_fragment", GoToBasePage::class.java.name)
+                    putBoolean("should_restore_fragment", true)
+                }
 
                 // Change to go to base page
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
