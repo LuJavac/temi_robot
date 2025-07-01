@@ -12,7 +12,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.temi.temi_robot.AlarmScheduler
+import com.temi.temi_robot.time.AlarmScheduler
 import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R

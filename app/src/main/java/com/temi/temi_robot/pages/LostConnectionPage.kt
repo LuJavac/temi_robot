@@ -35,6 +35,12 @@ class LostConnectionPage : Fragment(){
         // View layout
         val view = inflater.inflate(R.layout.layout_lost_connection, container, false)
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         // Going back to patrol page when Wi-Fi is reconnected
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
@@ -59,8 +65,6 @@ class LostConnectionPage : Fragment(){
         interactionButton.setOnClickListener{
 
         }
-
-        return view
     }
 
     // Unregistering callback to prevent memory leaks

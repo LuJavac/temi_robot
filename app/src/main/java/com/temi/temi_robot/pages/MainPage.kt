@@ -106,7 +106,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Settings button behavior
         settingsButton.setOnClickListener {
-            // Passing argument to password page to know where we come from
+            // Passing argument for password page to know where we come from
             args.putString("from", "locationsSettings")
             passwordPage.arguments = args
 
@@ -120,7 +120,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         // Time button behavior
         timeButton.setOnClickListener {
 
-            // Passing argument to password page to know where we come from
+            // Passing argument for password page to know where we come from
             args.putString("from", "timeSettings")
             passwordPage.arguments = args
 

@@ -79,7 +79,7 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
         val body = json.toString().toRequestBody("application/json".toMediaType())
 
         val request = Request.Builder()
-            .url("http://192.168.142.124:5000/process") // Replace with server URL
+            .url((activity as MainActivity).serverUrl)
             .post(body)
             .build()
 

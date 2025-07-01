@@ -1,4 +1,4 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.time
 
 import android.Manifest
 import android.app.AlarmManager
@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.RequiresPermission
+import com.temi.temi_robot.time.TimeListener
 import com.temi.temi_robot.dataclasses.TimeSlot
 import java.util.Calendar
 
@@ -92,7 +93,7 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
         alarmManager.cancel(pendingIntent)
     }
 
-    @androidx.annotation.RequiresPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)
+    @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     fun setAllAlarms(timeSlots: List<TimeSlot>){
         // Kill all alarms before setting new ones
         for (i in 0 until timeSlotsMaxNumber) {

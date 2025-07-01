@@ -13,12 +13,15 @@ import androidx.core.content.edit
 import com.robotemi.sdk.Robot
 import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.GoToBasePage
+import com.temi.temi_robot.time.AlarmScheduler
+import com.temi.temi_robot.time.TimeListener
 
 // Activity class
 class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
+    internal var serverUrl = "http://192.168.142.124:5000/process"
 
     internal var userRequest : String? = null
 
@@ -92,7 +95,7 @@ class MainActivity : AppCompatActivity() {
         prefs.edit { putBoolean("should_restore_fragment", false) }
     }
 
-    // When waking up the application, go directly to patrol page
+    // Page navigation when waking-up the application
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra("fragment_to_open")?.let {

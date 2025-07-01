@@ -11,7 +11,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
-import com.temi.temi_robot.AlarmScheduler
+import com.temi.temi_robot.time.AlarmScheduler
 import com.temi.temi_robot.JsonManager
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R

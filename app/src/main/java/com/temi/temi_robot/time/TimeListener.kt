@@ -1,10 +1,12 @@
-package com.temi.temi_robot
+package com.temi.temi_robot.time
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
 import androidx.core.content.edit
+import com.temi.temi_robot.MainActivity
+import com.temi.temi_robot.RobotController
 import com.temi.temi_robot.pages.GoToBasePage
 
 class TimeListener : BroadcastReceiver(){
@@ -49,7 +51,7 @@ class TimeListener : BroadcastReceiver(){
 
                 // Start main activity and open patrol page
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     putExtra("fragment_to_open", "MainPage")
                 }
                 context.startActivity(launchIntent)
@@ -57,7 +59,6 @@ class TimeListener : BroadcastReceiver(){
 
             // Going back to home base on time slots ends
             "end" -> {
-
                 // To end any conversation going on before going to home base
                 RobotController.finishConversation()
                 RobotController.setSatisfiedRequest(false)
@@ -79,7 +80,7 @@ class TimeListener : BroadcastReceiver(){
 
                 // Change to go to base page
                 val launchIntent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                     putExtra("fragment_to_open", "GoToBasePage")
                 }
                 context.startActivity(launchIntent)
