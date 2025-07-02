@@ -1,5 +1,6 @@
 package com.temi.temi_robot.pages
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
@@ -34,10 +35,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.layout_patrol, container, false)
+        val view = inflater.inflate(R.layout.layout_main_page, container, false)
         return view
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -90,6 +92,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val interactionButton = view.findViewById<Button>(R.id.interactionButton)
         val settingsButton = view.findViewById<ImageButton>(R.id.settingsButton)
         val timeButton = view.findViewById<ImageButton>(R.id.timeButton)
+
+        if(RobotController.isAtHomeBase()){
+            interactionButton.text = "Click on the button to ask me something"
+        }
 
         // Defining arguments for navigation
         val passwordPage = PasswordPage()

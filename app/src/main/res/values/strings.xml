@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Temi library assistant</string>
     <string name="ask_me_something">Wave at me or click on the button to ask me something</string>
-    <string name="my_gif">My GIF</string>
     <string name="nyp_logo" />
     <string name="temi_robot">Temi robot</string>
     <string name="validate_order_for_the_locations">Validate order for the locations</string>
@@ -12,7 +11,6 @@
     <string name="show_password">SHOW PASSWORD</string>
     <string name="continuate">Continue</string>
     <string name="settings_mode">Settings mode</string>
-    <string name="welcome_please_select_the_mode_you_want_to_use">Welcome, please select the mode you want to use:</string>
     <string name="cancel">Cancel</string>
     <string name="please_restart_the_application">Please restart the application</string>
     <string name="i_lost_connection_please_let_me_return_to_home_base_and_restart_me">I LOST CONNECTION PLEASE LET ME RETURN TO HOME BASE AND RESTART ME</string>

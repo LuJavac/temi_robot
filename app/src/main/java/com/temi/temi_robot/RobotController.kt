@@ -122,6 +122,9 @@ object RobotController:
     private val answer_82= "Please follow me, we are going to the lifestyle media."
     private val keywords1_82 = listOf("lifestyle media")
 
+    private val answer_83= "Please follow me, we are going to see this racist."
+    private val keywords1_83 = listOf("jason")
+
 
     // Time values
     private var lastRequestTime = 0L //
@@ -276,6 +279,10 @@ object RobotController:
     fun goToHomeBase(){
         goTo("home base")
         println(getRobot()?.detectionModeOn)
+    }
+
+    fun tiltHead(angle : Int){
+        getRobot()?.tiltAngle(angle)
     }
 
     // Person Detection
@@ -471,6 +478,7 @@ object RobotController:
                 isMoveRequest = false
                 setBlockMode(true)
                 isAtHomeBase = true
+                tiltHead(+55) // Make head go up
                 backToMainPageCallback?.onBackToMainPage()
             }
             // When a move request, do not trigger the patrolling appending
@@ -479,6 +487,7 @@ object RobotController:
                 speak("We arrived")
                 // Send temi back to home base after showing a location while being on home base
                 if(isAtHomeBase){
+                    goToHomeBase()
                     backToBaseCallback?.onBackToBase()
                 }
             }
@@ -669,6 +678,10 @@ object RobotController:
         else if (isIntoList(asrResult, keywords1_82, questions)){
             speak(answer_82)
             goTo("lifestyle media")
+        }
+        else if (isIntoList(asrResult, keywords1_83, questions)){
+            speak(answer_83)
+            goTo("jason")
         }
         // Start chatbot request if not a goTo request
         else {
