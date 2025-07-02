@@ -65,15 +65,17 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
+        alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             startMillis,
+            AlarmManager.INTERVAL_DAY,
             startPendingIntent
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
+        alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             endMillis,
+            AlarmManager.INTERVAL_DAY,
             endPendingIntent
         )
     }
