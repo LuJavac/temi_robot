@@ -7,6 +7,7 @@ hiltAndroidCompiler = "2.56.2"
 hiltAndroidCompilerVersion = "2.51.1"
 hiltAndroidVersion = "2.56.2"
 hiltNavigationCompose = "1.2.0"
+jsch = "0.1.55"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -40,6 +41,7 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 hilt-android-compiler-v2511 = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroidCompilerVersion" }
 hilt-android-v2511 = { module = "com.google.dagger:hilt-android", version.ref = "googleHiltAndroid" }
 hilt-android-v2562 = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroidVersion" }
+jsch = { module = "com.jcraft:jsch", version.ref = "jsch" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

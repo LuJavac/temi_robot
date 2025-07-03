@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
-    internal var serverUrl = "http://192.168.142.124:5000/process"
+    internal var serverUrl = "http://192.168.1.79:5000/process"
 
     internal var userRequest : String? = null
 
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         // Monitors time and activates wake-up for patrolling
         timeListener = TimeListener()
 
-        // Load SettingsPage as default
+        // Load FirstPage as default
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, FirstPage())
@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Load First Page in case of error
+                // Load Main Page in case of error
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, MainPage())
                     .commit()
