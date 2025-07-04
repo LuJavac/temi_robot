@@ -19,8 +19,9 @@ class AlarmScheduler(private var context: Context){
     fun scheduleTimeSlotAlarm(hour: Int, minute: Int, type: String, requestCode: Int, forTomorrow: Boolean=false) {
         println(type)
         println("planned alarm")
-        val now = System.currentTimeMillis()
+        val now = System.currentTimeMillis() // Current time
 
+        // Target time of the alarm (in the same day)
         val targetTime = Calendar.getInstance().apply {
             timeInMillis = now
             set(Calendar.HOUR_OF_DAY, hour)
@@ -28,15 +29,15 @@ class AlarmScheduler(private var context: Context){
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
 
+            // Alarm is in the past, schedule it for tomorrow
             if (timeInMillis <= now || forTomorrow) {
                 println("Schedule for tomorrow")
-                // Alarm is in the past, schedule it for tomorrow
                 add(Calendar.DAY_OF_YEAR, 1)
             }
         }
 
+        // Build Intent, set parameters and set alarm
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
         val startIntent = Intent(context, TimeListener::class.java).apply {
             putExtra("type", type)
             putExtra("requestCode", requestCode)
@@ -44,14 +45,12 @@ class AlarmScheduler(private var context: Context){
             putExtra("hour", hour)
             putExtra("minute", minute)
         }
-
         val startPendingIntent = PendingIntent.getBroadcast(
             context,
             requestCode,
             startIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             targetTime.timeInMillis,
