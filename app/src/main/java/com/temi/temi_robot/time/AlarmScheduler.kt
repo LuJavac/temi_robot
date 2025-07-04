@@ -10,11 +10,13 @@ import com.temi.temi_robot.time.TimeListener
 import com.temi.temi_robot.dataclasses.TimeSlot
 import java.util.Calendar
 
-class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumber: Int){
+class AlarmScheduler(private var context: Context){
+
+    private val timeSlotsMaxNumber = 3
 
     // Schedule a new alarm
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
-    fun scheduleTimeSlotAlarm(slot: TimeSlot, requestCode: Int) {
+    fun scheduleTimeSlotAlarm(hour: Int, minute: Int, type: String, forTomorrow: Boolean ,requestCode: Int) {
 
         // Get android alarm planning service
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -22,18 +24,28 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
         // Converting time slot into Unix calendar unit time
         val startMillis = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, slot.getStartingHour().toInt())
-            set(Calendar.MINUTE, slot.getStartingMinute().toInt())
+            /*
+            if(forTomorrow){
+                add(Calendar.DATE, 1)
+            }*/
+            set(Calendar.HOUR_OF_DAY, hour)
+
+            if(forTomorrow){
+                add(Calendar.MINUTE, 5)
+            }
+
+            //set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
-        /// Alarm for start
         // Starting TimeListener service even when app not currently executed
         val startIntent = Intent(context, TimeListener::class.java).apply {
-            putExtra("type", "start")
+            putExtra("type", type)
             putExtra("requestCode", requestCode)
             putExtra("timestamp", startMillis)
+            putExtra("hour", hour)
+            putExtra("minute", minute)
         }
 
         val startPendingIntent = PendingIntent.getBroadcast(
@@ -43,41 +55,12 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-
-        // Alarm for end
-        val endMillis = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, slot.getEndingHour().toInt())
-            set(Calendar.MINUTE, slot.getEndingMinute().toInt())
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        val endIntent = Intent(context, TimeListener::class.java).apply {
-            putExtra("type", "end")
-            putExtra("requestCode", requestCode + 1000)// offset to avoid conflicts
-            putExtra("timestamp", endMillis)
-        }
-
-        val endPendingIntent = PendingIntent.getBroadcast(
-            context,
-            requestCode + 1000,
-            endIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        alarmManager.setRepeating(
+        alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             startMillis,
-            AlarmManager.INTERVAL_DAY,
             startPendingIntent
         )
 
-        alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            endMillis,
-            AlarmManager.INTERVAL_DAY,
-            endPendingIntent
-        )
     }
 
     // Cancel an alarm
@@ -100,13 +83,14 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
         // Kill all alarms before setting new ones
         for (i in 0 until timeSlotsMaxNumber) {
             cancelAlarm(i)
-            cancelAlarm(i + 1000)
+            cancelAlarm(i + timeSlotsMaxNumber)
         }
 
         // Plan an alarm for each time slot
         timeSlots.forEachIndexed { index, slot ->
             if(slot.getState()){
-                scheduleTimeSlotAlarm(slot, index)
+                scheduleTimeSlotAlarm(slot.getStartingHour().toInt(), slot.getStartingMinute().toInt(), "start", forTomorrow = false, index)
+                scheduleTimeSlotAlarm(slot.getEndingHour().toInt(), slot.getEndingMinute().toInt(), "end", forTomorrow = false, index+timeSlotsMaxNumber) // Offset between start and end alarms to avoid conflicts
             }
         }
     }
@@ -114,5 +98,4 @@ class AlarmScheduler(private var context: Context, private val timeSlotsMaxNumbe
     fun getMaxTimeSlotsNumber(): Int {
         return timeSlotsMaxNumber
     }
-
 }

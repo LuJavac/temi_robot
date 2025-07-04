@@ -1,9 +1,11 @@
 package com.temi.temi_robot.time
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.PowerManager
+import androidx.annotation.RequiresPermission
 import androidx.core.content.edit
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.RobotController
@@ -11,7 +13,16 @@ import com.temi.temi_robot.pages.GoToBasePage
 
 class TimeListener : BroadcastReceiver(){
 
+    @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onReceive(context: Context, intent: Intent) {
+
+        // Rescheduling new alarm for tomorrow
+        val alarmScheduler = AlarmScheduler(context)
+        val hour = intent.getStringExtra("hour")
+        val minute = intent.getStringExtra("minute")
+        val requestCode = intent.getIntExtra("requestCode", -1)
+        val type = intent.getStringExtra("type")
+        alarmScheduler.scheduleTimeSlotAlarm(hour!!.toInt(), minute!!.toInt(), type!!, forTomorrow = true, requestCode)
 
         // Check if added alarm is not in the past
         val tolerance = 1000L // 1 second tolerance
@@ -30,8 +41,6 @@ class TimeListener : BroadcastReceiver(){
         )
         wakeLock.acquire(3000L)
 
-        // Identify if alarm is start or end or time slot
-        val type = intent.getStringExtra("type")
         when (type) {
             // Start patrolling on time slots starts
             "start" -> {
