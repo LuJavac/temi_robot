@@ -16,34 +16,31 @@ class AlarmScheduler(private var context: Context){
 
     // Schedule a new alarm
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
-    fun scheduleTimeSlotAlarm(hour: Int, minute: Int, type: String, forTomorrow: Boolean ,requestCode: Int) {
+    fun scheduleTimeSlotAlarm(hour: Int, minute: Int, type: String, requestCode: Int, forTomorrow: Boolean=false) {
+        println(type)
+        println("planned alarm")
+        val now = System.currentTimeMillis()
 
-        // Get android alarm planning service
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-        // Converting time slot into Unix calendar unit time
-        val startMillis = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            /*
-            if(forTomorrow){
-                add(Calendar.DATE, 1)
-            }*/
+        val targetTime = Calendar.getInstance().apply {
+            timeInMillis = now
             set(Calendar.HOUR_OF_DAY, hour)
-
-            if(forTomorrow){
-                add(Calendar.MINUTE, 5)
-            }
-
-            //set(Calendar.MINUTE, minute)
+            set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
 
-        // Starting TimeListener service even when app not currently executed
+            if (timeInMillis <= now || forTomorrow) {
+                println("Schedule for tomorrow")
+                // Alarm is in the past, schedule it for tomorrow
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }
+
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         val startIntent = Intent(context, TimeListener::class.java).apply {
             putExtra("type", type)
             putExtra("requestCode", requestCode)
-            putExtra("timestamp", startMillis)
+            putExtra("timestamp", targetTime.timeInMillis)
             putExtra("hour", hour)
             putExtra("minute", minute)
         }
@@ -57,11 +54,11 @@ class AlarmScheduler(private var context: Context){
 
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            startMillis,
+            targetTime.timeInMillis,
             startPendingIntent
         )
-
     }
+
 
     // Cancel an alarm
     fun cancelAlarm(requestCode: Int) {
@@ -81,16 +78,15 @@ class AlarmScheduler(private var context: Context){
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     fun setAllAlarms(timeSlots: List<TimeSlot>){
         // Kill all alarms before setting new ones
-        for (i in 0 until timeSlotsMaxNumber) {
+        for (i in 0 until 1000) {
             cancelAlarm(i)
-            cancelAlarm(i + timeSlotsMaxNumber)
         }
 
         // Plan an alarm for each time slot
         timeSlots.forEachIndexed { index, slot ->
             if(slot.getState()){
-                scheduleTimeSlotAlarm(slot.getStartingHour().toInt(), slot.getStartingMinute().toInt(), "start", forTomorrow = false, index)
-                scheduleTimeSlotAlarm(slot.getEndingHour().toInt(), slot.getEndingMinute().toInt(), "end", forTomorrow = false, index+timeSlotsMaxNumber) // Offset between start and end alarms to avoid conflicts
+                scheduleTimeSlotAlarm(slot.getStartingHour().toInt(), slot.getStartingMinute().toInt(), "start", index)
+                scheduleTimeSlotAlarm(slot.getEndingHour().toInt(), slot.getEndingMinute().toInt(), "end",  index+timeSlotsMaxNumber) // Offset between start and end alarms to avoid conflicts
             }
         }
     }

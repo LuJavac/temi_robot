@@ -258,7 +258,6 @@ object RobotController:
 
     fun goTo(location: String) {
         setDetectionModeOn(false, 0.5f)
-        println(getRobot()?.detectionModeOn)
         isMoveRequest = true
         getRobot()?.goTo(location)
     }
@@ -278,7 +277,6 @@ object RobotController:
 
     fun goToHomeBase(){
         goTo("home base")
-        println(getRobot()?.detectionModeOn)
     }
 
     fun tiltHead(angle : Int){

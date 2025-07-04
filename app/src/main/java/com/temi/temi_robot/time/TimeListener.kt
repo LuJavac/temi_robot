@@ -10,26 +10,26 @@ import androidx.core.content.edit
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.RobotController
 import com.temi.temi_robot.pages.GoToBasePage
+import java.util.Calendar
 
 class TimeListener : BroadcastReceiver(){
 
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     override fun onReceive(context: Context, intent: Intent) {
 
-        // Rescheduling new alarm for tomorrow
+        // Schedule alarm for tomorrow
         val alarmScheduler = AlarmScheduler(context)
-        val hour = intent.getStringExtra("hour")
-        val minute = intent.getStringExtra("minute")
+        val hour = intent.getIntExtra("hour", -1)
+        val minute = intent.getIntExtra("minute", -1)
         val requestCode = intent.getIntExtra("requestCode", -1)
         val type = intent.getStringExtra("type")
-        alarmScheduler.scheduleTimeSlotAlarm(hour!!.toInt(), minute!!.toInt(), type!!, forTomorrow = true, requestCode)
+        alarmScheduler.scheduleTimeSlotAlarm(hour, minute, type.toString(), requestCode, forTomorrow = true)
 
-        // Check if added alarm is not in the past
-        val tolerance = 1000L // 1 second tolerance
-        val timestamp = intent.getLongExtra("timestamp", -1L)
-        val now = System.currentTimeMillis()
-        if (timestamp + tolerance < now) {
-            println("return")
+        // If on week-end do not execute anything
+        val calendar = Calendar.getInstance()
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val isWeekend = (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY)
+        if(isWeekend){
             return
         }
 
