@@ -291,7 +291,7 @@ object RobotController:
     // Calls
     private fun callLibrarian(){
         val contacts = getRobot()?.allContact
-        val librarianID = contacts?.find { it.name == "Johan" }?.userId
+        val librarianID = contacts?.find { it.name == "Kamil" }?.userId
         if(librarianID == null){
             setBlockMode(false)
             speak("I couldn't find the librarian in the contact list")
