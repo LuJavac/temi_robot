@@ -136,6 +136,7 @@ object RobotController:
     private var isAskSatisfiedRequest = false
     private var isDoNotEatSpeech = false
     private var isAtHomeBase = true
+    private var isGoingHome = false
 
     private var readyCallback: RobotReadyCallback? = null
     private var mapReadyCallback: MapReadyCallback? = null
@@ -276,6 +277,7 @@ object RobotController:
     }
 
     fun goToHomeBase(){
+        isGoingHome = true
         goTo("home base")
     }
 
@@ -400,6 +402,11 @@ object RobotController:
             return@Runnable
         }
 
+        if(isGoingHome){
+            goToHomeBase()
+            return@Runnable
+        }
+
         // Do not trigger inactivity when on block mode or when going to a place
         if(!blockMode && !isMoveRequest){
             println("inactivity triggered")
@@ -474,6 +481,7 @@ object RobotController:
             // When arriving at home base set into block mode
             if(location == "home base"){
                 isMoveRequest = false
+                isGoingHome = false
                 setBlockMode(true)
                 isAtHomeBase = true
                 tiltHead(+55) // Make head go up
