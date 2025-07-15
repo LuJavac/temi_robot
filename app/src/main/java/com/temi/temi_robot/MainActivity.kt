@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Deactivate the flag after use, so that we load the last saved fragment only once after starting a meeting
+        // Turn off the flag after use, so that we load the last saved fragment only once after starting a meeting
         prefs.edit { putBoolean("should_restore_fragment", false) }
     }
 
