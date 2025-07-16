@@ -417,7 +417,7 @@ object RobotController:
 
     fun resetInactivityTimer() {
         inactivityHandler.removeCallbacks(inactivityRunnable)
-        inactivityHandler.postDelayed(inactivityRunnable, 20_000) // 20 seconds
+        inactivityHandler.postDelayed(inactivityRunnable, 120_000) // 120 seconds
     }
 
     // Speech handler to speak every x minutes
