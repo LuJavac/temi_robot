@@ -86,8 +86,8 @@ object RobotController:
     private val answer_70= "Please follow me, we are going to the book recommendations."
     private val keywords1_70 = listOf("book recommendations")
 
-    private val answer_71= "Please follow me, we are going to the magazines."
-    private val keywords1_71 = listOf("magazines", "magazines collection", "magazines books")
+    private val answer_71= "Please follow me, we are going to the lifestyle magazines."
+    private val keywords1_71 = listOf("lifestyle magazines")
 
     private val answer_72= "Please follow me, we are going to the lifestyle books."
     private val keywords1_72 = listOf("lifestyle books", "lifestyle book", "life style")
@@ -122,8 +122,6 @@ object RobotController:
     private val answer_82= "Please follow me, we are going to the lifestyle media."
     private val keywords1_82 = listOf("lifestyle media")
 
-    private val answer_83= "Please follow me, we are going to see this racist."
-    private val keywords1_83 = listOf("jason")
 
 
     // Time values
@@ -676,10 +674,6 @@ object RobotController:
         else if (isIntoList(asrResult, keywords1_82, questions)){
             speak(answer_82)
             goTo("lifestyle media")
-        }
-        else if (isIntoList(asrResult, keywords1_83, questions)){
-            speak(answer_83)
-            goTo("jason")
         }
         // Start chatbot request if not a goTo request
         else {
