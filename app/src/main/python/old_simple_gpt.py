@@ -12,3 +12,5 @@ def get_response(prompt):
     )
 
     return response['choices'][0]['message']['content']
+
+
