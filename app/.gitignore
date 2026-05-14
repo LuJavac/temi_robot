@@ -1,3 +1,5 @@
 /build
 config.py
 SSHConfig.kt
+__pycache__/
+*.pyc
