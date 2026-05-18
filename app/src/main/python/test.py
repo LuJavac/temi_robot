@@ -4,7 +4,7 @@ import requests
 url = 'http://127.0.0.1:5000/process'
 
 # La question que le "robot" va envoyer
-data = {'text': 'Quelles sont les bourses disponibles ?'}
+data = {'text': 'Can you tell me about the sports facilities at Nyp? \n Tell me where are those facilities located ? \n What can I eat in south canteen, north, kofu, center canteen ?  when are the opening hours of each of the canteens ? What can you study at Nyp ? What are the courses offered ? What are the facilities available for students ?'}
 
 print(f"Envoi de la question au serveur : '{data['text']}'...")
 
@@ -14,7 +14,7 @@ try:
     
     # On affiche la réponse du serveur
     if response.status_code == 200:
-        print("✅ Réponse de l'IA :")
+        print("✅ Réponse de l'IA : \n")
         print(response.json()['response'])
     else:
         print(f"❌ Erreur du serveur : Code {response.status_code}")

@@ -46,11 +46,19 @@ def chatbot(input_text):
     )
     query_engine = index.as_query_engine(
         response_synthesizer=response_synthesizer,
-        similarity_top_k=2
+        similarity_top_k=8
     )
     
     print(f"🤖 Le robot cherche la réponse pour : '{input_text}'")
     response = query_engine.query(input_text)
+
+    # verif des sources utilisées par le RAG
+    print("\n🔍 CE QUE LE ROBOT A LU DU RAG:")
+    for node in response.source_nodes:
+        print(f"-> {node.node.text}")
+    print("-----------------------------------------\n")
+    # 
+    
     return response.response
 
 @app.route('/process', methods=['POST'])
