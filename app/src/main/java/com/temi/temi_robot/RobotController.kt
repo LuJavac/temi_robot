@@ -1,7 +1,11 @@
 package com.temi.temi_robot
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.speech.tts.TextToSpeech
+import android.util.Log
+import java.util.Locale
 
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
@@ -36,6 +40,12 @@ object RobotController:
     private var robotRef: WeakReference<Robot>? = null
     private var mapName: String? = null
     private lateinit var patrolStates: PatrolStates
+
+    // Fallback Android TTS — used on .test builds where the Temi SDK rejects
+    // speak() because the package signature isn't whitelisted in Temi dev console.
+    private var androidTts: TextToSpeech? = null
+    private var androidTtsReady = false
+    private var useFallbackTts = false
 
     // Add listeners to robot instance
     fun setListeners(){
@@ -219,16 +229,45 @@ object RobotController:
         getRobot()?.setHardButtonMode(type, mode)
     }
 
+    // Initializes the Android TTS engine as a fallback for .test builds.
+    // No-op on the production package — Temi SDK speak() works there.
+    fun initAndroidTts(context: Context) {
+        if (androidTts != null) return
+        useFallbackTts = context.packageName.endsWith(".test")
+        if (!useFallbackTts) return
+        androidTts = TextToSpeech(context.applicationContext) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                androidTts?.language = Locale.US
+                androidTtsReady = true
+                Log.i("RobotController", "Android TTS fallback ready (.test build)")
+            } else {
+                Log.w("RobotController", "Android TTS init failed (status=$status)")
+            }
+        }
+    }
+
+    fun releaseAndroidTts() {
+        androidTts?.stop()
+        androidTts?.shutdown()
+        androidTts = null
+        androidTtsReady = false
+    }
+
     // Speech
     fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
-        // Creating TTS request before speaking
+        // On .test builds, use Android TTS exclusively to avoid the double-voice
+        // we observed when Robot.speak() also works on the .test signature.
+        if (useFallbackTts && androidTtsReady) {
+            androidTts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, null)
+            return
+        }
+        // Production: Temi TTS with subtitles on the conversation layer.
         val request = TtsRequest.create(
             speech = speech,
             isShowOnConversationLayer = subtitles,
             showAnimationOnly = !subtitles,
             language = TtsRequest.Language.EN_US
         )
-        // Speaking with sdk function
         getRobot()?.speak(request)
     }
 

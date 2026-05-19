@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.1"
+agp = "8.12.3"
 glide = "4.16.0"
 googleHiltAndroid = "2.51.1"
 hiltAndroid = "1.2.0"
@@ -8,23 +8,25 @@ hiltAndroidCompilerVersion = "2.51.1"
 hiltAndroidVersion = "2.56.2"
 hiltNavigationCompose = "1.2.0"
 jsch = "0.1.55"
-kotlin = "2.0.21"
+kotlin = "2.1.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-kotlinxSerializationJson = "1.6.3"
-lifecycleRuntimeKtx = "2.9.0"
+kotlinxSerializationJson = "1.7.3"
+lifecycleRuntimeKtx = "2.9.4"
 activityCompose = "1.10.1"
-composeBom = "2024.09.00"
+composeBom = "2026.04.01"
 media3Exoplayer = "1.6.1"
 navigationFragmentKtx = "2.9.0"
 okhttp = "4.12.0"
 recyclerview = "1.4.0"
 sdkVersion = "1.137.1"
-appcompat = "1.7.0"
+appcompat = "1.7.1"
 uiAndroid = "1.8.2"
 constraintlayout = "2.2.1"
+mediapipeTasks = "0.10.21"
+cameraX = "1.5.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -61,6 +63,10 @@ robotemi-sdk = { module = "com.robotemi:sdk", version.ref = "sdkVersion" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+mediapipe-tasks-vision = { module = "com.google.mediapipe:tasks-vision", version.ref = "mediapipeTasks" }
+androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraX" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraX" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraX" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

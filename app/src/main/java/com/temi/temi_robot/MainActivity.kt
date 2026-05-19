@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
         RobotController.setMapName(mapName)
         RobotController.setListeners()
 
+        // Init Android TTS fallback (active only on .test builds, no-op in production)
+        RobotController.initAndroidTts(this)
+
         // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -121,6 +124,7 @@ class MainActivity : AppCompatActivity() {
     // Release resources on destroy
     override fun onDestroy() {
         super.onDestroy()
+        RobotController.releaseAndroidTts()
         // Do not need to restore last fragment saved after restarting/destroying the app
         getSharedPreferences("temi_state", MODE_PRIVATE).edit {
             putBoolean("should_restore_fragment", false)

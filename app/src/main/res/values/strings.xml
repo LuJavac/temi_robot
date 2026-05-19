@@ -23,7 +23,7 @@
     <string name="delete_slot">Delete slot</string>
     <string name="set_patrol_locations">Set patrolling locations</string>
     <string name="set_patrolling_time_slots">Set patrolling time slots</string>
-    <string name="going_to_home_base_to_initialize">Going to home base</string>
+    <string name="going_to_home_base_to_initialize">Heading to home base</string>
     <string name="am_i_at_home_base">Am I at home base ?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

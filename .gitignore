@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+.claude/
+.idea/
+!.idea/codeStyles/
+
+app/src/main/python/config.py

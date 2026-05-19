@@ -2,6 +2,7 @@ package com.temi.temi_robot.pages
 
 import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.annotation.RequiresPermission
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.robotemi.sdk.constants.HardButton
 import com.temi.temi_robot.time.AlarmScheduler
@@ -42,6 +45,16 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Request camera permission once at app startup; Android persists the grant across launches
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.CAMERA),
+                1001
+            )
+        }
 
         // Hide top bar
         RobotController.hideTopBar()
