@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
 }
 android {
     namespace = "com.temi.temi_robot"
@@ -24,6 +24,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -61,6 +65,10 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.ui.android)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.mediapipe.tasks.vision)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
