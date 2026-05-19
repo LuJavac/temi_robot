@@ -1,0 +1,339 @@
+============================================================
+Changements effectués le 2026-05-14
+============================================================
+
+Contexte : permettre la cohabitation de deux apps sur le robot
+Temi — celle de Johan (package com.temi.temi_robot, signature
+1c77046c, installée le 2025-07-22) et la version de test pour
+travailler sur la détection de geste "wave" sans écraser la
+version existante.
+
+Approche retenue : utiliser un applicationIdSuffix sur le
+build type debug pour que le package devienne
+com.temi.temi_robot.test → Android voit deux apps distinctes.
+
+------------------------------------------------------------
+Changement #1 — app/build.gradle.kts
+------------------------------------------------------------
+
+But : ajouter le suffixe ".test" sur la build debug pour
+qu'elle s'installe à côté de l'app existante.
+
+--- AVANT ---
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+--- APRÈS ---
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
+        }
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+Conséquence : la build debug a maintenant le package
+com.temi.temi_robot.test et la versionName "1.0-test". La
+build release garde le package original com.temi.temi_robot.
+
+------------------------------------------------------------
+Changement #2 — app/src/debug/res/values/strings.xml (NOUVEAU FICHIER)
+------------------------------------------------------------
+
+But : afficher "Temi Test" comme nom d'app sur l'écran
+d'accueil du robot pour la build debug uniquement, sans
+toucher au strings.xml de production.
+
+--- AVANT ---
+
+(le fichier n'existait pas)
+
+--- APRÈS ---
+
+<resources>
+    <string name="app_name">Temi Test</string>
+</resources>
+
+Conséquence : grâce au source set "debug" d'Android Gradle
+Plugin, ce strings.xml surcharge celui de main/ uniquement
+pour la build debug. La build release garde "Temi library
+assistant" comme nom d'app.
+
+------------------------------------------------------------
+Limites connues de la build "Temi Test"
+------------------------------------------------------------
+
+Le SDK Temi (carte, patrol, goTo, meetings) est enregistré
+dans la console développeur Temi avec le package name
+com.temi.temi_robot + l'empreinte SHA d'origine. La build
+.test ne sera donc PAS reconnue par le robot pour ces
+fonctionnalités.
+
+Fonctionne sur la build .test :
+- Wave gesture (CameraX + MediaPipe + TTS "Hello!")
+- UI, pages, sauvegarde JSON locale
+
+Ne fonctionne PAS sur la build .test :
+- Navigation (goTo, patrol, goToHomeBase)
+- Meetings (appel librarian Kamil)
+- Permissions Temi (MAP, MEETINGS)
+
+------------------------------------------------------------
+Changement #3 — app/src/main/java/com/temi/temi_robot/detecttion/WaveGestureRecognizer.kt
+------------------------------------------------------------
+
+But : diagnostiquer pourquoi le wave gesture ne fonctionne pas
+sur le Temi. Les logs montraient :
+
+  CameraX W: No available camera can be found.
+  Cams:1 Id:0 Lens:0  Filters:1 LensFilter:1
+
+→ CameraX ne voit qu'1 caméra exposée comme LENS_FACING_BACK,
+alors que le code demandait DEFAULT_FRONT_CAMERA. Match
+impossible. Et les logs annoncés dans PROJECT.md (MediaPipe
+init, frames processed, first hand detected) n'existaient pas
+dans le code.
+
+--- AVANT (4 modifs concentrées dans le même fichier) ---
+
+    private val cameraExecutor = Executors.newSingleThreadExecutor()
+    private var handLandmarker: HandLandmarker? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+
+    // Sliding history of (timestamp, normalized X of wrist landmark)
+    private val wristXHistory = ArrayDeque<Pair<Long, Float>>()
+    private var lastWaveTimeMs = 0L
+
+    ...
+
+        handLandmarker = HandLandmarker.createFromOptions(context, options)
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun bindCamera() {
+        val providerFuture = ProcessCameraProvider.getInstance(context)
+        providerFuture.addListener({
+            try {
+                cameraProvider = providerFuture.get()
+
+                val analysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                    .also {
+                        it.setAnalyzer(cameraExecutor) { imageProxy ->
+                            processImageProxy(imageProxy)
+                        }
+                    }
+
+                cameraProvider?.unbindAll()
+                cameraProvider?.bindToLifecycle(
+                    lifecycleOwner,
+                    CameraSelector.DEFAULT_FRONT_CAMERA,
+                    analysis,
+                )
+                Log.i(TAG, "Camera bound, front camera + analysis use case active")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to bind camera", e)
+            }
+        }, ContextCompat.getMainExecutor(context))
+    }
+
+    private fun processImageProxy(imageProxy: ImageProxy) {
+        try {
+            val bitmap: Bitmap = imageProxy.toBitmap()
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            handLandmarker?.detectAsync(mpImage, System.currentTimeMillis())
+        } catch (e: Exception) {
+            Log.e(TAG, "Frame processing failed", e)
+        } finally {
+            imageProxy.close()
+        }
+    }
+
+    private fun handleResult(result: HandLandmarkerResult) {
+        if (result.landmarks().isEmpty()) return
+        // Landmark 0 = wrist; .x() is normalized to [0,1] across frame width
+        val wristX = result.landmarks()[0][0].x()
+
+--- APRÈS ---
+
+    private val cameraExecutor = Executors.newSingleThreadExecutor()
+    private var handLandmarker: HandLandmarker? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+
+    // Sliding history of (timestamp, normalized X of wrist landmark)
+    private val wristXHistory = ArrayDeque<Pair<Long, Float>>()
+    private var lastWaveTimeMs = 0L
+
+    // Diagnostic counters
+    private var framesProcessed = 0L
+    private var handsDetected = 0L
+    private var firstHandLogged = false
+
+    ...
+
+        handLandmarker = HandLandmarker.createFromOptions(context, options)
+        Log.i(TAG, "MediaPipe HandLandmarker initialized")
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private fun bindCamera() {
+        val providerFuture = ProcessCameraProvider.getInstance(context)
+        providerFuture.addListener({
+            try {
+                cameraProvider = providerFuture.get()
+
+                // Diagnostic: list every camera CameraX can see on this device.
+                val cams = cameraProvider?.availableCameraInfos ?: emptyList()
+                Log.i(TAG, "Available cameras: ${cams.size}")
+                cams.forEachIndexed { i, info ->
+                    val lensName = when (info.lensFacing) {
+                        CameraSelector.LENS_FACING_FRONT -> "FRONT"
+                        CameraSelector.LENS_FACING_BACK -> "BACK"
+                        CameraSelector.LENS_FACING_EXTERNAL -> "EXTERNAL"
+                        else -> "UNKNOWN(${info.lensFacing})"
+                    }
+                    Log.i(TAG, "  cam[$i] lensFacing=$lensName")
+                }
+
+                // Prefer FRONT (selfie cam); fall back to BACK if FRONT not exposed.
+                val selector: CameraSelector = when {
+                    cameraProvider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) == true -> {
+                        Log.i(TAG, "Using FRONT camera")
+                        CameraSelector.DEFAULT_FRONT_CAMERA
+                    }
+                    cameraProvider?.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA) == true -> {
+                        Log.w(TAG, "FRONT camera not available, falling back to BACK camera")
+                        CameraSelector.DEFAULT_BACK_CAMERA
+                    }
+                    else -> {
+                        Log.e(TAG, "No camera available at all — aborting bind")
+                        return@addListener
+                    }
+                }
+
+                val analysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                    .also {
+                        it.setAnalyzer(cameraExecutor) { imageProxy ->
+                            processImageProxy(imageProxy)
+                        }
+                    }
+
+                cameraProvider?.unbindAll()
+                cameraProvider?.bindToLifecycle(
+                    lifecycleOwner,
+                    selector,
+                    analysis,
+                )
+                Log.i(TAG, "Camera bound + analysis use case active")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to bind camera", e)
+            }
+        }, ContextCompat.getMainExecutor(context))
+    }
+
+    private fun processImageProxy(imageProxy: ImageProxy) {
+        try {
+            framesProcessed++
+            if (framesProcessed == 1L || framesProcessed % 60L == 0L) {
+                Log.i(TAG, "Camera frames processed: $framesProcessed (hand-detected: $handsDetected)")
+            }
+            val bitmap: Bitmap = imageProxy.toBitmap()
+            val mpImage = BitmapImageBuilder(bitmap).build()
+            handLandmarker?.detectAsync(mpImage, System.currentTimeMillis())
+        } catch (e: Exception) {
+            Log.e(TAG, "Frame processing failed", e)
+        } finally {
+            imageProxy.close()
+        }
+    }
+
+    private fun handleResult(result: HandLandmarkerResult) {
+        if (result.landmarks().isEmpty()) return
+        handsDetected++
+        if (!firstHandLogged) {
+            firstHandLogged = true
+            Log.i(TAG, "First hand detected")
+        }
+        // Landmark 0 = wrist; .x() is normalized to [0,1] across frame width
+        val wristX = result.landmarks()[0][0].x()
+
+Conséquences :
+- On verra dans logcat la liste exacte des caméras exposées
+  par le Temi à CameraX.
+- Si la front cam n'est pas dispo, on bascule automatiquement
+  sur la back cam (qui est probablement la seule visible et
+  qui pointe vers l'utilisateur depuis le robot).
+- On verra défiler les frames traitées et la détection de
+  main pour distinguer "caméra pas bindée" / "caméra OK mais
+  pas de main détectée" / "main détectée mais wave non
+  reconnu".
+
+------------------------------------------------------------
+Changement #4 — app/src/main/java/com/temi/temi_robot/pages/MainPage.kt
+------------------------------------------------------------
+
+But : libérer la caméra frontale avant que CameraX/MediaPipe
+ne tente de la binder. Le SDK Temi peut tenir la caméra via
+sa détection de personne native, ce qui ferait échouer
+silencieusement le bind. PROJECT.md mentionnait cette
+désactivation mais elle n'était pas implémentée dans le code.
+
+--- AVANT ---
+
+    private fun initWaveDetector() {
+        waveRecognizer = WaveGestureRecognizer(
+            context = requireContext(),
+            lifecycleOwner = viewLifecycleOwner,
+        ) {
+            requireActivity().runOnUiThread {
+                RobotController.speak("Hello!")
+            }
+        }
+        waveRecognizer?.start()
+    }
+
+--- APRÈS ---
+
+    private fun initWaveDetector() {
+        // Temi native person detection holds the front-facing camera; release it
+        // so CameraX/MediaPipe can bind to it for wave detection.
+        RobotController.setDetectionModeOn(false, 0.5f)
+
+        waveRecognizer = WaveGestureRecognizer(
+            context = requireContext(),
+            lifecycleOwner = viewLifecycleOwner,
+        ) {
+            requireActivity().runOnUiThread {
+                RobotController.speak("Hello!")
+            }
+        }
+        waveRecognizer?.start()
+    }
+
+------------------------------------------------------------
+Fichiers modifiés / créés aujourd'hui
+------------------------------------------------------------
+
+  M  app/build.gradle.kts
+  A  app/src/debug/res/values/strings.xml
+  M  app/src/main/java/com/temi/temi_robot/detecttion/WaveGestureRecognizer.kt
+  M  app/src/main/java/com/temi/temi_robot/pages/MainPage.kt
+  A  changes_2026-05-14.txt  (ce fichier)

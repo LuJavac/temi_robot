@@ -54,7 +54,7 @@ class LostConnectionPage : Fragment(){
             }
         }
 
-        // Registering callback to detect system Wi-FI changes
+        // Registering callback to detect system Wi-Fi changes
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()

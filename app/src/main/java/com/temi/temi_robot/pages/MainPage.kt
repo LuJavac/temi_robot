@@ -1,5 +1,10 @@
 package com.temi.temi_robot.pages
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.core.content.ContextCompat
+import com.temi.temi_robot.detection.WaveGestureRecognizer
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
@@ -23,6 +28,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+    private var waveRecognizer: WaveGestureRecognizer? = null
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -57,9 +63,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                     .addToBackStack(null)
                     .commit()
             }
+
         }
 
-        // Registering callback to detect system Wi-FI changes
+        // Registering callback to detect system Wi-Fi changes
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
@@ -136,6 +143,13 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 .addToBackStack(null)
                 .commit()
         }
+        // --- Wave gesture detection ---
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED) {
+            initWaveDetector()
+        } else {
+            Log.w("MainPage", "Camera permission not granted — wave detection unavailable this session")
+        }
 
     }
 
@@ -172,6 +186,40 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     override fun onDestroy() {
         super.onDestroy()
         connectivityManager.unregisterNetworkCallback(networkCallback)
+    }
+    private fun initWaveDetector() {
+        // Temi native person detection holds the front-facing camera; release it
+        // so CameraX/MediaPipe can bind to it for wave detection.
+        RobotController.setDetectionModeOn(false, 0.5f)
+
+        waveRecognizer = WaveGestureRecognizer(
+            context = requireContext(),
+            lifecycleOwner = viewLifecycleOwner,
+        ) {
+            requireActivity().runOnUiThread {
+                RobotController.speak("Hello!")
+                showHelloOverlay()
+            }
+        }
+        waveRecognizer?.start()
+    }
+
+    private val helloHideRunnable = Runnable {
+        view?.findViewById<View>(R.id.helloOverlay)?.visibility = View.GONE
+    }
+
+    private fun showHelloOverlay() {
+        val overlay = view?.findViewById<View>(R.id.helloOverlay) ?: return
+        overlay.visibility = View.VISIBLE
+        overlay.removeCallbacks(helloHideRunnable)
+        overlay.postDelayed(helloHideRunnable, 2000L)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        waveRecognizer?.stop()
+        waveRecognizer = null
+        RobotController.setDetectionModeOn(true, 0.5f)
     }
 
 }
