@@ -21,8 +21,7 @@ class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
-    internal var serverUrl = "http://192.168.1.79:5000/process"
-
+    internal var serverUrl = "http://192.168.1.30:5000/process" // PC:Lucas TONLOP and Wifi:gen
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
