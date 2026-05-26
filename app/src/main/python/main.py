@@ -2,6 +2,8 @@ from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageCon
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.response_synthesizers import get_response_synthesizer
+from llama_index.core import PromptTemplate
+
 
 import config
 import os
@@ -40,13 +42,32 @@ def get_index():
 index = get_index()
 
 def chatbot(input_text):
+    # Le prompt stable en anglais
+    custom_prompt_str = (
+        "You are Temi, a smart, friendly, and helpful robot assistant at NYP.\n"
+        "Here is the official database context:\n"
+        "---------------------\n"
+        "{context_str}\n"
+        "---------------------\n"
+        "User's query: {query_str}\n\n"
+        "STRICT INSTRUCTIONS:\n"
+        "1. If the official context contains the answer, use it to reply accurately.\n"
+        "2. If the user's query is completely unrelated to the context (e.g., general knowledge, animals like unicorns/kangaroos, jokes, small talk), COMPLETELY IGNORE the context and answer using your general AI knowledge in a friendly way.\n"
+        "3. NEVER say 'Based on the provided context' or 'I don't have information in my context'. Just answer the user directly and naturally."
+    )
+    custom_qa_template = PromptTemplate(custom_prompt_str)
+
+    # Configuration du synthétiseur
     response_synthesizer = get_response_synthesizer(
         response_mode="compact",
         streaming=False
     )
+    
+    # Application au moteur de recherche
     query_engine = index.as_query_engine(
         response_synthesizer=response_synthesizer,
-        similarity_top_k=8
+        similarity_top_k=4,
+        text_qa_template=custom_qa_template 
     )
     
     print(f"🤖 Le robot cherche la réponse pour : '{input_text}'")
@@ -57,9 +78,9 @@ def chatbot(input_text):
     for node in response.source_nodes:
         print(f"-> {node.node.text}")
     print("-----------------------------------------\n")
-    # 
     
     return response.response
+
 
 @app.route('/process', methods=['POST'])
 def process():

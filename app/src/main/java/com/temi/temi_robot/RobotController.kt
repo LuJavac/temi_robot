@@ -136,7 +136,7 @@ object RobotController:
 
     // Time values
     private var lastRequestTime = 0L //
-    private val requestCooldownMillis = 20000L // 20 seconds
+    private val requestCooldownMillis = 60000L // 60 secondes au lieu de 20
 
     // Own variables
     private var isMoveRequest = false
@@ -277,6 +277,13 @@ object RobotController:
     
     fun finishConversation(){
         getRobot()?.finishConversation()
+    }
+    fun stopSpeaking() {
+        // On coupe la voix officielle de Temi
+        getRobot()?.cancelAllTtsRequests()
+
+        //  On coupe la voix de secours d'Android (Celle qui parle en ce moment !)
+        androidTts?.stop()
     }
 
 
@@ -469,19 +476,16 @@ object RobotController:
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
         if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
-            // If the robot was saying an answer, ask if satisfied then
-            if(isAskSatisfiedRequest){
-                askQuestion("Do you want me to call a librarian in case you're not satisfied with the answer ?")
-                return
-            }
-            // If the robot talked due to periodical speech, restart it again
+
+            // On a supprimé le bloc "isAskSatisfiedRequest" ici !
+            // Le robot ne demandera plus s'il doit appeler le bibliothécaire à la fin d'une phrase.
+
+            // Si le robot a parlé à cause du speech périodique ("Do not eat"), on le relance
             if(isDoNotEatSpeech){
                 isDoNotEatSpeech = false
                 startPeriodicSpeech(15)
                 return
             }
-
-            // Otherwise don't change his current behavior
         }
     }
 
@@ -716,7 +720,6 @@ object RobotController:
         }
         // Start chatbot request if not a goTo request
         else {
-            isAskSatisfiedRequest = true
             requestReadyCallback?.onRequestIsReady(asrResult)
         }
     }

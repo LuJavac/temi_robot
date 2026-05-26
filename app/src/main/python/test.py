@@ -4,7 +4,7 @@ import requests
 url = 'http://127.0.0.1:5000/process'
 
 # La question que le "robot" va envoyer
-data = {'text': 'What criteria does NYP look out for during the EAE selection process for AI & Robotics? Can I get any module exemptions if I took O-Level Computing in secondary school? What is artificial intelligence (AI)?'}
+data = {'text': 'who are you and what can we do at nyp and what is a frog?'}
 
 print(f"Envoi de la question au serveur : '{data['text']}'...")
 

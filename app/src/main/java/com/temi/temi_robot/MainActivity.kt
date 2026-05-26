@@ -18,7 +18,7 @@ import com.temi.temi_robot.time.TimeListener
 
 // Activity class
 class MainActivity : AppCompatActivity() {
-    private val mapName = "R4 Block Complete (USE THIS) for BOA1" //level 2 backup
+    private val mapName = "R4 Block Complete (USE THIS) for RIG1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
     internal var serverUrl = "http://192.168.1.30:5000/process" // PC:Lucas TONLOP and Wifi:gen

@@ -100,6 +100,26 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val settingsButton = view.findViewById<ImageButton>(R.id.settingsButton)
         val timeButton = view.findViewById<ImageButton>(R.id.timeButton)
 
+
+        val stopButton = view.findViewById<Button>(R.id.stopButton)
+        val textInput = view.findViewById<android.widget.EditText>(R.id.textInput)
+        val sendTextButton = view.findViewById<Button>(R.id.sendTextButton)
+
+        // Bouton pour couper la parole
+        stopButton.setOnClickListener {
+            RobotController.stopSpeaking()
+        }
+
+        // Bouton pour envoyer une question tapée au clavier
+        sendTextButton.setOnClickListener {
+            val question = textInput.text.toString()
+            if (question.isNotEmpty()) {
+                textInput.text.clear() // On vide la case
+                // On simule que le robot a "entendu" cette question et on l'envoie au serveur
+                onRequestIsReady(question)
+            }
+        }
+
         if(RobotController.isAtHomeBase()){
             interactionButton.text = "Click on the button to ask me something"
         }

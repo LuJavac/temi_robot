@@ -16,12 +16,17 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 // Class for loading page when sending requests to python server
 class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
     private lateinit var request: String
 
-    val client = OkHttpClient() // Client for sending requests to server
+    val client = OkHttpClient.Builder() // Client for sending requests to server
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -92,17 +97,25 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
             // Speaking server response or the error message
             override fun onResponse(call: Call, response: Response) {
                 response.use {
+                    val answerToDisplay: String
+
+                    // On vérifie ce que le serveur Python a répondu
                     if (it.isSuccessful) {
                         val bodyString = it.body?.string()
                         if (bodyString != null) {
                             val jsonResponse = JSONObject(bodyString)
-                            val responseText = jsonResponse.getString("response")
-                            RobotController.speak(responseText)
+                            answerToDisplay = jsonResponse.getString("response")
                         } else {
-                            RobotController.speak("I have nothing to answer")
+                            answerToDisplay = "I have nothing to answer"
                         }
                     } else {
-                        RobotController.speak("The server has an error")
+                        answerToDisplay = "The server has an error"
+                    }
+
+                    // On fait parler le robot et on retourne au menu principal
+                    requireActivity().runOnUiThread {
+                        RobotController.speak(answerToDisplay)
+                        onBackToMainPage() // 👈 Retour immédiat pour pouvoir reposer une question !
                     }
                 }
             }
