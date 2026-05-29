@@ -238,6 +238,20 @@ object RobotController:
         androidTts = TextToSpeech(context.applicationContext) { status ->
             if (status == TextToSpeech.SUCCESS) {
                 androidTts?.language = Locale.US
+
+                // 🔴 NOUVEAU : On écoute la carte son pour savoir EXACTEMENT quand ça démarre et s'arrête
+                androidTts?.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {
+                        ttsStateCallback?.onTtsStart() // Allume 🗣️
+                    }
+                    override fun onDone(utteranceId: String?) {
+                        ttsStateCallback?.onTtsStop() // Remet 😐
+                    }
+                    override fun onError(utteranceId: String?) {
+                        ttsStateCallback?.onTtsStop() // Remet 😐 (en cas d'erreur)
+                    }
+                })
+
                 androidTtsReady = true
                 Log.i("RobotController", "Android TTS fallback ready (.test build)")
             } else {
@@ -255,26 +269,17 @@ object RobotController:
 
     // Speech
     fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
+        // On .test builds, use Android TTS exclusively to avoid the double-voice
         if (useFallbackTts && androidTtsReady) {
-            // 1. On prévient l'interface que la voix de secours commence
-            ttsStateCallback?.onTtsStart()
-
-            androidTts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, null)
-
-            // 2. Astuce pour la voix de secours : on estime sa durée (environ 80ms par caractère)
-            // pour dire à l'interface de s'arrêter, puisqu'on n'a pas le "COMPLETED" officiel.
-            val estimatedDurationMs = (speech.length * 80L)
-            Handler(Looper.getMainLooper()).postDelayed({
-                ttsStateCallback?.onTtsStop()
-            }, estimatedDurationMs)
-
+            // Le petit mot "TemiAudio" à la fin sert de clé pour réveiller notre écouteur de l'étape 1 !
+            androidTts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "TemiAudio")
             return
         }
 
         // Production: Temi TTS with subtitles on the conversation layer.
         val request = TtsRequest.create(
             speech = speech,
-            isShowOnConversationLayer = false, // Toujours false pour éviter les crashs !
+            isShowOnConversationLayer = false, // Toujours sur false !
             showAnimationOnly = true,
             language = TtsRequest.Language.EN_US
         )
