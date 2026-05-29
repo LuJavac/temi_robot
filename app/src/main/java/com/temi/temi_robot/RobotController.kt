@@ -255,17 +255,27 @@ object RobotController:
 
     // Speech
     fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
-        // On .test builds, use Android TTS exclusively to avoid the double-voice
-        // we observed when Robot.speak() also works on the .test signature.
         if (useFallbackTts && androidTtsReady) {
+            // 1. On prévient l'interface que la voix de secours commence
+            ttsStateCallback?.onTtsStart()
+
             androidTts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, null)
+
+            // 2. Astuce pour la voix de secours : on estime sa durée (environ 80ms par caractère)
+            // pour dire à l'interface de s'arrêter, puisqu'on n'a pas le "COMPLETED" officiel.
+            val estimatedDurationMs = (speech.length * 80L)
+            Handler(Looper.getMainLooper()).postDelayed({
+                ttsStateCallback?.onTtsStop()
+            }, estimatedDurationMs)
+
             return
         }
+
         // Production: Temi TTS with subtitles on the conversation layer.
         val request = TtsRequest.create(
             speech = speech,
-            isShowOnConversationLayer = subtitles,
-            showAnimationOnly = !subtitles,
+            isShowOnConversationLayer = false, // Toujours false pour éviter les crashs !
+            showAnimationOnly = true,
             language = TtsRequest.Language.EN_US
         )
         getRobot()?.speak(request)
@@ -406,6 +416,16 @@ object RobotController:
         this.requestReadyCallback = callback
     }
 
+    // Personal interface and callback for Face Animation
+    interface TtsStateCallback {
+        fun onTtsStart()
+        fun onTtsStop()
+    }
+    private var ttsStateCallback: TtsStateCallback? = null
+    fun setTtsStateCallback(callback: TtsStateCallback) {
+        this.ttsStateCallback = callback
+    }
+
     // Personal interface and callback for going back to patrol page
     interface BackToMainPageCallback {
         fun onBackToMainPage()
@@ -472,20 +492,26 @@ object RobotController:
         speechHandler.postDelayed(speechRunnable, minutes * 60 * 1000L)
     }
 
-    // Robot SDK overrides
     override fun onTtsStatusChanged(ttsRequest: TtsRequest) {
         resetInactivityTimer()
-        if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
 
-            // On a supprimé le bloc "isAskSatisfiedRequest" ici !
-            // Le robot ne demandera plus s'il doit appeler le bibliothécaire à la fin d'une phrase.
-
-            // Si le robot a parlé à cause du speech périodique ("Do not eat"), on le relance
-            if(isDoNotEatSpeech){
-                isDoNotEatSpeech = false
-                startPeriodicSpeech(15)
-                return
+        when (ttsRequest.status) {
+            TtsRequest.Status.STARTED -> {
+                // Le son sort des haut-parleurs
+                ttsStateCallback?.onTtsStart()
             }
+            TtsRequest.Status.COMPLETED, TtsRequest.Status.ERROR, TtsRequest.Status.CANCELED -> {
+                // Le son s'arrête !
+                ttsStateCallback?.onTtsStop()
+
+                if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
+                    if (isDoNotEatSpeech) {
+                        isDoNotEatSpeech = false
+                        startPeriodicSpeech(15)
+                    }
+                }
+            }
+            else -> {}
         }
     }
 

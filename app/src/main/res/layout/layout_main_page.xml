@@ -136,5 +136,52 @@
         android:textSize="220sp"
         android:textStyle="bold" />
 </FrameLayout>
+    <RelativeLayout
+        android:id="@+id/readingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/img_nyp_background"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="50dp">
 
+        <TextView
+            android:id="@+id/robotFace"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:textSize="120sp"
+            android:text="😐" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/closeReadingButton"
+            android:layout_below="@id/robotFace"
+            android:layout_marginBottom="40dp">
+
+            <TextView
+                android:id="@+id/readingTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                android:gravity="center_horizontal"
+                android:text="The answer will show here..." />
+        </ScrollView>
+
+        <Button
+            android:id="@+id/closeReadingButton"
+            android:layout_width="400dp"
+            android:layout_height="100dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:backgroundTint="#0055A6"
+            android:text="Finish / Ask Another Question"
+            android:textColor="@android:color/white"
+            android:textSize="25sp" />
+    </RelativeLayout>
 </FrameLayout>

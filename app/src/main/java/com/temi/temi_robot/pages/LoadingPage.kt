@@ -112,10 +112,23 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
                         answerToDisplay = "The server has an error"
                     }
 
-                    // On fait parler le robot et on retourne au menu principal
+                    // Les changements d'écran doivent se faire sur le Thread Principal d'Android
                     requireActivity().runOnUiThread {
-                        RobotController.speak(answerToDisplay)
-                        onBackToMainPage() // 👈 Retour immédiat pour pouvoir reposer une question !
+
+                        // On ne fait pas parler le robot ici, on laisse la MainPage s'en charger
+
+                        // 2. On prépare la MainPage en lui glissant la réponse dans les poches
+                        val mainPage = MainPage()
+                        val args = Bundle()
+                        args.putString("answer", answerToDisplay)
+                        args.putString("notPatrolAgain", "true") // Pour éviter qu'il ne parte en patrouille
+                        args.putBoolean("startSpeaking", true) // On donne l'ordre de parler
+                        mainPage.arguments = args
+
+                        // 3. On affiche la MainPage
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, mainPage)
+                            .commit()
                     }
                 }
             }

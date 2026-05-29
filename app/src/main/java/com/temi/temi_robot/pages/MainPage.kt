@@ -24,8 +24,8 @@ import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
 
 // Page to display to ask questions to the robot. It's his main page
-class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback{
-    
+class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback {
+
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     private var waveRecognizer: WaveGestureRecognizer? = null
@@ -54,6 +54,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             override fun onLost(network: Network) {
                 super.onLost(network)
 
+
                 // Sending temi to home base
                 RobotController.goToHomeBase()
 
@@ -75,6 +76,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Hide top bar
         RobotController.hideTopBar()
+
+        // Set Callback to listen to TTS State for animation
+        RobotController.setTtsStateCallback(this)
 
         // Set Callback to listen to user request event
         RobotController.setRequestReadyCallback(this)
@@ -105,6 +109,39 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val textInput = view.findViewById<android.widget.EditText>(R.id.textInput)
         val sendTextButton = view.findViewById<Button>(R.id.sendTextButton)
 
+        // --- Gestion de l'écran de lecture ---
+        val readingOverlay = view.findViewById<android.widget.RelativeLayout>(R.id.readingOverlay)
+        val readingTextView = view.findViewById<android.widget.TextView>(R.id.readingTextView)
+        val closeReadingButton = view.findViewById<Button>(R.id.closeReadingButton)
+
+        // On regarde si on vient de recevoir une réponse de l'IA
+        val answerText = arguments?.getString("answer")
+        val startSpeaking = arguments?.getBoolean("startSpeaking") ?: false
+
+        if (answerText != null) {
+            // On affiche le panneau et on écrit le texte
+            readingOverlay.visibility = View.VISIBLE
+            readingTextView.text = answerText
+
+            // 🔴 NOUVEAU : On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
+            if (startSpeaking) {
+                RobotController.speak(answerText)
+                arguments?.putBoolean("startSpeaking", false) // Sécurité pour qu'il ne répète pas
+            }
+        }
+
+        // Comportement du bouton "Finish"
+        closeReadingButton.setOnClickListener {
+            // 1. On cache l'écran de lecture
+            readingOverlay.visibility = View.GONE
+
+            // 2. On coupe la parole au robot s'il n'avait pas fini
+            RobotController.stopSpeaking()
+
+            // 3. On remet les compteurs à zéro pour la prochaine question
+            RobotController.resetInactivityTimer()
+        }
+
         // Bouton pour couper la parole
         stopButton.setOnClickListener {
             RobotController.stopSpeaking()
@@ -114,8 +151,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         sendTextButton.setOnClickListener {
             val question = textInput.text.toString()
             if (question.isNotEmpty()) {
-                textInput.text.clear() // On vide la case
-                // On simule que le robot a "entendu" cette question et on l'envoie au serveur
+
+                // 1. Coupe l'écoute vocale
+                RobotController.finishConversation()
+
+                // 2. Vide le texte IMMÉDIATEMENT (et referme le clavier visuel d'Android)
+                textInput.setText("")
+                textInput.clearFocus()
+
+                // 3. Envoie au serveur
                 onRequestIsReady(question)
             }
         }
@@ -240,6 +284,18 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer?.stop()
         waveRecognizer = null
         RobotController.setDetectionModeOn(true, 0.5f)
+    }
+    // --- ANIMATION DU VISAGE ---
+    override fun onTtsStart() {
+        activity?.runOnUiThread {
+            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "🗣️"
+        }
+    }
+
+    override fun onTtsStop() {
+        activity?.runOnUiThread {
+            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "😐"
+        }
     }
 
 }
