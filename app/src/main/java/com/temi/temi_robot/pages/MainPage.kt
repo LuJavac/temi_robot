@@ -23,12 +23,19 @@ import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
 
+import com.bumptech.glide.Glide
+import android.widget.ImageView
+
 // Page to display to ask questions to the robot. It's his main page
 class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback {
 
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     private var waveRecognizer: WaveGestureRecognizer? = null
+
+    // Variables pour l'animation du robot sur le menu
+    private val animationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var isSmiling = true
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -48,6 +55,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //  Lancer l'animation du robot sur le menu
+        animationHandler.post(blinkRunnable)
 
         // Going to lost connection page when Wi-Fi is disconnected and moving the robot to home base
         networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -123,7 +133,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             readingOverlay.visibility = View.VISIBLE
             readingTextView.text = answerText
 
-            // 🔴 NOUVEAU : On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
+            // initialiser le visage :
+            updateFace(false)
+
+            // On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
             if (startSpeaking) {
                 RobotController.speak(answerText)
                 arguments?.putBoolean("startSpeaking", false) // Sécurité pour qu'il ne répète pas
@@ -284,17 +297,60 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer?.stop()
         waveRecognizer = null
         RobotController.setDetectionModeOn(true, 0.5f)
+
+        animationHandler.removeCallbacks(blinkRunnable)
     }
-    // --- ANIMATION DU VISAGE ---
-    override fun onTtsStart() {
+
+    // --- NIVEAU 3 : GESTION DU VISAGE ANIMÉ ---
+
+    private fun updateFace(isTalking: Boolean) {
         activity?.runOnUiThread {
-            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "🗣️"
+            val eyesImage = view?.findViewById<ImageView>(R.id.robotEyes)
+            val mouthImage = view?.findViewById<ImageView>(R.id.robotMouth)
+
+            if (eyesImage != null && mouthImage != null) {
+                // 1. On charge les yeux (Glide les fera cligner tout seul si c'est un GIF)
+                Glide.with(this).load(R.drawable.eyes).into(eyesImage)
+
+                // 2. On change la bouche selon l'état
+                if (isTalking) {
+                    // Bouche qui parle (Onde animée)
+                    Glide.with(this).asGif().load(R.drawable.mouth_talking).into(mouthImage)
+                } else {
+                    // Bouche fermée (Trait plat)
+                    Glide.with(this).load(R.drawable.mouth_idle).into(mouthImage)
+                }
+            }
         }
     }
 
+    override fun onTtsStart() {
+        // Le son démarre -> La bouche s'anime
+        updateFace(true)
+    }
+
     override fun onTtsStop() {
-        activity?.runOnUiThread {
-            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "😐"
+        // Le son s'arrête -> La bouche se ferme
+        updateFace(false)
+    }
+
+    // --- ANIMATION DU ROBOT SUR LE MENU ---
+    private val blinkRunnable = object : Runnable {
+        override fun run() {
+            val robotImage = view?.findViewById<android.widget.ImageView>(R.id.menuRobotCharacter)
+            if (robotImage != null) {
+                if (isSmiling) {
+                    // On met la grimace
+                    robotImage.setImageResource(R.drawable.robot_grimace)
+                    isSmiling = false
+                    animationHandler.postDelayed(this, 500) // Reste en grimace 0.5 seconde
+                } else {
+                    // On remet le sourire
+                    robotImage.setImageResource(R.drawable.robot_smile)
+                    isSmiling = true
+                    animationHandler.postDelayed(this, 4000) // Reste souriant 4 secondes
+                }
+            }
         }
     }
 
