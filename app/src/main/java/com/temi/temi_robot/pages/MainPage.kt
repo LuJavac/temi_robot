@@ -23,6 +23,9 @@ import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
 import androidx.core.content.edit
 
+import com.bumptech.glide.Glide
+import android.widget.ImageView
+
 // Page to display to ask questions to the robot. It's his main page
 class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback {
 
@@ -123,7 +126,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             readingOverlay.visibility = View.VISIBLE
             readingTextView.text = answerText
 
-            // 🔴 NOUVEAU : On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
+            // initialiser le visage :
+            updateFace(false)
+
+            // On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
             if (startSpeaking) {
                 RobotController.speak(answerText)
                 arguments?.putBoolean("startSpeaking", false) // Sécurité pour qu'il ne répète pas
@@ -285,17 +291,38 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer = null
         RobotController.setDetectionModeOn(true, 0.5f)
     }
-    // --- ANIMATION DU VISAGE ---
-    override fun onTtsStart() {
+
+    // --- NIVEAU 3 : GESTION DU VISAGE ANIMÉ ---
+
+    private fun updateFace(isTalking: Boolean) {
         activity?.runOnUiThread {
-            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "🗣️"
+            val eyesImage = view?.findViewById<ImageView>(R.id.robotEyes)
+            val mouthImage = view?.findViewById<ImageView>(R.id.robotMouth)
+
+            if (eyesImage != null && mouthImage != null) {
+                // 1. On charge les yeux (Glide les fera cligner tout seul si c'est un GIF)
+                Glide.with(this).load(R.drawable.eyes).into(eyesImage)
+
+                // 2. On change la bouche selon l'état
+                if (isTalking) {
+                    // Bouche qui parle (Onde animée)
+                    Glide.with(this).asGif().load(R.drawable.mouth_talking).into(mouthImage)
+                } else {
+                    // Bouche fermée (Trait plat)
+                    Glide.with(this).load(R.drawable.mouth_idle).into(mouthImage)
+                }
+            }
         }
     }
 
+    override fun onTtsStart() {
+        // Le son démarre -> La bouche s'anime
+        updateFace(true)
+    }
+
     override fun onTtsStop() {
-        activity?.runOnUiThread {
-            view?.findViewById<android.widget.TextView>(R.id.robotFace)?.text = "😐"
-        }
+        // Le son s'arrête -> La bouche se ferme
+        updateFace(false)
     }
 
 }

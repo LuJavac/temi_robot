@@ -146,20 +146,34 @@
         android:focusable="true"
         android:padding="50dp">
 
-        <TextView
-            android:id="@+id/robotFace"
+        <LinearLayout
+            android:id="@+id/robotFaceContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:textSize="120sp"
-            android:text="😐" />
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/robotEyes"
+                android:layout_width="150dp"
+                android:layout_height="80dp"
+                android:src="@drawable/eyes" />
+
+            <ImageView
+                android:id="@+id/robotMouth"
+                android:layout_width="200dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="10dp"
+                android:src="@drawable/mouth_idle" />
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/closeReadingButton"
-            android:layout_below="@id/robotFace"
+            android:layout_below="@id/robotFaceContainer"
             android:layout_marginBottom="40dp">
 
             <TextView
