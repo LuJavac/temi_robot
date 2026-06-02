@@ -33,6 +33,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     private var waveRecognizer: WaveGestureRecognizer? = null
 
+    // Variables pour l'animation du robot sur le menu
+    private val animationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var isSmiling = true
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -51,6 +55,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //  Lancer l'animation du robot sur le menu
+        animationHandler.post(blinkRunnable)
 
         // Going to lost connection page when Wi-Fi is disconnected and moving the robot to home base
         networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -290,6 +297,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer?.stop()
         waveRecognizer = null
         RobotController.setDetectionModeOn(true, 0.5f)
+
+        animationHandler.removeCallbacks(blinkRunnable)
     }
 
     // --- NIVEAU 3 : GESTION DU VISAGE ANIMÉ ---
@@ -323,6 +332,26 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     override fun onTtsStop() {
         // Le son s'arrête -> La bouche se ferme
         updateFace(false)
+    }
+
+    // --- ANIMATION DU ROBOT SUR LE MENU ---
+    private val blinkRunnable = object : Runnable {
+        override fun run() {
+            val robotImage = view?.findViewById<android.widget.ImageView>(R.id.menuRobotCharacter)
+            if (robotImage != null) {
+                if (isSmiling) {
+                    // On met la grimace
+                    robotImage.setImageResource(R.drawable.robot_grimace)
+                    isSmiling = false
+                    animationHandler.postDelayed(this, 500) // Reste en grimace 0.5 seconde
+                } else {
+                    // On remet le sourire
+                    robotImage.setImageResource(R.drawable.robot_smile)
+                    isSmiling = true
+                    animationHandler.postDelayed(this, 4000) // Reste souriant 4 secondes
+                }
+            }
+        }
     }
 
 }

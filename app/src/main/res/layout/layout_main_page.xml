@@ -4,13 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/fragment_container"
-    android:background="@drawable/img_nyp_background"
-    android:gravity="left"
-    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_container"
+        android:background="#000000"  android:gravity="center_horizontal" android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -100,7 +98,14 @@
         android:text="Stop Talking"
         android:textColor="#FFFFFF" />
 
-    <Button
+        <ImageView
+            android:id="@+id/menuRobotCharacter"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:layout_marginTop="50dp"
+            android:src="@drawable/robot_smile" />
+
+        <Button
         android:id="@+id/interactionButton"
         android:layout_width="1029dp"
         android:layout_height="390dp"
