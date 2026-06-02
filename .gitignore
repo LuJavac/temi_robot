@@ -26,4 +26,6 @@ changes_2026-05-18.txt
 REPRISE_CONVERSATION.md
 rapport_wave_gesture.md
  
- 
+app/src/main/python/temi/
+app/src/main/python/venv/
+app/src/main/python/storage/
