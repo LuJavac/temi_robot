@@ -37,6 +37,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private val animationHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var isSmiling = true
 
+    // Variables pour l'animation de lecture
+    private var isReadingTalking = false
+    private val typeWriterHandler = android.os.Handler(android.os.Looper.getMainLooper())
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -115,7 +119,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val timeButton = view.findViewById<ImageButton>(R.id.timeButton)
 
 
-        val stopButton = view.findViewById<Button>(R.id.stopButton)
         val textInput = view.findViewById<android.widget.EditText>(R.id.textInput)
         val sendTextButton = view.findViewById<Button>(R.id.sendTextButton)
 
@@ -133,9 +136,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             readingOverlay.visibility = View.VISIBLE
             readingTextView.text = answerText
 
-            // initialiser le visage :
-            updateFace(false)
-
+            animateTextTypewriter(readingTextView, answerText)
             // On fait parler le robot UNIQUEMENT maintenant que la page écoute les signaux !
             if (startSpeaking) {
                 RobotController.speak(answerText)
@@ -153,12 +154,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
             // 3. On remet les compteurs à zéro pour la prochaine question
             RobotController.resetInactivityTimer()
+            typeWriterHandler.removeCallbacksAndMessages(null)
         }
 
-        // Bouton pour couper la parole
-        stopButton.setOnClickListener {
-            RobotController.stopSpeaking()
-        }
 
         // Bouton pour envoyer une question tapée au clavier
         sendTextButton.setOnClickListener {
@@ -178,7 +176,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
 
         if(RobotController.isAtHomeBase()){
-            interactionButton.text = "Click on the button to ask me something"
+            interactionButton.text = "Click on the button to ask me something\nor type your question below"
         }
 
         // Defining arguments for navigation
@@ -301,37 +299,58 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         animationHandler.removeCallbacks(blinkRunnable)
     }
 
-    // --- NIVEAU 3 : GESTION DU VISAGE ANIMÉ ---
-
-    private fun updateFace(isTalking: Boolean) {
-        activity?.runOnUiThread {
-            val eyesImage = view?.findViewById<ImageView>(R.id.robotEyes)
-            val mouthImage = view?.findViewById<ImageView>(R.id.robotMouth)
-
-            if (eyesImage != null && mouthImage != null) {
-                // 1. On charge les yeux (Glide les fera cligner tout seul si c'est un GIF)
-                Glide.with(this).load(R.drawable.eyes).into(eyesImage)
-
-                // 2. On change la bouche selon l'état
-                if (isTalking) {
-                    // Bouche qui parle (Onde animée)
-                    Glide.with(this).asGif().load(R.drawable.mouth_talking).into(mouthImage)
+    // --- GESTION DU VISAGE ANIMÉ PENDANT LA LECTURE ---
+    private val talkingRunnable = object : Runnable {
+        override fun run() {
+            val faceImage = view?.findViewById<ImageView>(R.id.robotFace)
+            if (faceImage != null && isReadingTalking) {
+                // On alterne rapidement (illusion de parole)
+                if (faceImage.tag == "talking") {
+                    faceImage.setImageResource(R.drawable.smiling_temi)
+                    faceImage.tag = "smiling"
                 } else {
-                    // Bouche fermée (Trait plat)
-                    Glide.with(this).load(R.drawable.mouth_idle).into(mouthImage)
+                    faceImage.setImageResource(R.drawable.talking_temi)
+                    faceImage.tag = "talking"
                 }
+                // Vitesse d'ouverture/fermeture de la bouche (150ms)
+                animationHandler.postDelayed(this, 150)
+            } else if (faceImage != null) {
+                // S'il s'arrête de parler, on force le sourire
+                faceImage.setImageResource(R.drawable.smiling_temi)
+                faceImage.tag = "smiling"
             }
         }
     }
 
     override fun onTtsStart() {
-        // Le son démarre -> La bouche s'anime
-        updateFace(true)
+        activity?.runOnUiThread {
+            isReadingTalking = true
+            animationHandler.post(talkingRunnable)
+        }
     }
 
     override fun onTtsStop() {
-        // Le son s'arrête -> La bouche se ferme
-        updateFace(false)
+        activity?.runOnUiThread {
+            isReadingTalking = false
+        }
+    }
+
+    // --- EFFET MACHINE À ÉCRIRE ---
+    private fun animateTextTypewriter(textView: android.widget.TextView, fullText: String) {
+        textView.text = ""
+        var charIndex = 0
+
+        val runnable = object : Runnable {
+            override fun run() {
+                if (charIndex < fullText.length) {
+                    textView.append(fullText[charIndex].toString())
+                    charIndex++
+                    // Vitesse de frappe (20ms entre chaque lettre)
+                    typeWriterHandler.postDelayed(this, 20)
+                }
+            }
+        }
+        typeWriterHandler.post(runnable)
     }
 
     // --- ANIMATION DU ROBOT SUR LE MENU ---

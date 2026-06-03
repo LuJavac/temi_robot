@@ -1,194 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <!-- FOND NOIR ET CONTENU PRINCIPAL -->
+    <RelativeLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fragment_container"
-        android:background="#000000"  android:gravity="center_horizontal" android:orientation="vertical">
+        android:background="#000000">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        <!-- 1. BARRE DU HAUT (Logo + Paramètres) -->
 
-        <ImageView
-            android:id="@+id/nypLogo"
-            android:layout_width="420dp"
-            android:layout_height="151dp"
-            android:background="@android:color/white"
-            android:contentDescription="@string/nyp_logo"
-            android:src="@drawable/img_nyp_logo"
-            android:layout_alignParentStart="true" />
+        <!-- 2. BARRE DE RECHERCHE TEXTE (Ancrée tout en bas) -->
+        <RelativeLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
 
-        <ImageButton
-            android:id="@+id/timeButton"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignTop="@id/nypLogo"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="200dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/time_settings"
-            android:src="@drawable/drawable_hourglass"
-            app:tint="@android:color/black"
-            tools:ignore="RelativeOverlap"
-            android:shadowColor="#00000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="1"
-            />
+            <!-- NOUVEAU LOGO SANS FOND BLANC -->
+            <ImageView
+                android:id="@+id/nypLogo"
+                android:layout_width="250dp"
+                android:layout_height="160dp"
+                android:layout_alignParentStart="true"
+                android:background="@null"
+                android:contentDescription="@string/nyp_logo"
+                android:src="@drawable/nyp_logo" />
 
-        <ImageButton
-            android:id="@+id/settingsButton"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_alignTop="@id/nypLogo"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="100dp"
-            android:layout_marginTop="10dp"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/settings"
-            android:src="@drawable/drawable_settings"
-            app:tint="@android:color/black"
-            tools:ignore="RelativeOverlap"
-            android:shadowColor="#00000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="1"
-            />
+            <!-- BOUTONS HAUT DROITE (Passés en blanc pour être visibles) -->
+            <ImageButton
+                android:id="@+id/timeButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="30dp"
+                android:layout_toStartOf="@id/settingsButton"
+                android:background="@android:color/transparent"
+                android:src="@drawable/drawable_hourglass"
+                app:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="30dp"
+                android:background="@android:color/transparent"
+                android:src="@drawable/drawable_settings"
+                app:tint="#FFFFFF" />
+        </RelativeLayout>
+
+        <!-- 3. LE CENTRE (Robot + Bouton Vocal de taille normale) -->
+
+        <LinearLayout
+            android:id="@+id/bottomSearchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="91dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/textInput"
+                android:layout_width="500dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="-0dp"
+                android:layout_marginEnd="20dp"
+                android:background="#FFFFFF"
+                android:hint="Type your question here..."
+                android:padding="15dp"
+                android:textSize="25sp" />
+
+            <Button
+                android:id="@+id/sendTextButton"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
+                android:text="Send"
+                android:textSize="20sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- LE ROBOT QUI S'ANIME -->
+
+            <!-- LE BOUTON BLEU -->
+            <ImageView
+                android:id="@+id/menuRobotCharacter"
+                android:layout_width="350dp"
+                android:layout_height="350dp"
+                android:src="@drawable/robot_smile" />
+
+            <Button
+                android:id="@+id/interactionButton"
+                android:layout_width="620dp"
+                android:layout_height="170dp"
+                android:layout_marginTop="0dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="Click on the button to ask me something\nor type your question below"
+                android:textColor="@android:color/white"
+                android:textSize="26sp" />
+        </LinearLayout>
     </RelativeLayout>
 
-    <LinearLayout
+    <!-- ========================================== -->
+    <!-- LES OVERLAYS (Cachés par défaut)           -->
+    <!-- ========================================== -->
+
+    <FrameLayout
+        android:id="@+id/helloOverlay"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="100dp"
-        android:gravity="center">
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
 
-        <EditText
-            android:id="@+id/textInput"
-            android:layout_width="400dp"
-            android:layout_height="60dp"
-            android:hint="Type your question here..."
-            android:background="#FFFFFF"
-            android:padding="10dp"
-            android:textSize="18sp"/>
-
-        <Button
-            android:id="@+id/sendTextButton"
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_marginStart="10dp"
-            android:text="Send" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Hello !"
+            android:textColor="#FFFFFF"
+            android:textSize="220sp"
+            android:textStyle="bold" />
+    </FrameLayout>
 
-    <Button
-        android:id="@+id/stopButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:backgroundTint="#FF0000"
-        android:text="Stop Talking"
-        android:textColor="#FFFFFF" />
-
-        <ImageView
-            android:id="@+id/menuRobotCharacter"
-            android:layout_width="400dp"
-            android:layout_height="400dp"
-            android:layout_marginTop="50dp"
-            android:src="@drawable/robot_smile" />
-
-        <Button
-        android:id="@+id/interactionButton"
-        android:layout_width="1029dp"
-        android:layout_height="390dp"
-        android:layout_gravity="center"
-        android:layout_marginHorizontal="50dp"
-        android:layout_marginTop="100dp"
-        android:background="@drawable/button_blue_transparent"
-        android:shadowColor="#80000000"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="1"
-        android:text="@string/ask_me_something"
-        android:textColor="@android:color/white"
-        android:textSize="75sp" />
-
-</LinearLayout>
-
-<FrameLayout
-    android:id="@+id/helloOverlay"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#000000"
-    android:clickable="true"
-    android:focusable="true"
-    android:visibility="gone">
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="Hello !"
-        android:textColor="#FFFFFF"
-        android:textSize="220sp"
-        android:textStyle="bold" />
-</FrameLayout>
     <RelativeLayout
         android:id="@+id/readingOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/img_nyp_background"
+        android:background="#000000"
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
         android:padding="50dp">
 
-        <LinearLayout
-            android:id="@+id/robotFaceContainer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <!-- VISAGE PENDANT LA LECTURE -->
+        <ImageView
+            android:id="@+id/robotFace"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:id="@+id/robotEyes"
-                android:layout_width="150dp"
-                android:layout_height="80dp"
-                android:src="@drawable/eyes" />
-
-            <ImageView
-                android:id="@+id/robotMouth"
-                android:layout_width="200dp"
-                android:layout_height="80dp"
-                android:layout_marginTop="10dp"
-                android:src="@drawable/mouth_idle" />
-        </LinearLayout>
+            android:src="@drawable/smiling_temi"
+            android:tag="smiling" />
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/closeReadingButton"
-            android:layout_below="@id/robotFaceContainer"
+            android:layout_below="@id/robotFace"
             android:layout_marginBottom="40dp">
 
             <TextView
                 android:id="@+id/readingTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
+                android:textColor="#FFFFFF"
                 android:textSize="40sp"
                 android:textStyle="bold"
                 android:gravity="center_horizontal"
+                android:layout_marginTop="30dp"
                 android:text="The answer will show here..." />
         </ScrollView>
 
