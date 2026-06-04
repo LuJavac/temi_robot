@@ -50,6 +50,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var sleepStep = 0
     private val SLEEP_TIMEOUT = 120000L // Temps avant de s'endormir : 120 000 ms (120 secondes)
 
+    private var snorePlayer: android.media.MediaPlayer? = null
+    private var hihiPlayer: android.media.MediaPlayer? = null
+    private var embarrassedStep = 0
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -340,6 +344,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         inactivityHandler.removeCallbacksAndMessages(null)
         sleepAnimationHandler.removeCallbacksAndMessages(null)
+        stopSnoring()
+        hihiPlayer?.release()
+        hihiPlayer = null
+
     }
 
     // --- GESTION DU VISAGE ANIMÉ PENDANT LA LECTURE ---
@@ -409,6 +417,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         isSleeping = true
         view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
         sleepAnimationHandler.post(sleepAnimationRunnable)
+        startSnoring()
     }
 
     private val sleepAnimationRunnable = object : Runnable {
@@ -428,25 +437,85 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
     }
 
-    private fun wakeUpSequence() {
+    // --- ANIMATION DE RÉVEIL (GÊNÉ) ---
+    private val embarrassedRunnable = object : Runnable {
+        override fun run() {
+            val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
+            if (sleepImage != null) {
+                // Alterne entre les deux images de gêne
+                if (embarrassedStep % 2 == 0) {
+                    sleepImage.setImageResource(R.drawable.embarassed_temi)
+                } else {
+                    sleepImage.setImageResource(R.drawable.embarassed2_temi)
+                }
+                embarrassedStep++
 
-        // Si on est déjà en train de se réveiller, on ne fait rien
+                // Vitesse du clignotement de panique (200 millisecondes)
+                sleepAnimationHandler.postDelayed(this, 200)
+            }
+        }
+    }
+
+    private fun wakeUpSequence() {
         if (isWakingUp) return
         isWakingUp = true
-        // 1. On coupe l'animation des Zzz
+
+        // 1. On coupe l'animation des Zzz ET on arrête le ronflement
         sleepAnimationHandler.removeCallbacksAndMessages(null)
+        stopSnoring()
 
-        // 2. On affiche le grand sourire
-        val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
-        sleepImage?.setImageResource(R.drawable.smiling_temi)
+        // 2. On lance le petit rire de gêne ("hihi")
+        playHihi()
 
-        // 3. On attend 1.5 seconde avant d'enlever l'écran noir
+        // 3. On lance l'animation paniquée/gênée
+        embarrassedStep = 0
+        sleepAnimationHandler.post(embarrassedRunnable)
+
+        // 4. On laisse l'animation gênée pendant 2.5 secondes
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
-            isSleeping = false
-            isWakingUp = false
-            resetLocalInactivityTimer() // On relance le chrono
-        }, 1500)
+
+            // On arrête de clignoter la gêne
+            sleepAnimationHandler.removeCallbacks(embarrassedRunnable)
+
+            // 5. On remet le grand sourire classique pour reprendre le travail
+            val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
+            sleepImage?.setImageResource(R.drawable.smiling_temi)
+
+            // 6. On attend encore 1 seconde avant d'enlever l'écran noir pour voir le sourire
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
+                isSleeping = false
+                isWakingUp = false
+                resetLocalInactivityTimer() // On relance le chrono d'inactivité
+            }, 1000)
+
+        }, 5000) // L'animation gênée dure 5 secondes
+    }
+
+    // --- LECTURE DES SONS ---
+    private fun startSnoring() {
+        context?.let {
+            snorePlayer = android.media.MediaPlayer.create(it, R.raw.snoring)
+            snorePlayer?.isLooping = true // Le ronflement tourne en boucle !
+            snorePlayer?.start()
+        }
+    }
+
+    private fun stopSnoring() {
+        snorePlayer?.stop()
+        snorePlayer?.release()
+        snorePlayer = null
+    }
+
+    private fun playHihi() {
+        context?.let {
+            hihiPlayer = android.media.MediaPlayer.create(it, R.raw.hihi)
+            hihiPlayer?.start()
+            hihiPlayer?.setOnCompletionListener { player ->
+                player.release() // On nettoie la mémoire une fois le rire fini
+                hihiPlayer = null
+            }
+        }
     }
 
     // --- ANIMATION DU ROBOT SUR LE MENU ---
