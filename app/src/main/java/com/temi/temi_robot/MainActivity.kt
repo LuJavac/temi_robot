@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
     internal var serverUrl = "http://192.168.1.43:5000/process" // IP : RaspBerry and Wifi: TP-Link_5C90
+    internal var streamUrl = "http://192.168.1.43:5000/stream" // Streaming SSE endpoint (token par token)
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager

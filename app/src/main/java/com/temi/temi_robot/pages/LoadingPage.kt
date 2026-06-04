@@ -33,6 +33,9 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
     private val animationHandler = Handler(Looper.getMainLooper())
     private var currentStep = 0
 
+    // Tampon des tokens reçus, en attente d'une phrase complète à faire lire
+    private var pending = ""
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -108,61 +111,104 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
         animationHandler.removeCallbacks(loadingAnimationRunnable)
     }
 
-    // Sending user request to python server
+    // Sending user request to python server (streaming SSE)
     fun sendRequestToServer(request: String) {
         val json = JSONObject()
         json.put("text", request)
 
         val body = json.toString().toRequestBody("application/json".toMediaType())
 
-        val request = Request.Builder()
-            .url((activity as MainActivity).serverUrl)
+        val httpRequest = Request.Builder()
+            .url((activity as MainActivity).streamUrl)
             .post(body)
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
+        client.newCall(httpRequest).enqueue(object : Callback {
             // Behavior when failing to send data to server
             override fun onFailure(call: Call, e: IOException) {
-                requireActivity().runOnUiThread {
+                activity?.runOnUiThread {
                     RobotController.speak("Sorry I couldn't send data to the server")
                 }
             }
 
-            // Speaking server response or the error message
+            // Read the SSE stream: speak each sentence as soon as it is complete,
+            // and accumulate the full text to display once finished.
             override fun onResponse(call: Call, response: Response) {
                 response.use {
-                    val answerToDisplay: String
+                    if (!it.isSuccessful) {
+                        activity?.runOnUiThread { RobotController.speak("The server has an error") }
+                        return
+                    }
 
-                    // On vérifie ce que le serveur Python a répondu
-                    if (it.isSuccessful) {
-                        val bodyString = it.body?.string()
-                        if (bodyString != null) {
-                            val jsonResponse = JSONObject(bodyString)
-                            answerToDisplay = jsonResponse.getString("response")
-                        } else {
-                            answerToDisplay = "I have nothing to answer"
+                    val full = StringBuilder()
+                    try {
+                        val source = it.body!!.source()
+                        while (!source.exhausted()) {
+                            val line = source.readUtf8Line() ?: continue
+                            if (!line.startsWith("data:")) continue
+                            val data = line.removePrefix("data:").trim()
+                            if (data == "[DONE]") break
+
+                            val delta = JSONObject(data).optString("delta", "")
+                            if (delta.isEmpty()) continue
+
+                            full.append(delta)
+                            pending += delta
+                            flushSentences(force = false) // parle dès qu'une phrase est prête
                         }
-                    } else {
-                        answerToDisplay = "The server has an error"
+                        flushSentences(force = true) // lit le reliquat (dernière phrase)
+                    } catch (e: Exception) {
+                        // Flux interrompu : on lit ce qu'on a déjà, puis on continue
+                        flushSentences(force = true)
                     }
 
-                    // Les changements d'écran doivent se faire sur le Thread Principal d'Android
-                    requireActivity().runOnUiThread {
-                        // 2. On prépare la MainPage en lui glissant la réponse dans les poches
-                        val mainPage = MainPage()
-                        val args = Bundle()
-                        args.putString("answer", answerToDisplay)
-                        args.putString("notPatrolAgain", "true")
-                        args.putBoolean("startSpeaking", true)
-                        mainPage.arguments = args
-
-                        // 3. On affiche la MainPage
-                        parentFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, mainPage)
-                            .commit()
-                    }
+                    // Une fois le flux terminé, on affiche la transcription complète
+                    // (sans refaire parler : le robot a déjà tout dit en streaming).
+                    activity?.runOnUiThread { goToMainPage(full.toString()) }
                 }
             }
         })
+    }
+
+    // Extrait les phrases complètes du tampon et les envoie au TTS (qui les met en file).
+    // On ne coupe qu'à une ponctuation SUIVIE d'un espace, pour ne pas casser "8.30".
+    // force=true vide aussi le reliquat (fin de réponse, sans ponctuation finale).
+    private fun flushSentences(force: Boolean) {
+        while (true) {
+            var idx = -1
+            for (i in 0 until pending.length - 1) {
+                val c = pending[i]
+                if ((c == '.' || c == '!' || c == '?' || c == '\n') && pending[i + 1].isWhitespace()) {
+                    idx = i
+                    break
+                }
+            }
+            if (idx == -1) break
+            val sentence = pending.substring(0, idx + 1).trim()
+            pending = pending.substring(idx + 1)
+            if (sentence.isNotEmpty()) speakOnUi(sentence)
+        }
+        if (force && pending.isNotBlank()) {
+            speakOnUi(pending.trim())
+            pending = ""
+        }
+    }
+
+    private fun speakOnUi(sentence: String) {
+        activity?.runOnUiThread { RobotController.speak(sentence) }
+    }
+
+    private fun goToMainPage(answer: String) {
+        if (!isAdded) return
+        val mainPage = MainPage()
+        val args = Bundle()
+        args.putString("answer", answer)
+        args.putString("notPatrolAgain", "true")
+        args.putBoolean("startSpeaking", false) // déjà lu en streaming
+        mainPage.arguments = args
+
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, mainPage)
+            .commit()
     }
 }
