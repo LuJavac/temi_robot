@@ -271,8 +271,10 @@ object RobotController:
     fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
         // On .test builds, use Android TTS exclusively to avoid the double-voice
         if (useFallbackTts && androidTtsReady) {
+            // QUEUE_ADD : les phrases envoyées en streaming s'enchaînent au lieu de se couper
+            // (comme la file TTS de Temi en prod). L'interruption se fait via stopSpeaking().
             // Le petit mot "TemiAudio" à la fin sert de clé pour réveiller notre écouteur de l'étape 1 !
-            androidTts?.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "TemiAudio")
+            androidTts?.speak(speech, TextToSpeech.QUEUE_ADD, null, "TemiAudio")
             return
         }
 
