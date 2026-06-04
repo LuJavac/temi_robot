@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Short NYP-blue accent bar used as an editorial divider above the title -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#0055A6" />
+    <corners android:radius="3dp" />
+</shape>

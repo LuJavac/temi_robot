@@ -3,11 +3,13 @@ package com.temi.temi_robot.pages
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.drawable.AnimationDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
@@ -39,7 +41,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.layout_first, container, false)
+        val view = inflater.inflate(R.layout.layout_first_v3, container, false)
         return view
     }
 
@@ -58,6 +60,12 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
 
         // Hide top bar
         RobotController.hideTopBar()
+
+        // Start the robot waving animation (only present in layout_first_v3; no-op otherwise)
+        val robotWave = view.findViewById<ImageView>(R.id.robotWave)
+        (robotWave?.drawable as? AnimationDrawable)?.let { anim ->
+            robotWave.post { anim.start() }
+        }
 
         // Set Callback to listen to robot and map ready events
         RobotController.setRobotReadyCallback(this)

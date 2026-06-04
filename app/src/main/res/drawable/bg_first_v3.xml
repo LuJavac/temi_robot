@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Background for the maxed-out first page: dark navy gradient + a soft blue ambient glow -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:startColor="#131A2E"
+                android:endColor="#080A10"
+                android:type="linear" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.5"
+                android:centerY="0.42"
+                android:gradientRadius="720dp"
+                android:startColor="#332E5BFF"
+                android:endColor="#002E5BFF" />
+        </shape>
+    </item>
+</layer-list>

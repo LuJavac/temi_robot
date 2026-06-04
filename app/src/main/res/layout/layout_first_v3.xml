@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Maxed-out version of the first page (kept side by side with layout_first.xml and
+  layout_first_v2.xml for a three-way before/after comparison).
+  Same view IDs as the original, so it stays a drop-in for FirstPage.
+
+  Pushes the UI further while staying sober: navy gradient + blue ambient glow,
+  one elevated glass hero card, the NYP robot mascot featured on the left, and an
+  editorial text column (logo, overline, accent bar, title, subtitle, actions) on the right.
+  The card fills the screen width (margins + weighted columns) so it scales up on the Temi.
+-->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_first_v3">
+
+    <!-- Elevated hero card -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="56dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_card_v3"
+        android:elevation="24dp"
+        android:paddingHorizontal="80dp"
+        android:paddingVertical="72dp">
+
+        <!-- Left: robot mascot waving (frame animation, started from FirstPage) -->
+        <ImageView
+            android:id="@+id/robotWave"
+            android:layout_width="420dp"
+            android:layout_height="420dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/temi_robot"
+            android:src="@drawable/robot_wave" />
+
+        <!-- Right: editorial text column + actions -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="72dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/nypLogo"
+                android:layout_width="250dp"
+                android:layout_height="160dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/nyp_logo"
+                android:scaleType="fitStart"
+                android:src="@drawable/nyp_logo" />
+
+            <TextView
+                android:id="@+id/yesOrNoOverline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:text="@string/first_v3_overline"
+                android:textColor="#6F8BFF"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.22" />
+
+            <View
+                android:layout_width="88dp"
+                android:layout_height="7dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/divider_accent_v3" />
+
+            <TextView
+                android:id="@+id/yesOrNoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/first_v2_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="62sp"
+                android:textStyle="bold"
+                android:letterSpacing="-0.01" />
+
+            <TextView
+                android:id="@+id/yesOrNoSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/first_v2_subtitle"
+                android:textColor="#99FFFFFF"
+                android:textSize="30sp"
+                android:lineSpacingMultiplier="1.18" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="56dp"
+                android:orientation="horizontal">
+
+                <!-- Primary action -->
+                <Button
+                    android:id="@+id/yesButton"
+                    android:layout_width="0dp"
+                    android:layout_height="150dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_primary_v2"
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null"
+                    android:text="@string/first_v2_yes"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="36sp"
+                    android:textStyle="bold" />
+
+                <!-- Secondary action -->
+                <Button
+                    android:id="@+id/noButton"
+                    android:layout_width="0dp"
+                    android:layout_height="150dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="28dp"
+                    android:background="@drawable/btn_secondary_v2"
+                    android:stateListAnimator="@null"
+                    android:text="@string/first_v2_no"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="36sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

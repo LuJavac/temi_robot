@@ -24,7 +24,16 @@
     <string name="set_patrol_locations">Set patrolling locations</string>
     <string name="set_patrolling_time_slots">Set patrolling time slots</string>
     <string name="going_to_home_base_to_initialize">Heading to home base</string>
-    <string name="am_i_at_home_base">Am I at home base ?</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
+
+    <!-- Strings for the first page (shared by layout_first_v3 / _v5) -->
+    <string name="first_v2_title">Is the robot on its home base ?</string>
+    <string name="first_v2_subtitle">Confirm the robot is docked on its charging base before starting.</string>
+    <string name="first_v2_yes">Yes, it\'s docked</string>
+    <string name="first_v2_no">No, send it back</string>
+
+    <!-- Extra string for the maxed-out first page (layout_first_v3.xml) -->
+    <string name="first_v3_overline">STARTUP CHECK</string>
+
+    <!-- Extra string for the editorial first page (layout_first_v5.xml) -->
+    <string name="first_v5_meta">TEMI ASSISTANT</string>
 </resources>

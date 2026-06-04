@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Editorial / Swiss-minimal take on the first page — a deliberate, radical break from
+  the dark "tech" versions. Inspired by clean award-winning UI (Awwwards "Clean"
+  collection, e.g. Slow Down Creative / Yazdani Studio): warm paper background, ink
+  type, oversized light headline, hairline rules, tiny tracked labels, an indexed
+  section marker, and the robot as a calm single splash of colour. Lots of negative space.
+
+  Kept beside the other versions. Same view IDs as the original (nypLogo, yesOrNoText,
+  yesButton, noButton) plus robotWave so the waving animation still plays.
+  Note: uses the full-colour logo (img_nyp_logo) since the white logo is invisible on paper.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F3EE"
+    android:orientation="vertical"
+    android:paddingHorizontal="80dp"
+    android:paddingVertical="56dp">
+
+    <!-- Masthead: logo + meta label -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/nypLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/nyp_logo"
+            android:src="@drawable/img_nyp_logo" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/first_v5_meta"
+            android:textColor="#8A857B"
+            android:textSize="17sp"
+            android:letterSpacing="0.22" />
+    </LinearLayout>
+
+    <!-- Hairline rule -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="28dp"
+        android:background="#22000000" />
+
+    <!-- Main split: text left, robot right -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Left: editorial text + actions -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
+            android:orientation="vertical"
+            android:paddingEnd="56dp">
+
+            <!-- Indexed section marker: 01 —— STARTUP CHECK -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="48dp"
+                    android:layout_height="2dp"
+                    android:layout_marginHorizontal="18dp"
+                    android:background="@drawable/rule_index_v5" />
+
+                <TextView
+                    android:id="@+id/yesOrNoOverline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/first_v3_overline"
+                    android:textColor="#8A857B"
+                    android:textSize="18sp"
+                    android:letterSpacing="0.22" />
+            </LinearLayout>
+
+            <!-- Oversized light headline -->
+            <TextView
+                android:id="@+id/yesOrNoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/first_v2_title"
+                android:textColor="#16140F"
+                android:textSize="76sp"
+                android:letterSpacing="-0.025"
+                android:lineSpacingMultiplier="0.98" />
+
+            <TextView
+                android:id="@+id/yesOrNoSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:maxWidth="760dp"
+                android:text="@string/first_v2_subtitle"
+                android:textColor="#6B665C"
+                android:textSize="26sp"
+                android:lineSpacingMultiplier="1.2" />
+
+            <!-- Actions -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="52dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/yesButton"
+                    android:layout_width="0dp"
+                    android:layout_height="128dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/btn_primary_v5"
+                    android:stateListAnimator="@null"
+                    android:text="@string/first_v2_yes"
+                    android:textAllCaps="false"
+                    android:textColor="#F5F3EE"
+                    android:textSize="30sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/noButton"
+                    android:layout_width="0dp"
+                    android:layout_height="128dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="24dp"
+                    android:background="@drawable/btn_secondary_v5"
+                    android:stateListAnimator="@null"
+                    android:text="@string/first_v2_no"
+                    android:textAllCaps="false"
+                    android:textColor="#16140F"
+                    android:textSize="30sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Right: the robot as the single splash of colour -->
+        <ImageView
+            android:id="@+id/robotWave"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/temi_robot"
+            android:src="@drawable/robot_wave" />
+    </LinearLayout>
+
+</LinearLayout>
