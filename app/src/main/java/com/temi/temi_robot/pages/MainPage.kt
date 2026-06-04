@@ -48,7 +48,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     private var isWakingUp = false
     private var sleepStep = 0
-    private val SLEEP_TIMEOUT = 120000L // Temps avant de s'endormir : 120 000 ms (120 secondes)
+    private val SLEEP_TIMEOUT = 300000L // Temps avant de s'endormir : 300 000 ms (300 secondes - 5 minutes)
 
     private var snorePlayer: android.media.MediaPlayer? = null
     private var hihiPlayer: android.media.MediaPlayer? = null
@@ -496,8 +496,12 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private fun startSnoring() {
         context?.let {
             snorePlayer = android.media.MediaPlayer.create(it, R.raw.snoring)
-            snorePlayer?.isLooping = true // Le ronflement tourne en boucle !
+            snorePlayer?.isLooping = false // Le ronflement tourne en boucle !
             snorePlayer?.start()
+
+            sleepAnimationHandler.postDelayed({
+                stopSnoring()
+            }, 5000)
         }
     }
 
