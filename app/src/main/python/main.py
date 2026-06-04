@@ -24,7 +24,7 @@ Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 CHAT_MODEL = "gpt-4o-mini"
 TEMPERATURE = 0.7
-TOP_K = 4
+TOP_K = 6
 
 # Client OpenAI brut pour la génération en streaming (lit OPENAI_API_KEY dans l'env)
 oai = OpenAIClient()
@@ -41,7 +41,8 @@ CUSTOM_PROMPT_STR = (
     "STRICT INSTRUCTIONS:\n"
     "1. If the official context contains the answer, use it to reply accurately.\n"
     "2. If the user's query is completely unrelated to the context (e.g., general knowledge, animals like unicorns/kangaroos, jokes, small talk), COMPLETELY IGNORE the context and answer using your general AI knowledge in a friendly way.\n"
-    "3. NEVER say 'Based on the provided context' or 'I don't have information in my context'. Just answer the user directly and naturally."
+    "3. NEVER say 'Based on the provided context' or 'I don't have information in my context'. Just answer the user directly and naturally.\n"
+    "4. If the user's query contains several distinct topics or questions, address EACH one thoroughly, giving each its own dedicated paragraph. Be comprehensive and do not merge unrelated topics into a single short answer."
 )
 CUSTOM_QA_TEMPLATE = PromptTemplate(CUSTOM_PROMPT_STR)
 
