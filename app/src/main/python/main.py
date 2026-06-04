@@ -3,6 +3,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.response_synthesizers import get_response_synthesizer
 from llama_index.core import PromptTemplate
+from openai import OpenAI as OpenAIClient   # SDK OpenAI brut, pour le vrai streaming
 
 
 import config
@@ -20,6 +21,13 @@ os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", config.apikey)
 # 2. On force l'utilisation des TOUT NOUVEAUX modèles OpenAI (débloqués par défaut)
 Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0.7)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
+
+CHAT_MODEL = "gpt-4o-mini"
+TEMPERATURE = 0.7
+TOP_K = 4
+
+# Client OpenAI brut pour la génération en streaming (lit OPENAI_API_KEY dans l'env)
+oai = OpenAIClient()
 
 # Prompt stable (en tête → éligible au prompt caching d'OpenAI).
 # Le contexte RAG + la question (variables) sont injectés via {context_str} / {query_str}.
@@ -61,34 +69,44 @@ def get_index():
 # Initialisation de la mémoire (chargée UNE fois, gardée chaude en RAM)
 index = get_index()
 
+# Retriever réutilisable : sert UNIQUEMENT à récupérer les passages pertinents.
+retriever = index.as_retriever(similarity_top_k=TOP_K)
 
-def build_query_engine(streaming: bool):
-    """Construit un moteur de requête RAG, en mode bloquant ou streaming."""
-    response_synthesizer = get_response_synthesizer(
-        response_mode="compact",
-        streaming=streaming,
-    )
-    return index.as_query_engine(
-        response_synthesizer=response_synthesizer,
-        similarity_top_k=4,
-        text_qa_template=CUSTOM_QA_TEMPLATE,
-    )
+
+def build_prompt(input_text):
+    """Récupère le contexte RAG et construit le prompt final (mêmes règles qu'avant)."""
+    nodes = retriever.retrieve(input_text)
+    context_str = "\n\n".join(n.node.get_content() for n in nodes)
+
+    # Debug : ce que le RAG a lu
+    print("\n🔍 CE QUE LE ROBOT A LU DU RAG:")
+    for n in nodes:
+        print(f"-> {n.node.get_content()[:120]}...")
+    print("-----------------------------------------\n")
+
+    return CUSTOM_PROMPT_STR.format(context_str=context_str, query_str=input_text)
 
 
 def chatbot(input_text):
-    """Réponse complète (bloquante) — utilisée par /process."""
-    query_engine = build_query_engine(streaming=False)
+    """Réponse complète (bloquante) — utilisée par /process. Réutilise le streaming en interne."""
+    return "".join(generate_deltas(input_text))
 
-    print(f"🤖 Le robot cherche la réponse pour : '{input_text}'")
-    response = query_engine.query(input_text)
 
-    # verif des sources utilisées par le RAG
-    print("\n🔍 CE QUE LE ROBOT A LU DU RAG:")
-    for node in response.source_nodes:
-        print(f"-> {node.node.text}")
-    print("-----------------------------------------\n")
+def generate_deltas(input_text):
+    """Génère la réponse token par token via l'API OpenAI en streaming."""
+    print(f"🤖 Recherche pour : '{input_text}'")
+    prompt = build_prompt(input_text)
 
-    return response.response
+    stream = oai.chat.completions.create(
+        model=CHAT_MODEL,
+        temperature=TEMPERATURE,
+        messages=[{"role": "user", "content": prompt}],
+        stream=True,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta
 
 
 @app.route('/process', methods=['POST'])
@@ -112,11 +130,8 @@ def stream():
     input_text = data.get('text', '')
 
     def generate():
-        print(f"🤖 (stream) Recherche pour : '{input_text}'")
-        query_engine = build_query_engine(streaming=True)
-        streaming_response = query_engine.query(input_text)
-        for token in streaming_response.response_gen:
-            yield f"data: {json.dumps({'delta': token})}\n\n"
+        for delta in generate_deltas(input_text):
+            yield f"data: {json.dumps({'delta': delta})}\n\n"
         yield "data: [DONE]\n\n"
 
     return Response(stream_with_context(generate()), mimetype='text/event-stream')
