@@ -41,6 +41,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var isReadingTalking = false
     private val typeWriterHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
+    // --- VARIABLES MODE VEILLE (SLEEP) ---
+    private val inactivityHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val sleepAnimationHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private var isSleeping = false
+
+    private var isWakingUp = false
+    private var sleepStep = 0
+    private val SLEEP_TIMEOUT = 120000L // Temps avant de s'endormir : 120 000 ms (120 secondes)
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -59,6 +68,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        resetLocalInactivityTimer()
 
         //  Lancer l'animation du robot sur le menu
         animationHandler.post(blinkRunnable)
@@ -146,6 +156,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Comportement du bouton "Finish"
         closeReadingButton.setOnClickListener {
+
+            resetLocalInactivityTimer()
+
             // 1. On cache l'écran de lecture
             readingOverlay.visibility = View.GONE
 
@@ -160,6 +173,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Bouton pour envoyer une question tapée au clavier
         sendTextButton.setOnClickListener {
+
+            resetLocalInactivityTimer()
+
             val question = textInput.text.toString()
             if (question.isNotEmpty()) {
 
@@ -175,6 +191,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             }
         }
 
+        // --- Réveil Tactile ---
+        val sleepOverlay = view.findViewById<View>(R.id.sleepOverlay)
+        sleepOverlay.setOnClickListener {
+            if (isSleeping) {
+                // Si l'utilisateur touche l'écran pendant que le robot dort, on le réveille
+                wakeUpSequence()
+            }
+        }
+
         if(RobotController.isAtHomeBase()){
             interactionButton.text = "Click on the button to ask me something\nor type your question below"
         }
@@ -182,6 +207,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         // Defining arguments for navigation
         val passwordPage = PasswordPage()
         val args = Bundle()
+
+        // --- Réveil Tactile ---
+        val sleepOverlayView = view.findViewById<View>(R.id.sleepOverlay)
+        sleepOverlayView.setOnClickListener {
+            if (isSleeping) {
+                // L'utilisateur a tapé sur l'écran noir
+                wakeUpSequence()
+            }
+        }
 
         // User button behavior
         interactionButton.setOnClickListener{
@@ -263,8 +297,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
     private fun initWaveDetector() {
-        // Temi native person detection holds the front-facing camera; release it
-        // so CameraX/MediaPipe can bind to it for wave detection.
         RobotController.setDetectionModeOn(false, 0.5f)
 
         waveRecognizer = WaveGestureRecognizer(
@@ -272,8 +304,16 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             lifecycleOwner = viewLifecycleOwner,
         ) {
             requireActivity().runOnUiThread {
-                RobotController.speak("Hello!")
-                showHelloOverlay()
+
+                if (isSleeping) {
+                    // S'il dort, le wave le réveille
+                    wakeUpSequence()
+                } else {
+                    // Comportement normal s'il est déjà réveillé
+                    RobotController.speak("Hello!")
+                    showHelloOverlay()
+                    resetLocalInactivityTimer() // Réinitialise le chrono
+                }
             }
         }
         waveRecognizer?.start()
@@ -297,6 +337,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         RobotController.setDetectionModeOn(true, 0.5f)
 
         animationHandler.removeCallbacks(blinkRunnable)
+
+        inactivityHandler.removeCallbacksAndMessages(null)
+        sleepAnimationHandler.removeCallbacksAndMessages(null)
     }
 
     // --- GESTION DU VISAGE ANIMÉ PENDANT LA LECTURE ---
@@ -351,6 +394,59 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             }
         }
         typeWriterHandler.post(runnable)
+    }
+
+    // --- LOGIQUE DU MODE VEILLE ---
+    private fun resetLocalInactivityTimer() {
+        inactivityHandler.removeCallbacksAndMessages(null)
+        // On ne lance le chrono de sommeil que si on n'est pas déjà en train de lire une réponse
+        if (!isSleeping && view?.findViewById<View>(R.id.readingOverlay)?.visibility != View.VISIBLE) {
+            inactivityHandler.postDelayed(goToSleepRunnable, SLEEP_TIMEOUT)
+        }
+    }
+
+    private val goToSleepRunnable = Runnable {
+        isSleeping = true
+        view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
+        sleepAnimationHandler.post(sleepAnimationRunnable)
+    }
+
+    private val sleepAnimationRunnable = object : Runnable {
+        override fun run() {
+            val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
+            if (sleepImage != null && isSleeping) {
+                // Animation Zzz...
+                when (sleepStep) {
+                    0 -> sleepImage.setImageResource(R.drawable.sleeping_temi)
+                    1 -> sleepImage.setImageResource(R.drawable.sleeping_temi_z)
+                    2 -> sleepImage.setImageResource(R.drawable.sleeping_temi_zz)
+                    3 -> sleepImage.setImageResource(R.drawable.sleeping_temi_zzz)
+                }
+                sleepStep = (sleepStep + 1) % 4
+                sleepAnimationHandler.postDelayed(this, 500) // Vitesse de l'animation Zzz (0.5s)
+            }
+        }
+    }
+
+    private fun wakeUpSequence() {
+
+        // Si on est déjà en train de se réveiller, on ne fait rien
+        if (isWakingUp) return
+        isWakingUp = true
+        // 1. On coupe l'animation des Zzz
+        sleepAnimationHandler.removeCallbacksAndMessages(null)
+
+        // 2. On affiche le grand sourire
+        val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
+        sleepImage?.setImageResource(R.drawable.smiling_temi)
+
+        // 3. On attend 1.5 seconde avant d'enlever l'écran noir
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
+            isSleeping = false
+            isWakingUp = false
+            resetLocalInactivityTimer() // On relance le chrono
+        }, 1500)
     }
 
     // --- ANIMATION DU ROBOT SUR LE MENU ---
