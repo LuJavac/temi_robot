@@ -156,6 +156,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 RobotController.speak(answerText)
                 arguments?.putBoolean("startSpeaking", false) // Sécurité pour qu'il ne répète pas
             }
+
+        }else if (savedInstanceState == null) {
+            // : S'il n'y a pas de réponse à lire ET que c'est l'ouverture de la page
+            // (Le savedInstanceState == null évite qu'il répète la phrase si on fait juste un aller-retour dans les Paramètres)
+            RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
 
         // Comportement du bouton "Finish"
@@ -311,7 +316,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
                 if (isSleeping) {
                     // S'il dort, le wave le réveille
-                    wakeUpSequence()
+                    try {
+                        wakeUpSequence()
+                    } catch (e: Exception) {
+                        TODO("Not yet implemented")
+                    }
                 } else {
                     // Comportement normal s'il est déjà réveillé
                     RobotController.speak("Hello!")
@@ -487,6 +496,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 isSleeping = false
                 isWakingUp = false
                 resetLocalInactivityTimer() // On relance le chrono d'inactivité
+
+                RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
             }, 1000)
 
         }, 5000) // L'animation gênée dure 5 secondes
