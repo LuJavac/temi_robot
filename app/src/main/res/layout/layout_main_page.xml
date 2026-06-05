@@ -157,6 +157,7 @@
             android:tag="smiling" />
 
         <ScrollView
+            android:id="@+id/readingScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@id/closeReadingButton"
@@ -172,6 +173,7 @@
                 android:textStyle="bold"
                 android:gravity="center_horizontal"
                 android:layout_marginTop="30dp"
+                android:paddingBottom="100dp"
                 android:text="The answer will show here..." />
         </ScrollView>
 

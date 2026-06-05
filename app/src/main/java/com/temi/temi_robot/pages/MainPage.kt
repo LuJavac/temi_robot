@@ -391,11 +391,16 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         textView.text = ""
         var charIndex = 0
 
+        // Le ScrollView qui contient le texte, pour le faire défiler automatiquement
+        val scrollView = textView.parent as? android.widget.ScrollView
+
         val runnable = object : Runnable {
             override fun run() {
                 if (charIndex < fullText.length) {
                     textView.append(fullText[charIndex].toString())
                     charIndex++
+                    // On fait descendre le ScrollView tout en bas au fur et à mesure
+                    scrollView?.post { scrollView.fullScroll(View.FOCUS_DOWN) }
                     // Vitesse de frappe (20ms entre chaque lettre)
                     typeWriterHandler.postDelayed(this, 20)
                 }
