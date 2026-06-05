@@ -178,6 +178,11 @@ object RobotController:
         return this.patrolStates
     }
 
+    // True une fois que le robot a fini de s'initialiser (états de patrouille chargés).
+    // Permet de réafficher les boutons Oui/Non si on revient sur la FirstPage, car les
+    // callbacks onRobotIsReady/onMapIsReady ne se redéclenchent pas une seconde fois.
+    fun isInitialized(): Boolean = ::patrolStates.isInitialized
+
     fun isAtHomeBase(): Boolean{
         return isAtHomeBase
 

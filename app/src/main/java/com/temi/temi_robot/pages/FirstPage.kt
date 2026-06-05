@@ -76,6 +76,13 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
         val noButton = view.findViewById<Button>(R.id.noButton)
         changeItemsVisibility(View.GONE)
 
+        // Si le robot est déjà initialisé (cas d'un RETOUR sur cette page via le bouton
+        // retour de la tablette), les callbacks onRobotIsReady/onMapIsReady ne se
+        // redéclencheront pas : on réaffiche donc les boutons Oui/Non tout de suite.
+        if (RobotController.isInitialized()) {
+            changeItemsVisibility(View.VISIBLE)
+        }
+
         // If at home base you can start asking questions on the main page
         yesButton.setOnClickListener {
             // Change view to main page if robot at home base
