@@ -51,6 +51,43 @@ CUSTOM_PROMPT_STR = (
 )
 CUSTOM_QA_TEMPLATE = PromptTemplate(CUSTOM_PROMPT_STR)
 
+# Prompt de pré-correction : nettoie les erreurs de reconnaissance vocale AVANT le RAG.
+# Indispensable car le retrieval cherche les passages avec le texte de la question :
+# si le mot est mal transcrit (ex: "NYPD" au lieu de "NYP"), la recherche part sur de
+# mauvais documents. On corrige donc la question avant de chercher ET de répondre.
+ASR_CORRECTION_PROMPT = (
+    "You fix speech-to-text transcription errors in short queries spoken to Temi, a robot "
+    "assistant at Nanyang Polytechnic (NYP) library in Singapore. The speech recognition often "
+    "mishears specific or local terms (for example it writes 'NYPD' when the user actually said 'NYP').\n"
+    "Rewrite the query below, correcting ONLY obvious transcription mistakes. Keep the original "
+    "meaning, language and wording as much as possible. Do NOT answer the query and do NOT add "
+    "anything else. Return ONLY the corrected query text.\n\n"
+    "Query: {query}\n"
+    "Corrected query:"
+)
+
+
+def correct_transcription(input_text):
+    """Corrige les erreurs de reconnaissance vocale via un mini-appel GPT (avant le RAG).
+
+    En cas d'échec (réseau, API...), on retombe sur le texte brut pour ne jamais bloquer.
+    """
+    try:
+        resp = oai.chat.completions.create(
+            model=CHAT_MODEL,
+            temperature=0,
+            max_tokens=60,
+            messages=[{"role": "user", "content": ASR_CORRECTION_PROMPT.format(query=input_text)}],
+        )
+        corrected = (resp.choices[0].message.content or "").strip()
+        if corrected:
+            if corrected != input_text:
+                print(f"📝 Correction ASR : '{input_text}' -> '{corrected}'")
+            return corrected
+    except Exception as e:
+        print(f"⚠️ Correction ASR échouée ({e}), utilisation du texte brut.")
+    return input_text
+
 
 def construct_index(directory_path):
     print("🧠 Lecture des fichiers PDF avec les nouveaux modèles OpenAI en cours...")
@@ -81,6 +118,10 @@ retriever = index.as_retriever(similarity_top_k=TOP_K)
 
 def build_prompt(input_text):
     """Récupère le contexte RAG et construit le prompt final (mêmes règles qu'avant)."""
+    # Étape 0 : on corrige les erreurs de reconnaissance vocale AVANT le retrieval,
+    # pour que la recherche de passages ET la réponse partent du bon texte.
+    input_text = correct_transcription(input_text)
+
     nodes = retriever.retrieve(input_text)
     context_str = "\n\n".join(n.node.get_content() for n in nodes)
 
