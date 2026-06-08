@@ -159,7 +159,7 @@ class FirstPage : Fragment(), RobotController.RobotReadyCallback, RobotControlle
 
     // Setting system default parameters
     fun initSystem(){
-        RobotController.setVolume(4)
+        RobotController.setVolume(6)
         RobotController.toggleWakeup(true) //s Disable wake-up sentences when at true
         RobotController.setTopBadgeEnabled(true) // CHANGE TO FALSE
         RobotController.setHardButtonMode(HardButton.MAIN, HardButton.Mode.ENABLED) // CHANGE TO DISABLED
