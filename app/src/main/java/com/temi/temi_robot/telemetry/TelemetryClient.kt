@@ -44,6 +44,9 @@ object TelemetryClient {
     private const val FLUSH_INTERVAL_MS = 30_000L
     private const val MAX_QUEUED_EVENTS = 1000
     private const val MAX_BATCH_SIZE = 200
+    // Session close automatiquement après ce délai sans nouveau tour,
+    // même si l'interface reste sur l'écran de lecture (pas de mise en veille)
+    private const val SESSION_IDLE_TIMEOUT_MS = 300_000L
 
     private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
     private val client = OkHttpClient.Builder()
@@ -63,6 +66,7 @@ object TelemetryClient {
     // --- Session de conversation en cours (UUID anonyme) ---
     private var sessionId: String? = null
     private var sessionStartMs: Long = 0
+    private var sessionLastTurnMs: Long = 0
     private var sessionTurnCount: Int = 0
     private val sessionTopicCounts = mutableMapOf<String, Int>()
 
@@ -119,6 +123,7 @@ object TelemetryClient {
             sessionTurnCount = 0
             sessionTopicCounts.clear()
         }
+        sessionLastTurnMs = System.currentTimeMillis()
         sessionTurnCount++
         if (request != null) {
             val topic = categorizeTopic(request)
@@ -170,9 +175,20 @@ object TelemetryClient {
         }
     }
 
+    /** Ferme la session si aucun tour depuis SESSION_IDLE_TIMEOUT_MS. */
+    @Synchronized
+    private fun autoEndIdleSession() {
+        if (sessionId != null &&
+            System.currentTimeMillis() - sessionLastTurnMs > SESSION_IDLE_TIMEOUT_MS
+        ) {
+            endSession()
+        }
+    }
+
     private fun scheduleFlush(delayMs: Long) {
         flushHandler?.postDelayed({
             try {
+                autoEndIdleSession()
                 flush()
             } catch (e: Exception) {
                 Log.e(TAG, "Telemetry flush failed", e)

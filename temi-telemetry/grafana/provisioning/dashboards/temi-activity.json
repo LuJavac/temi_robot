@@ -2,7 +2,7 @@
   "uid": "temi-activity",
   "title": "temi — Activité du robot",
   "tags": ["temi"],
-  "timezone": "browser",
+  "timezone": "Asia/Singapore",
   "schemaVersion": 39,
   "refresh": "1m",
   "time": { "from": "now-24h", "to": "now" },
