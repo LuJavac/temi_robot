@@ -28,8 +28,7 @@ import com.bumptech.glide.Glide
 import android.widget.ImageView
 
 // Page to display to ask questions to the robot. It's his main page
-class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback {
-
+class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback, RobotController.DestinationReachedCallback {
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
     private var waveRecognizer: WaveGestureRecognizer? = null
@@ -54,6 +53,14 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var snorePlayer: android.media.MediaPlayer? = null
     private var hihiPlayer: android.media.MediaPlayer? = null
     private var embarrassedStep = 0
+
+    //  LA LISTE DE TES LIEUX SUR LA CARTE
+    private val savedLocations = listOf(
+        "test point 1", "test point 2", "test point 3", "test point 4",
+        "r410 front door", "tour start spot", "r406", "r412", "r405",
+        "lift lobby", "home base", "nyp map",
+        "entrance", "library", "school of it", "lounge"
+    )
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -96,7 +103,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                     .addToBackStack(null)
                     .commit()
             }
-
         }
 
         // Registering callback to detect system Wi-Fi changes
@@ -105,9 +111,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             .build()
         connectivityManager.registerNetworkCallback(request, networkCallback)
 
-
         // Hide top bar
         RobotController.hideTopBar()
+
+        // Set Callback to listen to arrival
+        RobotController.setDestinationReachedCallback(this)
 
         // Set Callback to listen to TTS State for animation
         RobotController.setTtsStateCallback(this)
@@ -167,6 +175,23 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
 
+        // --- LOGIQUE DE L'ÉCRAN D'ARRIVÉE ---
+        val arrivedOverlay = view.findViewById<View>(R.id.arrivedOverlay)
+
+        // Bouton 1 : Poser une question (efface juste l'écran)
+        view.findViewById<Button>(R.id.btnAskQuestion).setOnClickListener {
+            arrivedOverlay.visibility = View.GONE
+            resetLocalInactivityTimer()
+        }
+
+        // Bouton 2 : Retour Base (ordonne au robot de rentrer)
+        view.findViewById<Button>(R.id.btnGoHome).setOnClickListener {
+            arrivedOverlay.visibility = View.GONE
+            RobotController.speak("Going back to my home base.")
+            RobotController.goToHomeBase()
+            onBackToBase() // Déclenche l'animation de retour
+        }
+
         // Comportement du bouton "Finish"
         closeReadingButton.setOnClickListener {
 
@@ -212,8 +237,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 wakeUpSequence()
             }
         }
-
-
 
         // Defining arguments for navigation
         val passwordPage = PasswordPage()
@@ -291,10 +314,33 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     }
 
-    // When user request arrived, change view to loading page
+    // 🔴 NOUVEAU : INTERCEPTION DES DEMANDES DE DÉPLACEMENT
     override fun onRequestIsReady(request: String) {
-        // Un tour de conversation = une question posée à l'IA (pas de verbatim envoyé)
+        // Un tour de conversation = une question posée au robot (pas de verbatim envoyé)
         TelemetryClient.recordConversationTurn()
+
+        // On met la phrase en minuscules pour faciliter la recherche
+        val lowerReq = request.lowercase()
+
+        // 1. INTERCEPTION POUR LE DÉPLACEMENT
+        if (lowerReq.contains("take me to") || lowerReq.contains("go to") || lowerReq.contains("bring me to")) {
+
+            // On cherche si un des lieux connus est cité dans la phrase de l'utilisateur
+            for (location in savedLocations) {
+                if (lowerReq.contains(location)) {
+                    // BINGO ! On a trouvé le lieu
+                    RobotController.speak("Sure! Please follow me to the $location.")
+                    RobotController.goToLocation(location)
+                    return // TRÈS IMPORTANT : On s'arrête ici, on n'envoie PAS à l'IA
+                }
+            }
+
+            // S'il a dit "Take me to..." mais vers un endroit inconnu
+            RobotController.speak("I understand you want to go somewhere, but I don't have this location saved on my map.")
+            return // On s'arrête ici aussi
+        }
+
+        // 2. COMPORTEMENT NORMAL (Si ce n'est pas une demande de déplacement -> on envoie au RAG Python)
         (activity as MainActivity).userRequest = request
         // Change view to loading page
         parentFragmentManager.beginTransaction()
@@ -329,6 +375,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         super.onDestroy()
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
+
     private fun initWaveDetector() {
         RobotController.setDetectionModeOn(false, 0.5f)
 
@@ -352,8 +399,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
         waveRecognizer?.start()
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -571,6 +616,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 }
             }
         }
-    }
+    } // 🔴 FIN DU BLOC CLIGNEMENT D'OEIL ICI !
 
-}
+    // 🔴 NOUVEAU : Fonction déclenchée quand le robot arrive à destination (Dans la classe MainPage)
+    override fun onDestinationReached() {
+        activity?.runOnUiThread {
+            // Affiche l'écran avec les deux boutons
+            view?.findViewById<View>(R.id.arrivedOverlay)?.visibility = View.VISIBLE
+            RobotController.speak("We arrived. What would you like to do next?")
+            resetLocalInactivityTimer()
+        }
+    }
+} // 🔴 FIN DE LA CLASSE MAINPAGE

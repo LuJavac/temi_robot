@@ -254,4 +254,64 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/arrivedOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/arrivedRobotFace"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="50dp"
+            android:src="@drawable/smiling_temi" />
+
+        <TextView
+            android:id="@+id/arrivedText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/arrivedRobotFace"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="We have arrived!"
+            android:textColor="#FFFFFF"
+            android:textSize="50sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/arrivedText"
+            android:layout_marginTop="60dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAskQuestion"
+                android:layout_width="350dp"
+                android:layout_height="120dp"
+                android:layout_marginEnd="40dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="Ask another question"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnGoHome"
+                android:layout_width="350dp"
+                android:layout_height="120dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="Return to Home Base"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </RelativeLayout>
+
 </RelativeLayout>

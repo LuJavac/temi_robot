@@ -58,7 +58,7 @@ object RobotController:
         getRobot()?.addOnDistanceToDestinationChangedListener(this)
         getRobot()?.addOnRequestPermissionResultListener(this)
         getRobot()?.addOnLoadMapStatusChangedListener(this)
-        getRobot()?.addOnTelepresenceStatusChangedListener(this)   
+        getRobot()?.addOnTelepresenceStatusChangedListener(this)
     }
 
     // Lists of keywords for approving or denying librarian call request
@@ -132,8 +132,6 @@ object RobotController:
 
     private val answer_82= "Please follow me, we are going to the lifestyle media."
     private val keywords1_82 = listOf("lifestyle media")
-
-
 
     // Time values
     private var lastRequestTime = 0L //
@@ -236,7 +234,6 @@ object RobotController:
     }
 
     // Initializes the Android TTS engine as a fallback for .test builds.
-    // No-op on the production package — Temi SDK speak() works there.
     fun initAndroidTts(context: Context) {
         if (androidTts != null) return
         useFallbackTts = context.packageName.endsWith(".test")
@@ -277,9 +274,6 @@ object RobotController:
     fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
         // On .test builds, use Android TTS exclusively to avoid the double-voice
         if (useFallbackTts && androidTtsReady) {
-            // QUEUE_ADD : les phrases envoyées en streaming s'enchaînent au lieu de se couper
-            // (comme la file TTS de Temi en prod). L'interruption se fait via stopSpeaking().
-            // Le petit mot "TemiAudio" à la fin sert de clé pour réveiller notre écouteur de l'étape 1 !
             androidTts?.speak(speech, TextToSpeech.QUEUE_ADD, null, "TemiAudio")
             return
         }
@@ -297,7 +291,7 @@ object RobotController:
     fun askQuestion(question: String) {
         getRobot()?.askQuestion(question)
     }
-    
+
     fun finishConversation(){
         getRobot()?.finishConversation()
     }
@@ -305,10 +299,9 @@ object RobotController:
         // On coupe la voix officielle de Temi
         getRobot()?.cancelAllTtsRequests()
 
-        //  On coupe la voix de secours d'Android (Celle qui parle en ce moment !)
+        //  On coupe la voix de secours d'Android
         androidTts?.stop()
     }
-
 
     // Movements and map
     fun loadMap() {
@@ -327,6 +320,19 @@ object RobotController:
         setDetectionModeOn(false, 0.5f)
         isMoveRequest = true
         getRobot()?.goTo(location)
+    }
+
+    // --- NOUVELLE FONCTION DE DÉPLACEMENT SÉCURISÉE ---
+    fun goToLocation(locationName: String) {
+        val robot = getRobot()
+        val locations = robot?.locations ?: emptyList()
+
+        // Vérifie si le lieu existe vraiment dans la mémoire du robot
+        if (locations.contains(locationName)) {
+            goTo(locationName) // Utilise la fonction goTo existante
+        } else {
+            speak("Sorry, I cannot find $locationName on my map.")
+        }
     }
 
     fun patrol(){
@@ -401,7 +407,6 @@ object RobotController:
         return true
     }
 
-
     // Personal interface and callbacks for robot initialization
     interface RobotReadyCallback {
         fun onRobotIsReady()
@@ -437,6 +442,15 @@ object RobotController:
     private var ttsStateCallback: TtsStateCallback? = null
     fun setTtsStateCallback(callback: TtsStateCallback) {
         this.ttsStateCallback = callback
+    }
+
+    // Callback pour prévenir qu'on est arrivés à destination
+    interface DestinationReachedCallback {
+        fun onDestinationReached()
+    }
+    private var destinationReachedCallback: DestinationReachedCallback? = null
+    fun setDestinationReachedCallback(callback: DestinationReachedCallback) {
+        this.destinationReachedCallback = callback
     }
 
     // Personal interface and callback for going back to patrol page
@@ -510,11 +524,9 @@ object RobotController:
 
         when (ttsRequest.status) {
             TtsRequest.Status.STARTED -> {
-                // Le son sort des haut-parleurs
                 ttsStateCallback?.onTtsStart()
             }
             TtsRequest.Status.COMPLETED, TtsRequest.Status.ERROR, TtsRequest.Status.CANCELED -> {
-                // Le son s'arrête !
                 ttsStateCallback?.onTtsStop()
 
                 if (ttsRequest.status == TtsRequest.Status.COMPLETED) {
@@ -529,7 +541,6 @@ object RobotController:
     }
 
     override fun onDetectionStateChanged(state: Int) {
-        // Ask question when detected and reset inactivity
         resetInactivityTimer()
         if (state == 2) {
             val currentTime = System.currentTimeMillis()
@@ -554,7 +565,6 @@ object RobotController:
         description: String
     ) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE){
-            // When arriving at home base set into block mode
             if(location == "home base"){
                 isMoveRequest = false
                 setBlockMode(true)
@@ -562,17 +572,14 @@ object RobotController:
                 tiltHead(+55) // Make head go up
                 backToMainPageCallback?.onBackToMainPage()
             }
-            // When a move request, do not trigger the patrolling appending
             else if(isMoveRequest){
                 isMoveRequest = false
-                speak("We arrived")
-                // Send temi back to home base after showing a location while being on home base
-                if(isAtHomeBase){
-                    goToHomeBase()
-                    backToBaseCallback?.onBackToBase()
-                }
+                speak("We arrived at your destination.")
+
+                // 🔴 ON A SUPPRIMÉ LE RETOUR AUTOMATIQUE (goToHomeBase) ICI !
+                // À la place, on déclenche l'affichage des boutons sur l'écran :
+                destinationReachedCallback?.onDestinationReached()
             }
-            // When arriving at a location when patrolling, append it to the list
             else {
                 patrolStates.appendFirstPatrolLocation()
             }
@@ -670,7 +677,6 @@ object RobotController:
                 callLibrarian()
             }
         }
-
         // Go to locations
         else if (isIntoList(asrResult, keywords1_61, questions)){
             speak(answer_61)
