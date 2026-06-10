@@ -209,9 +209,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             }
         }
 
-        if(RobotController.isAtHomeBase()){
-            interactionButton.text = "Click on the button to ask me something\nor type your question below"
-        }
+
 
         // Defining arguments for navigation
         val passwordPage = PasswordPage()
@@ -269,6 +267,24 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             Log.w("MainPage", "Camera permission not granted — wave detection unavailable this session")
         }
 
+        // --- Clics sur les 4 grandes cartes (Questions prédéfinies) ---
+        view.findViewById<Button>(R.id.cardPool).setOnClickListener {
+            resetLocalInactivityTimer()
+            onRequestIsReady("Where is the swimming pool ?")
+        }
+        view.findViewById<Button>(R.id.cardLibrary).setOnClickListener {
+            resetLocalInactivityTimer()
+            onRequestIsReady("Where is the library ?")
+        }
+        view.findViewById<Button>(R.id.cardClubs).setOnClickListener {
+            resetLocalInactivityTimer()
+            onRequestIsReady("Tell me about Student Clubs")
+        }
+        view.findViewById<Button>(R.id.cardBursary).setOnClickListener {
+            resetLocalInactivityTimer()
+            onRequestIsReady("How do I apply for a bursary ?")
+        }
+
     }
 
     // When user request arrived, change view to loading page
@@ -316,15 +332,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
                 if (isSleeping) {
                     // S'il dort, le wave le réveille
-                    try {
-                        wakeUpSequence()
-                    } catch (e: Exception) {
-                        TODO("Not yet implemented")
-                    }
+                    wakeUpSequence()
                 } else {
                     // Comportement normal s'il est déjà réveillé
                     RobotController.speak("Hello!")
-                    showHelloOverlay()
                     resetLocalInactivityTimer() // Réinitialise le chrono
                 }
             }
@@ -332,16 +343,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer?.start()
     }
 
-    private val helloHideRunnable = Runnable {
-        view?.findViewById<View>(R.id.helloOverlay)?.visibility = View.GONE
-    }
 
-    private fun showHelloOverlay() {
-        val overlay = view?.findViewById<View>(R.id.helloOverlay) ?: return
-        overlay.visibility = View.VISIBLE
-        overlay.removeCallbacks(helloHideRunnable)
-        overlay.postDelayed(helloHideRunnable, 2000L)
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -410,8 +412,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                     charIndex++
                     // On fait descendre le ScrollView tout en bas au fur et à mesure
                     scrollView?.post { scrollView.fullScroll(View.FOCUS_DOWN) }
-                    // Vitesse de frappe (20ms entre chaque lettre)
-                    typeWriterHandler.postDelayed(this, 20)
+                    // Vitesse de frappe
+                    typeWriterHandler.postDelayed(this, 60)
                 }
             }
         }

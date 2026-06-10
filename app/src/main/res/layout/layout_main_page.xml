@@ -1,140 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#000000">
 
-    <!-- FOND NOIR ET CONTENU PRINCIPAL -->
     <RelativeLayout
-        android:id="@+id/fragment_container"
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#000000">
+        android:layout_height="80dp"
+        android:paddingHorizontal="20dp">
 
-        <!-- 1. BARRE DU HAUT (Logo + Paramètres) -->
-
-        <!-- 2. BARRE DE RECHERCHE TEXTE (Ancrée tout en bas) -->
-        <RelativeLayout
-            android:id="@+id/topBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="20dp">
-
-            <!-- NOUVEAU LOGO SANS FOND BLANC -->
-            <ImageView
-                android:id="@+id/nypLogo"
-                android:layout_width="250dp"
-                android:layout_height="160dp"
-                android:layout_alignParentStart="true"
-                android:background="@null"
-                android:contentDescription="@string/nyp_logo"
-                android:src="@drawable/nyp_logo" />
-
-            <!-- BOUTONS HAUT DROITE (Passés en blanc pour être visibles) -->
-            <ImageButton
-                android:id="@+id/timeButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="30dp"
-                android:layout_toStartOf="@id/settingsButton"
-                android:background="@android:color/transparent"
-                android:src="@drawable/drawable_hourglass"
-                app:tint="#FFFFFF" />
-
-            <ImageButton
-                android:id="@+id/settingsButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_alignParentEnd="true"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="30dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/drawable_settings"
-                app:tint="#FFFFFF" />
-        </RelativeLayout>
-
-        <!-- 3. LE CENTRE (Robot + Bouton Vocal de taille normale) -->
-
-        <LinearLayout
-            android:id="@+id/bottomSearchBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="91dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/textInput"
-                android:layout_width="500dp"
-                android:layout_height="80dp"
-                android:layout_marginTop="-0dp"
-                android:layout_marginEnd="20dp"
-                android:background="#FFFFFF"
-                android:hint="Type your question here..."
-                android:padding="15dp"
-                android:textSize="25sp" />
-
-            <Button
-                android:id="@+id/sendTextButton"
-                android:layout_width="120dp"
-                android:layout_height="80dp"
-                android:text="Send"
-                android:textSize="20sp" />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/nypLogo"
+            android:layout_width="180dp"
+            android:layout_height="60dp"
+            android:layout_centerVertical="true"
+            android:src="@drawable/nyp_logo" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="vertical"
-            android:gravity="center">
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal">
 
-            <!-- LE ROBOT QUI S'ANIME -->
+            <ImageButton
+                android:id="@+id/timeButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:tint="#FFFFFF" />
 
-            <!-- LE BOUTON BLEU -->
-            <ImageView
-                android:id="@+id/menuRobotCharacter"
-                android:layout_width="350dp"
-                android:layout_height="350dp"
-                android:src="@drawable/robot_smile" />
-
-            <Button
-                android:id="@+id/interactionButton"
-                android:layout_width="620dp"
-                android:layout_height="170dp"
-                android:layout_marginTop="0dp"
-                android:background="@drawable/button_blue_transparent"
-                android:text="Click on the button to ask me something\nor type your question below"
-                android:textColor="@android:color/white"
-                android:textSize="26sp" />
+            <ImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="15dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_preferences"
+                android:tint="#FFFFFF" />
         </LinearLayout>
     </RelativeLayout>
 
-    <!-- ========================================== -->
-    <!-- LES OVERLAYS (Cachés par défaut)           -->
-    <!-- ========================================== -->
-
-    <FrameLayout
-        android:id="@+id/helloOverlay"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000000"
-        android:clickable="true"
-        android:focusable="true"
-        android:visibility="gone">
+        android:layout_above="@id/bottomContainer"
+        android:layout_below="@id/topBar"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Hello !"
+            android:layout_marginBottom="5dp"
+            android:gravity="center"
+            android:text="Hi there, it's Temi! How can I help you?"
             android:textColor="#FFFFFF"
-            android:textSize="220sp"
+            android:textSize="36sp"
             android:textStyle="bold" />
-    </FrameLayout>
+
+        <ImageView
+            android:id="@+id/menuRobotCharacter"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_marginBottom="15dp"
+            android:src="@drawable/robot_smile" />
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:rowCount="2">
+
+            <Button
+                android:id="@+id/cardPool"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/card_bg"
+                android:text="Where is the swimming pool?"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/cardLibrary"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/card_bg"
+                android:text="Where is the library?"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/cardClubs"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/card_bg"
+                android:text="Tell me about Student Clubs"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/cardBursary"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/card_bg"
+                android:text="How do I apply for a bursary?"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+        </GridLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomContainer"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="30dp"
+        android:paddingBottom="25dp"> <Button
+        android:id="@+id/interactionButton"
+        android:layout_width="0dp"
+        android:layout_height="90dp"
+        android:layout_marginEnd="15dp"
+        android:layout_weight="1"
+        android:background="@drawable/button_blue_transparent"
+        android:text="Press here"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_marginStart="15dp"
+            android:layout_weight="1"
+            android:background="@drawable/card_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="15dp">
+
+            <EditText
+                android:id="@+id/textInput"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="Type your question here..."
+
+                android:inputType="text"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#888888"
+                android:textSize="22sp" />
+
+            <Button
+                android:id="@+id/sendTextButton"
+                android:layout_width="120dp"
+                android:layout_height="60dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="SEND"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/readingOverlay"
@@ -143,50 +183,46 @@
         android:background="#000000"
         android:visibility="gone"
         android:clickable="true"
-        android:focusable="true"
-        android:padding="50dp">
+        android:focusable="true">
 
-        <!-- VISAGE PENDANT LA LECTURE -->
         <ImageView
             android:id="@+id/robotFace"
             android:layout_width="250dp"
             android:layout_height="250dp"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:src="@drawable/smiling_temi"
             android:tag="smiling" />
 
         <ScrollView
-            android:id="@+id/readingScrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@id/closeReadingButton"
-            android:layout_below="@id/robotFace"
-            android:layout_marginBottom="40dp">
+            android:layout_above="@+id/closeReadingButton"
+            android:layout_below="@+id/robotFace"
+            android:layout_marginBottom="20dp"
+            android:paddingHorizontal="50dp"
+            android:paddingTop="20dp">
 
             <TextView
                 android:id="@+id/readingTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="#FFFFFF"
-                android:textSize="40sp"
-                android:textStyle="bold"
-                android:gravity="center_horizontal"
-                android:layout_marginTop="30dp"
-                android:paddingBottom="100dp"
-                android:text="The answer will show here..." />
-        </ScrollView>
+                android:lineSpacingExtra="8dp"
+                android:textSize="38sp" /> </ScrollView>
 
         <Button
             android:id="@+id/closeReadingButton"
-            android:layout_width="400dp"
-            android:layout_height="100dp"
+            android:layout_width="280dp"
+            android:layout_height="90dp"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
-            android:backgroundTint="#0055A6"
-            android:text="Finish / Ask Another Question"
-            android:textColor="@android:color/white"
-            android:textSize="25sp" />
+            android:layout_marginBottom="50dp"
+            android:background="@drawable/button_blue_transparent"
+            android:text="FINISH"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            android:textStyle="bold" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -217,4 +253,5 @@
             android:textSize="35sp"
             android:textStyle="bold" />
     </RelativeLayout>
-</FrameLayout>
+
+</RelativeLayout>
