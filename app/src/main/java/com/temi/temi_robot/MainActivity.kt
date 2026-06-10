@@ -13,6 +13,7 @@ import androidx.core.content.edit
 import com.robotemi.sdk.Robot
 import com.temi.temi_robot.pages.FirstPage
 import com.temi.temi_robot.pages.GoToBasePage
+import com.temi.temi_robot.telemetry.TelemetryClient
 import com.temi.temi_robot.time.AlarmScheduler
 import com.temi.temi_robot.time.TimeListener
 
@@ -47,6 +48,9 @@ class MainActivity : AppCompatActivity() {
 
         // Init Android TTS fallback (active only on .test builds, no-op in production)
         RobotController.initAndroidTts(this)
+
+        // Telemetry client with offline queue (events sent to the Raspberry Pi)
+        TelemetryClient.init(this)
 
         // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager

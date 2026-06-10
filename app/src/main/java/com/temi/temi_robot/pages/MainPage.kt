@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.telemetry.TelemetryClient
 import androidx.core.content.edit
 
 import com.bumptech.glide.Glide
@@ -88,6 +89,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         networkCallback = object : ConnectivityManager.NetworkCallback() {
             override fun onLost(network: Network) {
                 super.onLost(network)
+
+                // Clôture de la session : l'événement reste dans la file locale
+                // et sera envoyé au retour du réseau
+                TelemetryClient.endSession()
 
                 // Sending temi to home base
                 RobotController.goToHomeBase()
@@ -349,6 +354,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     // 🔴 NOUVEAU : INTERCEPTION DES DEMANDES DE DÉPLACEMENT
     override fun onRequestIsReady(request: String) {
+        // Un tour de conversation = une question posée au robot. La question sert
+        // à classer le thème en local, son texte n'est jamais envoyé en télémétrie.
+        TelemetryClient.recordConversationTurn(request)
+
         // On met la phrase en minuscules pour faciliter la recherche
         val lowerReq = request.lowercase()
 
@@ -391,6 +400,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     // Callback to go back to base page when needed
     override fun onBackToBase() {
+        // Le retour à la base marque la fin de la session d'interaction
+        TelemetryClient.endSession()
         // Change view to go back base page
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, GoToBasePage())
@@ -412,6 +423,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             lifecycleOwner = viewLifecycleOwner,
         ) {
             requireActivity().runOnUiThread {
+                TelemetryClient.track("wave")
 
                 if (isSleeping) {
                     // S'il dort, le wave le réveille
@@ -419,6 +431,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 } else {
                     // Comportement normal s'il est déjà réveillé
                     RobotController.speak("Hello!")
+                    TelemetryClient.track("greeting")
                     resetLocalInactivityTimer() // Réinitialise le chrono
                 }
             }
@@ -511,6 +524,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     }
 
     private val goToSleepRunnable = Runnable {
+        // Fin de la session d'interaction : on envoie ses métriques anonymes
+        TelemetryClient.endSession()
+        TelemetryClient.track("idle")
         isSleeping = true
         view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
         sleepAnimationHandler.post(sleepAnimationRunnable)
