@@ -37,7 +37,7 @@ object TelemetryClient {
     // IP : RaspBerry (même machine que serverUrl dans MainActivity)
     private const val ENDPOINT_URL = "http://192.168.1.43:8000/events/batch"
     // Doit correspondre à API_TOKEN dans temi-telemetry/.env sur le Pi
-    private const val TELEMETRY_TOKEN = "change-me-temi-telemetry-token"
+    private const val TELEMETRY_TOKEN = "bb1dbce86b11617751308562d1205669db7f16707f1effc7"
 
     private const val QUEUE_FILE_NAME = "telemetry_queue.jsonl"
     private const val FLUSH_INTERVAL_MS = 30_000L
