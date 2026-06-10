@@ -23,6 +23,7 @@ import com.robotemi.sdk.permission.Permission
 import com.robotemi.sdk.telepresence.CallState
 import com.robotemi.sdk.telepresence.Participant
 import com.temi.temi_robot.dataclasses.PatrolStates
+import com.temi.temi_robot.telemetry.TelemetryClient
 import java.lang.ref.WeakReference
 
 // Robot controller class
@@ -536,6 +537,9 @@ object RobotController:
                 return
             }
             lastRequestTime = currentTime
+
+            TelemetryClient.track("face_detected")
+            TelemetryClient.track("greeting")
 
             getRobot()?.stopMovement()
             getRobot()?.setDetectionModeOn(false, 0.5f)

@@ -1,0 +1,105 @@
+{
+  "uid": "temi-activity",
+  "title": "temi — Activité du robot",
+  "tags": ["temi"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "1m",
+  "time": { "from": "now-24h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Waves par heure",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"robot_events\" and r.event_type == \"wave\" and r._field == \"count\")\n  |> aggregateWindow(every: 1h, fn: sum, createEmpty: true)\n  |> fill(value: 0)\n  |> yield(name: \"waves\")"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Événements par heure (par type)",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "stacking": { "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"robot_events\" and r._field == \"count\")\n  |> group(columns: [\"event_type\"])\n  |> aggregateWindow(every: 1h, fn: sum, createEmpty: true)\n  |> fill(value: 0)\n  |> yield(name: \"events\")"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Durée moyenne des conversations",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 9 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "decimals": 0 },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group()\n  |> mean()\n  |> yield(name: \"avg_duration\")"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Conversations sur la période",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 9 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group()\n  |> count()\n  |> yield(name: \"conversations\")"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Conversations par jour",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 9 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: true)\n  |> fill(value: 0)\n  |> yield(name: \"conversations_per_day\")"
+        }
+      ]
+    }
+  ]
+}
