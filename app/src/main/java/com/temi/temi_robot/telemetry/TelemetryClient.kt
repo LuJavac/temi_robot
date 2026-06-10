@@ -138,7 +138,9 @@ object TelemetryClient {
     @Synchronized
     fun endSession() {
         val id = sessionId ?: return
-        val durationS = (System.currentTimeMillis() - sessionStartMs) / 1000.0
+        // Durée = du premier au dernier tour : on n'inclut pas les minutes
+        // d'inactivité qui précèdent la clôture de la session
+        val durationS = (sessionLastTurnMs - sessionStartMs) / 1000.0
         val dominantTopic = sessionTopicCounts.maxByOrNull { it.value }?.key
         val event = JSONObject()
             .put("event_type", "conversation")
