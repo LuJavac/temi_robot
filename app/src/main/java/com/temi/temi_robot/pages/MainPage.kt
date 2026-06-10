@@ -316,8 +316,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     // 🔴 NOUVEAU : INTERCEPTION DES DEMANDES DE DÉPLACEMENT
     override fun onRequestIsReady(request: String) {
-        // Un tour de conversation = une question posée au robot (pas de verbatim envoyé)
-        TelemetryClient.recordConversationTurn()
+        // Un tour de conversation = une question posée au robot. La question sert
+        // à classer le thème en local, son texte n'est jamais envoyé en télémétrie.
+        TelemetryClient.recordConversationTurn(request)
 
         // On met la phrase en minuscules pour faciliter la recherche
         val lowerReq = request.lowercase()

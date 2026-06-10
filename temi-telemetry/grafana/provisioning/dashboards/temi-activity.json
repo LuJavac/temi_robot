@@ -82,6 +82,23 @@
       ]
     },
     {
+      "id": 6,
+      "type": "piechart",
+      "title": "Conversations par thème",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 17 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group(columns: [\"topic\"])\n  |> count()\n  |> yield(name: \"by_topic\")"
+        }
+      ]
+    },
+    {
       "id": 5,
       "type": "timeseries",
       "title": "Conversations par jour",

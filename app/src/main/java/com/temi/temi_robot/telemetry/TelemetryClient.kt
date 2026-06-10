@@ -64,6 +64,25 @@ object TelemetryClient {
     private var sessionId: String? = null
     private var sessionStartMs: Long = 0
     private var sessionTurnCount: Int = 0
+    private val sessionTopicCounts = mutableMapOf<String, Int>()
+
+    // Catégories grossières de thème : la question est analysée SUR le robot,
+    // seule la catégorie part dans la télémétrie — jamais le texte.
+    private val topicKeywords = listOf(
+        "directions" to listOf("where", "go to", "take me", "bring me", "find", "located", "how do i get"),
+        "library" to listOf("library", "book", "borrow", "return"),
+        "clubs" to listOf("club", "cca", "society", "activities"),
+        "admin" to listOf("bursary", "scholarship", "apply", "admission", "enrol", "fees"),
+        "facilities" to listOf("pool", "gym", "canteen", "cafe", "toilet", "sport"),
+    )
+
+    private fun categorizeTopic(request: String): String {
+        val lower = request.lowercase()
+        for ((topic, keywords) in topicKeywords) {
+            if (keywords.any { lower.contains(it) }) return topic
+        }
+        return "other"
+    }
 
     /** À appeler une fois au démarrage de l'app (MainActivity.onCreate). */
     fun init(context: Context) {
@@ -87,17 +106,24 @@ object TelemetryClient {
     }
 
     /**
-     * Marque un tour de conversation (une question posée à l'IA).
-     * Ouvre une session anonyme si aucune n'est en cours.
+     * Marque un tour de conversation (une question posée au robot).
+     * Ouvre une session anonyme si aucune n'est en cours. La question sert
+     * uniquement à déterminer une catégorie de thème, en local : son texte
+     * n'est ni stocké ni envoyé.
      */
     @Synchronized
-    fun recordConversationTurn() {
+    fun recordConversationTurn(request: String? = null) {
         if (sessionId == null) {
             sessionId = UUID.randomUUID().toString()
             sessionStartMs = System.currentTimeMillis()
             sessionTurnCount = 0
+            sessionTopicCounts.clear()
         }
         sessionTurnCount++
+        if (request != null) {
+            val topic = categorizeTopic(request)
+            sessionTopicCounts[topic] = (sessionTopicCounts[topic] ?: 0) + 1
+        }
     }
 
     /**
@@ -108,14 +134,19 @@ object TelemetryClient {
     fun endSession() {
         val id = sessionId ?: return
         val durationS = (System.currentTimeMillis() - sessionStartMs) / 1000.0
+        val dominantTopic = sessionTopicCounts.maxByOrNull { it.value }?.key
         val event = JSONObject()
             .put("event_type", "conversation")
             .put("timestamp", isoFormat.format(Date()))
             .put("session_id", id)
             .put("duration_s", durationS)
             .put("turn_count", sessionTurnCount)
+        if (dominantTopic != null) {
+            event.put("topic", dominantTopic)
+        }
         sessionId = null
         sessionTurnCount = 0
+        sessionTopicCounts.clear()
         enqueue(event)
     }
 
