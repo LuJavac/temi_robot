@@ -54,12 +54,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var hihiPlayer: android.media.MediaPlayer? = null
     private var embarrassedStep = 0
 
-    //  LA LISTE DE TES LIEUX SUR LA CARTE
+    // 🔴 LA LISTE MISE À JOUR DE TES 9 UNIQUE LIEUX SUR LA CARTE
     private val savedLocations = listOf(
         "test point 1", "test point 2", "test point 3", "test point 4",
-        "r410 front door", "tour start spot", "r406", "r412", "r405",
-        "lift lobby", "home base", "nyp map",
-        "entrance", "library", "school of it", "lounge"
+        "r410 front door", "tour start spot", "r406", "r412", "r405"
     )
 
     // Recover robot controller from main activity
@@ -90,8 +88,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             override fun onLost(network: Network) {
                 super.onLost(network)
 
-                // Clôture de la session : l'événement reste dans la file locale
-                // et sera envoyé au retour du réseau
+                // Clôture de la session en télémétrie
                 TelemetryClient.endSession()
 
                 // Sending temi to home base
@@ -171,7 +168,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         }else if (savedInstanceState == null) {
             // : S'il n'y a pas de réponse à lire ET que c'est l'ouverture de la page
-            // (Le savedInstanceState == null évite qu'il répète la phrase si on fait juste un aller-retour dans les Paramètres)
             RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
 
@@ -194,16 +190,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Comportement du bouton "Finish"
         closeReadingButton.setOnClickListener {
-
             resetLocalInactivityTimer()
-
-            // 1. On cache l'écran de lecture
             readingOverlay.visibility = View.GONE
-
-            // 2. On coupe la parole au robot s'il n'avait pas fini
             RobotController.stopSpeaking()
-
-            // 3. On remet les compteurs à zéro pour la prochaine question
             RobotController.resetInactivityTimer()
             typeWriterHandler.removeCallbacksAndMessages(null)
         }
@@ -211,20 +200,12 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Bouton pour envoyer une question tapée au clavier
         sendTextButton.setOnClickListener {
-
             resetLocalInactivityTimer()
-
             val question = textInput.text.toString()
             if (question.isNotEmpty()) {
-
-                // 1. Coupe l'écoute vocale
                 RobotController.finishConversation()
-
-                // 2. Vide le texte IMMÉDIATEMENT (et referme le clavier visuel d'Android)
                 textInput.setText("")
                 textInput.clearFocus()
-
-                // 3. Envoie au serveur
                 onRequestIsReady(question)
             }
         }
@@ -233,7 +214,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val sleepOverlay = view.findViewById<View>(R.id.sleepOverlay)
         sleepOverlay.setOnClickListener {
             if (isSleeping) {
-                // Si l'utilisateur touche l'écran pendant que le robot dort, on le réveille
                 wakeUpSequence()
             }
         }
@@ -246,7 +226,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val sleepOverlayView = view.findViewById<View>(R.id.sleepOverlay)
         sleepOverlayView.setOnClickListener {
             if (isSleeping) {
-                // L'utilisateur a tapé sur l'écran noir
                 wakeUpSequence()
             }
         }
@@ -262,11 +241,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Settings button behavior
         settingsButton.setOnClickListener {
-            // Passing argument for password page to know where we come from
             args.putString("from", "locationsSettings")
             passwordPage.arguments = args
-
-            // Change view to settings page
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, passwordPage)
                 .addToBackStack(null)
@@ -275,12 +251,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // Time button behavior
         timeButton.setOnClickListener {
-
-            // Passing argument for password page to know where we come from
             args.putString("from", "timeSettings")
             passwordPage.arguments = args
-
-            // Change view to settings page
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, passwordPage)
                 .addToBackStack(null)
@@ -292,36 +264,35 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val mapOverlay = view.findViewById<View>(R.id.mapOverlay)
         val closeMapButton = view.findViewById<Button>(R.id.closeMapButton)
 
-        // 1. Ouvrir le menu Map quand on clique sur l'icône en haut
         mapMenuButton.setOnClickListener {
             resetLocalInactivityTimer()
             mapOverlay.visibility = View.VISIBLE
         }
 
-        // 2. Fermer le menu Map avec la croix (X)
         closeMapButton.setOnClickListener {
             resetLocalInactivityTimer()
             mapOverlay.visibility = View.GONE
         }
 
-        // 3. Fonction magique pour relier les boutons aux moteurs
         fun setupLocationButton(buttonId: Int, locationName: String) {
             view.findViewById<Button>(buttonId).setOnClickListener {
                 resetLocalInactivityTimer()
-                mapOverlay.visibility = View.GONE // On ferme le menu
+                mapOverlay.visibility = View.GONE
                 RobotController.speak("Sure, follow me to the $locationName.")
-                RobotController.goToLocation(locationName) // 🚀 Go !
+                RobotController.goToLocation(locationName)
             }
         }
 
-        // 4. On relie nos 7 boutons à leurs noms officiels !
-        setupLocationButton(R.id.btnLocLift, "lift lobby")
-        setupLocationButton(R.id.btnLocHome, "home base")
-        setupLocationButton(R.id.btnLocMap, "nyp map")
-        setupLocationButton(R.id.btnLocEntrance, "entrance")
-        setupLocationButton(R.id.btnLocLibrary, "library")
-        setupLocationButton(R.id.btnLocSchool, "school of it")
-        setupLocationButton(R.id.btnLocLounge, "lounge")
+        // 🔴 LIAISON EXCLUSIVE DE TES 9 VRAIS BOUTONS Tactiles
+        setupLocationButton(R.id.btnLocTest1, "test point 1")
+        setupLocationButton(R.id.btnLocTest2, "test point 2")
+        setupLocationButton(R.id.btnLocTest3, "test point 3")
+        setupLocationButton(R.id.btnLocTest4, "test point 4")
+        setupLocationButton(R.id.btnLocR410, "r410 front door")
+        setupLocationButton(R.id.btnLocTour, "tour start spot")
+        setupLocationButton(R.id.btnLocR406, "r406")
+        setupLocationButton(R.id.btnLocR412, "r412")
+        setupLocationButton(R.id.btnLocR405, "r405")
 
 
         // --- Wave gesture detection ---
@@ -349,48 +320,37 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             resetLocalInactivityTimer()
             onRequestIsReady("How do I apply for a bursary ?")
         }
-
     }
 
-    // 🔴 NOUVEAU : INTERCEPTION DES DEMANDES DE DÉPLACEMENT
+    // INTERCEPTION DES DEMANDES DE DÉPLACEMENT Vocales ou Clavier
     override fun onRequestIsReady(request: String) {
-        // Un tour de conversation = une question posée au robot. La question sert
-        // à classer le thème en local, son texte n'est jamais envoyé en télémétrie.
         TelemetryClient.recordConversationTurn(request)
-
-        // On met la phrase en minuscules pour faciliter la recherche
         val lowerReq = request.lowercase()
 
         // 1. INTERCEPTION POUR LE DÉPLACEMENT
         if (lowerReq.contains("take me to") || lowerReq.contains("go to") || lowerReq.contains("bring me to")) {
 
-            // On cherche si un des lieux connus est cité dans la phrase de l'utilisateur
             for (location in savedLocations) {
                 if (lowerReq.contains(location)) {
-                    // BINGO ! On a trouvé le lieu
                     RobotController.speak("Sure! Please follow me to the $location.")
                     RobotController.goToLocation(location)
-                    return // TRÈS IMPORTANT : On s'arrête ici, on n'envoie PAS à l'IA
+                    return
                 }
             }
 
-            // S'il a dit "Take me to..." mais vers un endroit inconnu
             RobotController.speak("I understand you want to go somewhere, but I don't have this location saved on my map.")
-            return // On s'arrête ici aussi
+            return
         }
 
-        // 2. COMPORTEMENT NORMAL (Si ce n'est pas une demande de déplacement -> on envoie au RAG Python)
+        // 2. COMPORTEMENT NORMAL (IA Python)
         (activity as MainActivity).userRequest = request
-        // Change view to loading page
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, LoadingPage())
             .addToBackStack(null)
             .commit()
     }
 
-    // When meeting started, save last page before leaving for call
     override fun onMeetingStarted() {
-        // Save last page before leaving for call
         val prefs = requireActivity().getSharedPreferences("temi_state", Context.MODE_PRIVATE)
         prefs.edit {
             putString("last_fragment", this::class.java.name)
@@ -398,18 +358,14 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
     }
 
-    // Callback to go back to base page when needed
     override fun onBackToBase() {
-        // Le retour à la base marque la fin de la session d'interaction
         TelemetryClient.endSession()
-        // Change view to go back base page
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, GoToBasePage())
             .addToBackStack(null)
             .commit()
     }
 
-    // Unregistering callback to prevent memory leaks
     override fun onDestroy() {
         super.onDestroy()
         connectivityManager.unregisterNetworkCallback(networkCallback)
@@ -417,22 +373,18 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     private fun initWaveDetector() {
         RobotController.setDetectionModeOn(false, 0.5f)
-
         waveRecognizer = WaveGestureRecognizer(
             context = requireContext(),
             lifecycleOwner = viewLifecycleOwner,
         ) {
             requireActivity().runOnUiThread {
                 TelemetryClient.track("wave")
-
                 if (isSleeping) {
-                    // S'il dort, le wave le réveille
                     wakeUpSequence()
                 } else {
-                    // Comportement normal s'il est déjà réveillé
                     RobotController.speak("Hello!")
                     TelemetryClient.track("greeting")
-                    resetLocalInactivityTimer() // Réinitialise le chrono
+                    resetLocalInactivityTimer()
                 }
             }
         }
@@ -444,23 +396,18 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         waveRecognizer?.stop()
         waveRecognizer = null
         RobotController.setDetectionModeOn(true, 0.5f)
-
         animationHandler.removeCallbacks(blinkRunnable)
-
         inactivityHandler.removeCallbacksAndMessages(null)
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
         hihiPlayer?.release()
         hihiPlayer = null
-
     }
 
-    // --- GESTION DU VISAGE ANIMÉ PENDANT LA LECTURE ---
     private val talkingRunnable = object : Runnable {
         override fun run() {
             val faceImage = view?.findViewById<ImageView>(R.id.robotFace)
             if (faceImage != null && isReadingTalking) {
-                // On alterne rapidement (illusion de parole)
                 if (faceImage.tag == "talking") {
                     faceImage.setImageResource(R.drawable.smiling_temi)
                     faceImage.tag = "smiling"
@@ -468,10 +415,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                     faceImage.setImageResource(R.drawable.talking_temi)
                     faceImage.tag = "talking"
                 }
-                // Vitesse d'ouverture/fermeture de la bouche (150ms)
                 animationHandler.postDelayed(this, 150)
             } else if (faceImage != null) {
-                // S'il s'arrête de parler, on force le sourire
                 faceImage.setImageResource(R.drawable.smiling_temi)
                 faceImage.tag = "smiling"
             }
@@ -491,22 +436,16 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
     }
 
-    // --- EFFET MACHINE À ÉCRIRE ---
     private fun animateTextTypewriter(textView: android.widget.TextView, fullText: String) {
         textView.text = ""
         var charIndex = 0
-
-        // Le ScrollView qui contient le texte, pour le faire défiler automatiquement
         val scrollView = textView.parent as? android.widget.ScrollView
-
         val runnable = object : Runnable {
             override fun run() {
                 if (charIndex < fullText.length) {
                     textView.append(fullText[charIndex].toString())
                     charIndex++
-                    // On fait descendre le ScrollView tout en bas au fur et à mesure
                     scrollView?.post { scrollView.fullScroll(View.FOCUS_DOWN) }
-                    // Vitesse de frappe
                     typeWriterHandler.postDelayed(this, 60)
                 }
             }
@@ -514,17 +453,14 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         typeWriterHandler.post(runnable)
     }
 
-    // --- LOGIQUE DU MODE VEILLE ---
     private fun resetLocalInactivityTimer() {
         inactivityHandler.removeCallbacksAndMessages(null)
-        // On ne lance le chrono de sommeil que si on n'est pas déjà en train de lire une réponse
         if (!isSleeping && view?.findViewById<View>(R.id.readingOverlay)?.visibility != View.VISIBLE) {
             inactivityHandler.postDelayed(goToSleepRunnable, SLEEP_TIMEOUT)
         }
     }
 
     private val goToSleepRunnable = Runnable {
-        // Fin de la session d'interaction : on envoie ses métriques anonymes
         TelemetryClient.endSession()
         TelemetryClient.track("idle")
         isSleeping = true
@@ -537,7 +473,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         override fun run() {
             val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
             if (sleepImage != null && isSleeping) {
-                // Animation Zzz...
                 when (sleepStep) {
                     0 -> sleepImage.setImageResource(R.drawable.sleeping_temi)
                     1 -> sleepImage.setImageResource(R.drawable.sleeping_temi_z)
@@ -545,25 +480,21 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                     3 -> sleepImage.setImageResource(R.drawable.sleeping_temi_zzz)
                 }
                 sleepStep = (sleepStep + 1) % 4
-                sleepAnimationHandler.postDelayed(this, 500) // Vitesse de l'animation Zzz (0.5s)
+                sleepAnimationHandler.postDelayed(this, 500)
             }
         }
     }
 
-    // --- ANIMATION DE RÉVEIL (GÊNÉ) ---
     private val embarrassedRunnable = object : Runnable {
         override fun run() {
             val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
             if (sleepImage != null) {
-                // Alterne entre les deux images de gêne
                 if (embarrassedStep % 2 == 0) {
                     sleepImage.setImageResource(R.drawable.embarassed_temi)
                 } else {
                     sleepImage.setImageResource(R.drawable.embarassed2_temi)
                 }
                 embarrassedStep++
-
-                // Vitesse du clignotement de panique (200 millisecondes)
                 sleepAnimationHandler.postDelayed(this, 200)
             }
         }
@@ -572,51 +503,33 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private fun wakeUpSequence() {
         if (isWakingUp) return
         isWakingUp = true
-
-        // 1. On coupe l'animation des Zzz ET on arrête le ronflement
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
-
-        // 2. On lance le petit rire de gêne ("hihi")
         playHihi()
-
-        // 3. On lance l'animation paniquée/gênée
         embarrassedStep = 0
         sleepAnimationHandler.post(embarrassedRunnable)
 
-        // 4. On laisse l'animation gênée pendant 2.5 secondes
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-
-            // On arrête de clignoter la gêne
             sleepAnimationHandler.removeCallbacks(embarrassedRunnable)
-
-            // 5. On remet le grand sourire classique pour reprendre le travail
             val sleepImage = view?.findViewById<ImageView>(R.id.sleepRobotImage)
             sleepImage?.setImageResource(R.drawable.smiling_temi)
 
-            // 6. On attend encore 1 seconde avant d'enlever l'écran noir pour voir le sourire
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
                 isSleeping = false
                 isWakingUp = false
-                resetLocalInactivityTimer() // On relance le chrono d'inactivité
-
+                resetLocalInactivityTimer()
                 RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
             }, 1000)
-
-        }, 5000) // L'animation gênée dure 5 secondes
+        }, 5000)
     }
 
-    // --- LECTURE DES SONS ---
     private fun startSnoring() {
         context?.let {
             snorePlayer = android.media.MediaPlayer.create(it, R.raw.snoring)
-            snorePlayer?.isLooping = false // Le ronflement tourne en boucle !
+            snorePlayer?.isLooping = false
             snorePlayer?.start()
-
-            sleepAnimationHandler.postDelayed({
-                stopSnoring()
-            }, 5000)
+            sleepAnimationHandler.postDelayed({ stopSnoring() }, 5000)
         }
     }
 
@@ -631,39 +544,34 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             hihiPlayer = android.media.MediaPlayer.create(it, R.raw.hihi)
             hihiPlayer?.start()
             hihiPlayer?.setOnCompletionListener { player ->
-                player.release() // On nettoie la mémoire une fois le rire fini
+                player.release()
                 hihiPlayer = null
             }
         }
     }
 
-    // --- ANIMATION DU ROBOT SUR LE MENU ---
     private val blinkRunnable = object : Runnable {
         override fun run() {
             val robotImage = view?.findViewById<android.widget.ImageView>(R.id.menuRobotCharacter)
             if (robotImage != null) {
                 if (isSmiling) {
-                    // On met la grimace
                     robotImage.setImageResource(R.drawable.robot_grimace)
                     isSmiling = false
-                    animationHandler.postDelayed(this, 500) // Reste en grimace 0.5 seconde
+                    animationHandler.postDelayed(this, 500)
                 } else {
-                    // On remet le sourire
                     robotImage.setImageResource(R.drawable.robot_smile)
                     isSmiling = true
-                    animationHandler.postDelayed(this, 4000) // Reste souriant 4 secondes
+                    animationHandler.postDelayed(this, 4000)
                 }
             }
         }
-    } // 🔴 FIN DU BLOC CLIGNEMENT D'OEIL ICI !
+    }
 
-    // 🔴 NOUVEAU : Fonction déclenchée quand le robot arrive à destination (Dans la classe MainPage)
     override fun onDestinationReached() {
         activity?.runOnUiThread {
-            // Affiche l'écran avec les deux boutons
             view?.findViewById<View>(R.id.arrivedOverlay)?.visibility = View.VISIBLE
             RobotController.speak("We arrived. What would you like to do next?")
             resetLocalInactivityTimer()
         }
     }
-} // 🔴 FIN DE LA CLASSE MAINPAGE
+}

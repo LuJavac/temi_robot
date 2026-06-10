@@ -367,13 +367,17 @@
             android:rowCount="3"
             android:layout_marginTop="20dp">
 
-            <Button android:id="@+id/btnLocLift" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="Lift Lobby" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocHome" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="Home Base" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocMap" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="NYP Map" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocEntrance" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="Entrance" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocLibrary" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="Library" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocSchool" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="School of IT" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocLounge" android:layout_width="280dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="Lounge" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocTest1" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 1" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocTest2" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 2" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocTest3" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 3" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+
+            <Button android:id="@+id/btnLocTest4" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 4" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocR410" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="R410 Door" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocTour" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Tour Start" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+
+            <Button android:id="@+id/btnLocR406" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R406" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocR412" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R412" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <Button android:id="@+id/btnLocR405" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R405" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
 
         </GridLayout>
     </RelativeLayout>
