@@ -31,7 +31,8 @@ explication_gemini.md
 rapport_wave_gesture.md 
 choses faites par moi.pdf
 temi-kiosk-mode-contexte.md
- 
+temi_telemetry_pi_specs.md
+
 app/src/main/python/temi/
 app/src/main/python/venv/
 app/src/main/python/storage/
