@@ -61,8 +61,10 @@ Le client est `app/src/main/java/com/temi/temi_robot/telemetry/TelemetryClient.k
 - les événements sont bufferisés dans un fichier local (`telemetry_queue.jsonl`)
   et flushés par batch toutes les 30 s vers `http://192.168.1.43:8000/events/batch` —
   rien n'est perdu pendant les coupures réseau ;
-- **le jeton `TELEMETRY_TOKEN` dans `TelemetryClient.kt` doit correspondre à
-  `API_TOKEN` dans le `.env` du Pi.**
+- **le jeton se configure dans `local.properties`** (à la racine du projet Android,
+  jamais versionné) avec la ligne `telemetry.token=<valeur>` — la valeur doit
+  correspondre à `API_TOKEN` dans le `.env` du Pi. Chaque développeur doit ajouter
+  cette ligne dans son propre `local.properties`.
 
 Événements émis : `wave`, `face_detected`, `greeting`, `idle`, et un événement
 `conversation` (durée + nombre de tours, session UUID anonyme) à la fin de chaque

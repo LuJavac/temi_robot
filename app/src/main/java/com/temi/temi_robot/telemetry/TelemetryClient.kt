@@ -36,8 +36,9 @@ object TelemetryClient {
 
     // IP : RaspBerry (même machine que serverUrl dans MainActivity)
     private const val ENDPOINT_URL = "http://192.168.1.43:8000/events/batch"
-    // Doit correspondre à API_TOKEN dans temi-telemetry/.env sur le Pi
-    private const val TELEMETRY_TOKEN = "bb1dbce86b11617751308562d1205669db7f16707f1effc7"
+    // Jeton lu depuis local.properties (telemetry.token=...), jamais versionné.
+    // Doit correspondre à API_TOKEN dans temi-telemetry/.env sur le Pi.
+    private val TELEMETRY_TOKEN = com.temi.temi_robot.BuildConfig.TELEMETRY_TOKEN
 
     private const val QUEUE_FILE_NAME = "telemetry_queue.jsonl"
     private const val FLUSH_INTERVAL_MS = 30_000L
@@ -67,6 +68,9 @@ object TelemetryClient {
     /** À appeler une fois au démarrage de l'app (MainActivity.onCreate). */
     fun init(context: Context) {
         if (queueFile != null) return
+        if (TELEMETRY_TOKEN.isBlank()) {
+            Log.w(TAG, "telemetry.token absent de local.properties — l'API refusera les envois (401)")
+        }
         queueFile = File(context.applicationContext.filesDir, QUEUE_FILE_NAME)
 
         val thread = HandlerThread("telemetry-flush").apply { start() }

@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
 }
+
+// Secrets locaux (jamais versionnés) : local.properties à la racine du projet
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
 android {
     namespace = "com.temi.temi_robot"
     compileSdk = 35
@@ -31,6 +40,12 @@ android {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
 
+        // Jeton de télémétrie lu depuis local.properties (telemetry.token=...)
+        buildConfigField(
+            "String",
+            "TELEMETRY_TOKEN",
+            "\"${localProperties.getProperty("telemetry.token", "")}\""
+        )
     }
 
     buildTypes {
@@ -59,6 +74,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
