@@ -281,6 +281,44 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 .addToBackStack(null)
                 .commit()
         }
+
+        // 🔴 --- LOGIQUE DE L'ÉCRAN DE NAVIGATION (MAP) --- 🔴
+        val mapMenuButton = view.findViewById<ImageButton>(R.id.mapMenuButton)
+        val mapOverlay = view.findViewById<View>(R.id.mapOverlay)
+        val closeMapButton = view.findViewById<Button>(R.id.closeMapButton)
+
+        // 1. Ouvrir le menu Map quand on clique sur l'icône en haut
+        mapMenuButton.setOnClickListener {
+            resetLocalInactivityTimer()
+            mapOverlay.visibility = View.VISIBLE
+        }
+
+        // 2. Fermer le menu Map avec la croix (X)
+        closeMapButton.setOnClickListener {
+            resetLocalInactivityTimer()
+            mapOverlay.visibility = View.GONE
+        }
+
+        // 3. Fonction magique pour relier les boutons aux moteurs
+        fun setupLocationButton(buttonId: Int, locationName: String) {
+            view.findViewById<Button>(buttonId).setOnClickListener {
+                resetLocalInactivityTimer()
+                mapOverlay.visibility = View.GONE // On ferme le menu
+                RobotController.speak("Sure, follow me to the $locationName.")
+                RobotController.goToLocation(locationName) // 🚀 Go !
+            }
+        }
+
+        // 4. On relie nos 7 boutons à leurs noms officiels !
+        setupLocationButton(R.id.btnLocLift, "lift lobby")
+        setupLocationButton(R.id.btnLocHome, "home base")
+        setupLocationButton(R.id.btnLocMap, "nyp map")
+        setupLocationButton(R.id.btnLocEntrance, "entrance")
+        setupLocationButton(R.id.btnLocLibrary, "library")
+        setupLocationButton(R.id.btnLocSchool, "school of it")
+        setupLocationButton(R.id.btnLocLounge, "lounge")
+
+
         // --- Wave gesture detection ---
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
