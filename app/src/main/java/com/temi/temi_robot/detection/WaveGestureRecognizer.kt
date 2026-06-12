@@ -56,15 +56,16 @@ class WaveGestureRecognizer(
     companion object {
         private const val TAG = "WaveGestureRecognizer"
 
-        // Heuristic parameters — re-tuned 2026-05-18 after open-palm filter rejected
-        // every frame: loosen the palm check (3/4 fingers instead of 4/4) and accept
-        // a slightly smaller wave amplitude since palm-filter already prunes noise.
+        // Heuristic parameters — re-tightened 2026-06-12: the 05-18 loosened values
+        // produced false "Hello" triggers with nobody waving (phantom hands at 0.3
+        // confidence + tiny amplitude). Palm check stays at 3/4 fingers (4/4 was
+        // rejecting every frame).
         private const val WINDOW_MS = 2000L          // sliding time window for oscillation detection
-        private const val MIN_DIRECTION_CHANGES = 3  // at least 3 reversals (real back-and-forth)
-        private const val MIN_AMPLITUDE = 0.10f      // wrist must travel >= 10% of frame width
+        private const val MIN_DIRECTION_CHANGES = 4  // at least 4 reversals (real back-and-forth)
+        private const val MIN_AMPLITUDE = 0.15f      // wrist must travel >= 15% of frame width
         private const val NOISE_THRESHOLD = 0.010f   // ignore micro-jitter
-        private const val MIN_SAMPLES = 4            // need enough open-palm datapoints to decide
-        private const val COOLDOWN_MS = 4_000L       // a Hello at most every 4 s (test value — bump back to 10s once detection is validated)
+        private const val MIN_SAMPLES = 8            // need enough open-palm datapoints to decide
+        private const val COOLDOWN_MS = 10_000L      // a Hello at most every 10 s
 
         // MediaPipe Hand landmark indices used for the open-palm check
         private const val WRIST = 0
@@ -119,9 +120,9 @@ class WaveGestureRecognizer(
             .setBaseOptions(baseOptions)
             .setRunningMode(RunningMode.LIVE_STREAM)
             .setNumHands(1)
-            .setMinHandDetectionConfidence(0.3f)
-            .setMinHandPresenceConfidence(0.3f)
-            .setMinTrackingConfidence(0.3f)
+            .setMinHandDetectionConfidence(0.5f)
+            .setMinHandPresenceConfidence(0.5f)
+            .setMinTrackingConfidence(0.5f)
             .setResultListener { result, _ -> handleResult(result) }
             .setErrorListener { error -> Log.e(TAG, "MediaPipe error", error) }
             .build()

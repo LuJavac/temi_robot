@@ -305,7 +305,16 @@ object RobotController:
     }
 
     // Movements and map
+    private var loadedMapName: String? = null
+    private var pendingMapName: String? = null
+
     fun loadMap() {
+        // Carte déjà chargée : on ne recharge pas, ça évitait de re-déclencher
+        // le chargement (et son annonce) à chaque retour sur la page principale
+        if (mapName != null && mapName == loadedMapName) {
+            mapReadyCallback?.onMapIsReady()
+            return
+        }
         val maps = getRobot()?.getMapList()
         val map = maps?.find { it.name == mapName }
         if(map == null){
@@ -313,7 +322,9 @@ object RobotController:
             readyCallback?.onRobotIsReady()
         }
         else {
-            getRobot()?.loadMap(map.id)
+            pendingMapName = map.name
+            // withoutUI = true : pas de pop-up du launcher pendant/après le chargement
+            getRobot()?.loadMap(map.id, withoutUI = true)
         }
     }
 
@@ -577,11 +588,15 @@ object RobotController:
             lastRequestTime = currentTime
 
             TelemetryClient.track("face_detected")
-            TelemetryClient.track("greeting")
 
-            getRobot()?.stopMovement()
-            getRobot()?.setDetectionModeOn(false, 0.5f)
-            getRobot()?.askQuestion("Hi, how can I help you ?")
+            // La salutation vocale ne se fait plus à la détection : elle est
+            // déclenchée une seule fois après le réveil (wakeUpSequence, MainPage).
+            // Ancien comportement (arrêt + salutation quand une personne est
+            // détectée), à décommenter si besoin un jour :
+            // TelemetryClient.track("greeting")
+            // getRobot()?.stopMovement()
+            // getRobot()?.setDetectionModeOn(false, 0.5f)
+            // getRobot()?.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
     }
 
@@ -631,6 +646,7 @@ object RobotController:
             }
             0 -> {
                 // La carte est chargée avec succès
+                loadedMapName = pendingMapName
                 val locationsWithoutHome = getRobot()?.locations?.filter{it.lowercase() != "home base"}
                 if (locationsWithoutHome != null){
                     patrolStates = PatrolStates(

@@ -21,6 +21,18 @@ class CallPage : Fragment() {
 
     private var statusText: TextView? = null
 
+    // Si personne ne décroche au bout de ce délai, on annule la tentative
+    // d'appel nous-mêmes : sinon le robot reste en état "occupé" sur l'écran
+    // d'appel natif et bloque les appels suivants
+    private val ringTimeoutHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val ringTimeoutMillis = 30_000L
+
+    // Fermeture automatique de la page quelques secondes après la fin de
+    // l'appel (terminé, refusé, sans réponse...), pour ne pas rester bloqué
+    // sur cette page si la personne s'en va
+    private val autoCloseHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val autoCloseDelayMillis = 5_000L
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -73,14 +85,30 @@ class CallPage : Fragment() {
             params.setMargins(0, 10, 0, 10)
             button.layoutParams = params
             button.setOnClickListener {
+                // Nouvel appel : on annule une éventuelle fermeture en attente
+                autoCloseHandler.removeCallbacksAndMessages(null)
                 RobotController.startCall(contact)
                 showStatus("Calling ${contact.name}...")
                 // Bouton raccrocher visible par-dessus l'écran d'appel natif
-                // (no-op si la permission de superposition n'est pas accordée)
+                // (no-op si la permission de superposition n'est pas accordée).
+                // Il raccroche ET ferme la page immédiatement : le bouton rouge
+                // natif ne raccroche pas directement (compteur d'une minute)
                 CallHangupOverlay.show(requireContext()) {
+                    ringTimeoutHandler.removeCallbacksAndMessages(null)
+                    autoCloseHandler.removeCallbacksAndMessages(null)
                     RobotController.stopCall()
                     context?.let { ctx -> CallHangupOverlay.hide(ctx) }
+                    closePageNow()
                 }
+                // Annulation automatique si personne ne décroche
+                ringTimeoutHandler.removeCallbacksAndMessages(null)
+                ringTimeoutHandler.postDelayed({
+                    RobotController.stopCall()
+                    context?.let { ctx -> CallHangupOverlay.hide(ctx) }
+                    showStatus("No answer, call cancelled")
+                    RobotController.speak("Sorry, nobody answered the call.")
+                    scheduleAutoClose()
+                }, ringTimeoutMillis)
             }
             contactsContainer.addView(button)
         }
@@ -94,6 +122,15 @@ class CallPage : Fragment() {
     }
 
     private fun onCallStateChanged(state: CallState.State) {
+        // L'appel a décroché ou s'est terminé de lui-même :
+        // plus besoin du timeout de sonnerie
+        if (state != CallState.State.INITIALIZED) {
+            ringTimeoutHandler.removeCallbacksAndMessages(null)
+        }
+        // Fin d'appel, quelle qu'en soit la raison : la page se fermera toute seule
+        if (state != CallState.State.INITIALIZED && state != CallState.State.STARTED) {
+            scheduleAutoClose()
+        }
         when (state) {
             CallState.State.INITIALIZED -> showStatus("Calling...")
             CallState.State.STARTED -> showStatus("Call in progress")
@@ -129,8 +166,25 @@ class CallPage : Fragment() {
         statusText?.visibility = View.VISIBLE
     }
 
+    private fun scheduleAutoClose() {
+        autoCloseHandler.removeCallbacksAndMessages(null)
+        autoCloseHandler.postDelayed({ closePageNow() }, autoCloseDelayMillis)
+    }
+
+    // commitAllowingStateLoss : on peut être appelé pendant que l'activité est
+    // en arrière-plan derrière l'écran d'appel natif, où commit() planterait
+    private fun closePageNow() {
+        if (!isAdded) return
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, MainPage())
+            .addToBackStack(null)
+            .commitAllowingStateLoss()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        ringTimeoutHandler.removeCallbacksAndMessages(null)
+        autoCloseHandler.removeCallbacksAndMessages(null)
         RobotController.setCallStateCallback(null)
         context?.let { CallHangupOverlay.hide(it) }
         statusText = null

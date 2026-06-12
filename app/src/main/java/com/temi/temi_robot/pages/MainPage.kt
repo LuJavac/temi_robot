@@ -92,6 +92,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     // La liste des points de la carte ACTUELLE (pour l'écoute vocale)
     private var currentActivePoints: List<String> = emptyList()
 
+    companion object {
+        // Phrase d'accueil dite une seule fois par lancement de l'app
+        private var hasSpokenIntro = false
+    }
+
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -212,8 +217,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 arguments?.putBoolean("startSpeaking", false) // Sécurité pour qu'il ne répète pas
             }
 
-        }else if (savedInstanceState == null) {
-            // : S'il n'y a pas de réponse à lire ET que c'est l'ouverture de la page
+        }else if (savedInstanceState == null && !hasSpokenIntro) {
+            // Phrase d'accueil dite une seule fois par lancement de l'app : la page
+            // principale est recréée à chaque navigation, sans ce flag le robot la
+            // répétait à chaque retour
+            hasSpokenIntro = true
             RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
 
@@ -224,6 +232,16 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         view.findViewById<Button>(R.id.btnAskQuestion).setOnClickListener {
             arrivedOverlay.visibility = View.GONE
             resetLocalInactivityTimer()
+        }
+
+        // Bouton : Appeler un contact (ouvre la page des appels)
+        view.findViewById<Button>(R.id.btnCallContact).setOnClickListener {
+            arrivedOverlay.visibility = View.GONE
+            resetLocalInactivityTimer()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, CallPage())
+                .addToBackStack(null)
+                .commit()
         }
 
         // Bouton 2 : Retour Base (ordonne au robot de rentrer)
@@ -282,7 +300,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.setLastRequestTimeNow()
             RobotController.stopMovement()
             RobotController.resetInactivityTimer()
-            RobotController.askQuestion("Hi, how can I help you ?")
+            RobotController.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
         }
 
         // Settings button behavior
@@ -331,13 +349,17 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         }
 
         // --- Le moteur de création des boutons ---
-        fun loadMapAndGenerateButtons(mapName: String) {
+        // announce = false pour le chargement par défaut à l'ouverture de la page,
+        // pour ne pas répéter "Loading map" à chaque retour sur la page principale
+        fun loadMapAndGenerateButtons(mapName: String, announce: Boolean = true) {
             resetLocalInactivityTimer()
 
             // 1. Ordonner au robot de charger la carte
             RobotController.setMapName(mapName)
             RobotController.loadMap()
-            RobotController.speak("Loading map for $mapName.")
+            if (announce) {
+                RobotController.speak("Loading map for $mapName.")
+            }
 
             // 2. Récupérer les points de cette carte
             val points = mapsData[mapName] ?: emptyList()
@@ -388,8 +410,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             loadMapAndGenerateButtons("Library level 4 (pls dont delete)1")
         }
 
-        // Par défaut, au démarrage, on charge R4 dans la mémoire UI
-        loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1")
+        // Par défaut, au démarrage, on charge R4 dans la mémoire UI (sans annonce vocale)
+        loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1", announce = false)
         // --- Wave gesture detection ---
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
@@ -616,7 +638,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 isSleeping = false
                 isWakingUp = false
                 resetLocalInactivityTimer()
-                RobotController.speak("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
+                // Une seule activation de l'écoute vocale par réveil, après l'animation
+                RobotController.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
             }, 1000)
         }, 5000)
     }

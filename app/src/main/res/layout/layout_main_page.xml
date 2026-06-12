@@ -323,6 +323,17 @@
                 android:textStyle="bold" />
 
             <Button
+                android:id="@+id/btnCallContact"
+                android:layout_width="350dp"
+                android:layout_height="120dp"
+                android:layout_marginEnd="40dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="Call someone"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <Button
                 android:id="@+id/btnGoHome"
                 android:layout_width="350dp"
                 android:layout_height="120dp"
