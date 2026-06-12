@@ -31,6 +31,12 @@ import android.widget.ImageView
 class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotController.MeetingStartedCallback, RobotController.BackToBaseCallback, RobotController.TtsStateCallback, RobotController.DestinationReachedCallback {
     private lateinit var connectivityManager: ConnectivityManager
     private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+
+    // Délai de grâce avant le retour base sur perte réseau : un simple changement
+    // de Wi-Fi déclenche onLost quelques secondes avant que le nouveau réseau
+    // soit prêt, sans que ce soit une vraie panne
+    private val lostNetworkHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val lostNetworkGraceMillis = 7_000L
     private var waveRecognizer: WaveGestureRecognizer? = null
 
     // Variables pour l'animation du robot sur le menu
@@ -88,17 +94,31 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             override fun onLost(network: Network) {
                 super.onLost(network)
 
-                // Clôture de la session en télémétrie
-                TelemetryClient.endSession()
+                lostNetworkHandler.removeCallbacksAndMessages(null)
+                lostNetworkHandler.postDelayed({
+                    // Un réseau est revenu pendant le délai de grâce
+                    // (simple changement de Wi-Fi) : on ne fait rien
+                    if (connectivityManager.activeNetwork != null) return@postDelayed
+                    if (!isAdded) return@postDelayed
 
-                // Sending temi to home base
-                RobotController.goToHomeBase()
+                    // Clôture de la session en télémétrie
+                    TelemetryClient.endSession()
 
-                // Change view to lost connection page
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, LostConnectionPage())
-                    .addToBackStack(null)
-                    .commit()
+                    // Sending temi to home base
+                    RobotController.goToHomeBase()
+
+                    // Change view to lost connection page
+                    parentFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, LostConnectionPage())
+                        .addToBackStack(null)
+                        .commit()
+                }, lostNetworkGraceMillis)
+            }
+
+            override fun onAvailable(network: Network) {
+                super.onAvailable(network)
+                // Réseau retrouvé : on annule le retour base en attente
+                lostNetworkHandler.removeCallbacksAndMessages(null)
             }
         }
 
@@ -249,6 +269,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 .commit()
         }
 
+        // Call button behavior (écran d'appel des contacts du robot)
+        view.findViewById<ImageButton>(R.id.callButton).setOnClickListener {
+            resetLocalInactivityTimer()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, CallPage())
+                .addToBackStack(null)
+                .commit()
+        }
+
         // Time button behavior
         timeButton.setOnClickListener {
             args.putString("from", "timeSettings")
@@ -368,6 +397,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     override fun onDestroy() {
         super.onDestroy()
+        lostNetworkHandler.removeCallbacksAndMessages(null)
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 

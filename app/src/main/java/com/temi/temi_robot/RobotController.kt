@@ -10,6 +10,7 @@ import java.util.Locale
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.SttLanguage
 import com.robotemi.sdk.TtsRequest
+import com.robotemi.sdk.UserInfo
 import com.robotemi.sdk.constants.HardButton
 import com.robotemi.sdk.constants.Platform
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
@@ -362,6 +363,32 @@ object RobotController:
     }
 
     // Calls
+    // Callback used by CallPage to display call states; when set, it takes
+    // priority over the librarian speech in onTelepresenceStatusChanged.
+    private var callStateCallback: ((CallState.State) -> Unit)? = null
+
+    fun setCallStateCallback(callback: ((CallState.State) -> Unit)?) {
+        callStateCallback = callback
+    }
+
+    // Role 10 contacts are face-recognition only and cannot be called (see UserInfo doc)
+    fun getCallableContacts(): List<UserInfo> {
+        return getRobot()?.allContact?.filter { it.role != 10 } ?: emptyList()
+    }
+
+    // startTelepresence est dépréciée au profit de startMeeting, mais c'est la
+    // seule des deux qui établit l'appel sur ce robot (startMeeting → CANT_JOIN)
+    @Suppress("DEPRECATION")
+    fun startCall(contact: UserInfo): String {
+        return getRobot()?.startTelepresence(contact.name, contact.userId, Platform.MOBILE) ?: ""
+    }
+
+    // 200 = OK, 404 = no ongoing call, 403 = MEETINGS permission missing,
+    // 400 = package name verification failed, 500 = SDK internal error
+    fun stopCall(): Int {
+        return getRobot()?.stopTelepresence() ?: 500
+    }
+
     private fun callLibrarian(){
         val contacts = getRobot()?.allContact
         val librarianID = contacts?.find { it.name == "Kamil" }?.userId
@@ -630,6 +657,12 @@ object RobotController:
     }
 
     override fun onTelepresenceStatusChanged(callState: CallState) {
+        // While the call page is open it handles the states itself
+        val pageCallback = callStateCallback
+        if (pageCallback != null) {
+            pageCallback(callState.state)
+            return
+        }
         when(callState.state){
             CallState.State.ENDED -> {
                 speak("I'm always in the library in case you need any help.")
