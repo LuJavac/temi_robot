@@ -333,52 +333,121 @@
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
-        android:elevation="10dp">
+        android:elevation="10dp"
+        android:padding="30dp">
 
         <TextView
             android:id="@+id/mapTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="50dp"
-            android:text="📍 Where do you want to go?"
+            android:text="📍 Navigation Menu"
             android:textColor="#FFFFFF"
-            android:textSize="45sp"
+            android:textSize="40sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/closeMapButton"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_alignParentEnd="true"
-            android:layout_marginTop="30dp"
-            android:layout_marginEnd="30dp"
             android:background="@drawable/button_blue_transparent"
             android:text="X"
             android:textColor="#FFFFFF"
-            android:textSize="30sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
-        <GridLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:columnCount="3"
-            android:rowCount="3"
-            android:layout_marginTop="20dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/mapTitle"
+            android:layout_marginTop="30dp"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-            <Button android:id="@+id/btnLocTest1" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 1" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocTest2" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 2" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocTest3" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 3" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingEnd="20dp">
 
-            <Button android:id="@+id/btnLocTest4" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Test Point 4" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocR410" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="R410 Door" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocTour" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Tour Start" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1. Select Area"
+                    android:textColor="#00BFFF"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="20dp"/>
 
-            <Button android:id="@+id/btnLocR406" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R406" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocR412" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R412" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
-            <Button android:id="@+id/btnLocR405" android:layout_width="260dp" android:layout_height="90dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="Room R405" android:textColor="#FFFFFF" android:textSize="22sp" android:textStyle="bold"/>
+                <Button
+                    android:id="@+id/btnMapR4"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginBottom="15dp"
+                    android:background="@drawable/button_blue_transparent"
+                    android:text="Block R4 (RIG1)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-        </GridLayout>
+                <Button
+                    android:id="@+id/btnMapS118"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginBottom="15dp"
+                    android:background="@drawable/button_blue_transparent"
+                    android:text="S118"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnMapLibrary"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginBottom="15dp"
+                    android:background="@drawable/button_blue_transparent"
+                    android:text="Library Level 4"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="2dp"
+                android:layout_height="match_parent"
+                android:background="#55FFFFFF" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2.5"
+                android:orientation="vertical"
+                android:paddingStart="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2. Choose Destination"
+                    android:textColor="#00BFFF"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="20dp"/>
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fadeScrollbars="false">
+
+                    <GridLayout
+                        android:id="@+id/destinationsGrid"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:columnCount="3" />
+                </ScrollView>
+            </LinearLayout>
+        </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>

@@ -54,11 +54,37 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var hihiPlayer: android.media.MediaPlayer? = null
     private var embarrassedStep = 0
 
-    // 🔴 LA LISTE MISE À JOUR DE TES 9 UNIQUE LIEUX SUR LA CARTE
-    private val savedLocations = listOf(
-        "test point 1", "test point 2", "test point 3", "test point 4",
-        "r410 front door", "tour start spot", "r406", "r412", "r405"
+    // LA BASE DE DONNÉES DE TOUTES LES CARTES
+    private val mapsData = mapOf(
+        "R4 Block Complete (USE THIS) for RIG1" to listOf(
+            "test point 1", "test point 2", "home base", "tour start spot",
+            "r410 front door", "r406", "r412", "r405", "award exit",
+            "trophy cabinet 1", "r416", "r417", "r410 back door",
+            "middle ramp", "reception", "back entrance"
+        ),
+        "S118" to listOf(
+            "home base", "start", "okura", "festo", "pcb",
+            "pca", "abb", "kawada", "tea time"
+        ),
+        "Library level 4 (pls dont delete)1" to listOf(
+            "project reports", "patrol southwing back", "health sciences 2",
+            "life sciences collection", "health sciences", "fiction books",
+            "design collection", "photocopying stations", "patrol southwing entry",
+            "research carrels south", "patrol southwing", "smart space",
+            "patrol entrance", "home base", "book recommendations", "smart kiosk",
+            "patrol centerwing", "exhibition", "patrol south corridor", "magazines",
+            "lifestyle books", "cafe", "patrol south door", "performance stage",
+            "lifestyle media", "patrol north corridor", "dvds", "patrol north door",
+            "lean for life pod", "patrol northwing", "patrol northwing entry",
+            "smart learning hub", "idea space", "patrol northwing2",
+            "patrol northwing2 grass", "dream space", "patrol northwing2 middle",
+            "think space", "patrol northwing2 back", "management collection",
+            "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back"
+        )
     )
+
+    // La liste des points de la carte ACTUELLE (pour l'écoute vocale)
+    private var currentActivePoints: List<String> = emptyList()
 
     // Recover robot controller from main activity
     override fun onAttach(context: Context) {
@@ -259,10 +285,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 .commit()
         }
 
-        // 🔴 --- LOGIQUE DE L'ÉCRAN DE NAVIGATION (MAP) --- 🔴
+        // 🔴 --- LOGIQUE DE L'ÉCRAN DE NAVIGATION (MAP) MULTI-CARTES --- 🔴
         val mapMenuButton = view.findViewById<ImageButton>(R.id.mapMenuButton)
         val mapOverlay = view.findViewById<View>(R.id.mapOverlay)
         val closeMapButton = view.findViewById<Button>(R.id.closeMapButton)
+        val destinationsGrid = view.findViewById<android.widget.GridLayout>(R.id.destinationsGrid)
 
         mapMenuButton.setOnClickListener {
             resetLocalInactivityTimer()
@@ -274,27 +301,66 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             mapOverlay.visibility = View.GONE
         }
 
-        fun setupLocationButton(buttonId: Int, locationName: String) {
-            view.findViewById<Button>(buttonId).setOnClickListener {
-                resetLocalInactivityTimer()
-                mapOverlay.visibility = View.GONE
-                RobotController.speak("Sure, follow me to the $locationName.")
-                RobotController.goToLocation(locationName)
+        // --- Le moteur de création des boutons ---
+        fun loadMapAndGenerateButtons(mapName: String) {
+            resetLocalInactivityTimer()
+
+            // 1. Ordonner au robot de charger la carte
+            RobotController.setMapName(mapName)
+            RobotController.loadMap()
+            RobotController.speak("Loading map for $mapName.")
+
+            // 2. Récupérer les points de cette carte
+            val points = mapsData[mapName] ?: emptyList()
+            currentActivePoints = points // Met à jour l'intelligence vocale !
+
+            // 3. Vider l'ancienne grille
+            destinationsGrid.removeAllViews()
+
+            // 4. Générer les nouveaux boutons
+            val density = resources.displayMetrics.density
+            for (point in points) {
+                val btn = Button(requireContext())
+                btn.text = point.uppercase()
+                btn.setTextColor(android.graphics.Color.WHITE)
+                btn.textSize = 18f
+                btn.isAllCaps = false
+                btn.setBackgroundResource(R.drawable.card_bg) // Ton fond gris
+
+                // Tailles des boutons (Largeur: 240dp, Hauteur: 80dp)
+                val params = android.widget.GridLayout.LayoutParams()
+                params.width = (240 * density).toInt()
+                params.height = (80 * density).toInt()
+                params.setMargins((10 * density).toInt(), (10 * density).toInt(), (10 * density).toInt(), (10 * density).toInt())
+                btn.layoutParams = params
+
+                // Action quand on clique sur le bouton généré
+                btn.setOnClickListener {
+                    resetLocalInactivityTimer()
+                    mapOverlay.visibility = View.GONE
+                    RobotController.speak("Sure, follow me to the $point.")
+                    RobotController.goToLocation(point)
+                }
+
+                destinationsGrid.addView(btn)
             }
         }
 
-        // 🔴 LIAISON EXCLUSIVE DE TES 9 VRAIS BOUTONS Tactiles
-        setupLocationButton(R.id.btnLocTest1, "test point 1")
-        setupLocationButton(R.id.btnLocTest2, "test point 2")
-        setupLocationButton(R.id.btnLocTest3, "test point 3")
-        setupLocationButton(R.id.btnLocTest4, "test point 4")
-        setupLocationButton(R.id.btnLocR410, "r410 front door")
-        setupLocationButton(R.id.btnLocTour, "tour start spot")
-        setupLocationButton(R.id.btnLocR406, "r406")
-        setupLocationButton(R.id.btnLocR412, "r412")
-        setupLocationButton(R.id.btnLocR405, "r405")
+        // Clics sur les cartes (à gauche de l'écran)
+        view.findViewById<Button>(R.id.btnMapR4).setOnClickListener {
+            loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1")
+        }
 
+        view.findViewById<Button>(R.id.btnMapS118).setOnClickListener {
+            loadMapAndGenerateButtons("S118")
+        }
 
+        view.findViewById<Button>(R.id.btnMapLibrary).setOnClickListener {
+            loadMapAndGenerateButtons("Library level 4 (pls dont delete)1")
+        }
+
+        // Par défaut, au démarrage, on charge R4 dans la mémoire UI
+        loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1")
         // --- Wave gesture detection ---
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
@@ -330,15 +396,16 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         // 1. INTERCEPTION POUR LE DÉPLACEMENT
         if (lowerReq.contains("take me to") || lowerReq.contains("go to") || lowerReq.contains("bring me to")) {
 
-            for (location in savedLocations) {
-                if (lowerReq.contains(location)) {
+            // Cherche uniquement dans les points de la carte actuellement chargée
+            for (location in currentActivePoints) {
+                if (lowerReq.contains(location.lowercase())) {
                     RobotController.speak("Sure! Please follow me to the $location.")
                     RobotController.goToLocation(location)
                     return
                 }
             }
 
-            RobotController.speak("I understand you want to go somewhere, but I don't have this location saved on my map.")
+            RobotController.speak("I don't have this location saved on my CURRENT map. Please check the map menu.")
             return
         }
 
