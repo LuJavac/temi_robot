@@ -626,9 +626,11 @@ object RobotController:
     override fun onLoadMapStatusChanged(status: Int, requestId: String) {
         when(status){
             1 -> {
+                // Le chargement commence
                 return
             }
             0 -> {
+                // La carte est chargée avec succès
                 val locationsWithoutHome = getRobot()?.locations?.filter{it.lowercase() != "home base"}
                 if (locationsWithoutHome != null){
                     patrolStates = PatrolStates(
@@ -637,8 +639,12 @@ object RobotController:
                     )
                     mapReadyCallback?.onMapIsReady()
                 }
+
+                // On prévient juste vocalement
+                speak("Map loaded successfully.")
             }
             else -> {
+                speak("Error. I couldn't load the map.")
                 mapReadyCallback?.onMapIsReady()
             }
         }
