@@ -596,7 +596,7 @@ object RobotController:
             // TelemetryClient.track("greeting")
             // getRobot()?.stopMovement()
             // getRobot()?.setDetectionModeOn(false, 0.5f)
-            // getRobot()?.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
+            // getRobot()?.askQuestion("Hi, how can I help you ?")
         }
     }
 

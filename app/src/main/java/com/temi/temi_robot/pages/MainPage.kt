@@ -300,7 +300,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.setLastRequestTimeNow()
             RobotController.stopMovement()
             RobotController.resetInactivityTimer()
-            RobotController.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
+            RobotController.askQuestion("Hi, how can I help you ?")
         }
 
         // Settings button behavior
@@ -639,7 +639,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 isWakingUp = false
                 resetLocalInactivityTimer()
                 // Une seule activation de l'écoute vocale par réveil, après l'animation
-                RobotController.askQuestion("I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
+                RobotController.askQuestion("Hi, how can I help you ?")
             }, 1000)
         }, 5000)
     }
