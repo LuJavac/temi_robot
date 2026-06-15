@@ -11,11 +11,15 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
@@ -112,10 +116,27 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         return view
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         resetLocalInactivityTimer()
+
+        // Fermer le clavier quand on touche en dehors du champ de saisie :
+        // évite de rester coincé avec le clavier ouvert
+        view.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                val focused = activity?.currentFocus
+                if (focused is EditText) {
+                    val outRect = Rect()
+                    focused.getGlobalVisibleRect(outRect)
+                    if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                        focused.clearFocus()
+                        hideKeyboard(focused)
+                    }
+                }
+            }
+            false
+        }
 
         //  Lancer l'animation du robot sur le menu
         animationHandler.post(blinkRunnable)
@@ -570,6 +591,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             }
         }
         typeWriterHandler.post(runnable)
+    }
+
+    private fun hideKeyboard(focusedView: View) {
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.hideSoftInputFromWindow(focusedView.windowToken, 0)
     }
 
     private fun resetLocalInactivityTimer() {
