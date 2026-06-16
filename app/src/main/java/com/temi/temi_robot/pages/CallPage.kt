@@ -68,6 +68,14 @@ class CallPage : Fragment() {
             activity?.runOnUiThread { onCallStateChanged(state) }
         }
 
+        // Signal fiable de fin d'appel : se déclenche aussi quand
+        // l'interlocuteur distant raccroche/quitte. On referme alors tout de
+        // suite l'écran d'appel natif du Temi (sinon il reste affiché avec sa
+        // détection "personne dans la salle" et l'appel ne se ferme pas seul).
+        RobotController.setCallEndedCallback {
+            activity?.runOnUiThread { onCallEnded() }
+        }
+
         val contacts = RobotController.getCallableContacts()
         if (contacts.isEmpty()) {
             showStatus("No contact available")
@@ -127,38 +135,52 @@ class CallPage : Fragment() {
         if (state != CallState.State.INITIALIZED) {
             ringTimeoutHandler.removeCallbacksAndMessages(null)
         }
-        // Fin d'appel, quelle qu'en soit la raison : la page se fermera toute seule
+        // Fin d'appel, quelle qu'en soit la raison : on referme l'écran natif
+        // du Temi et la page se ferme seule
         if (state != CallState.State.INITIALIZED && state != CallState.State.STARTED) {
+            endNativeCall()
             scheduleAutoClose()
         }
         when (state) {
             CallState.State.INITIALIZED -> showStatus("Calling...")
             CallState.State.STARTED -> showStatus("Call in progress")
-            CallState.State.ENDED -> {
-                showStatus("Call ended")
-                context?.let { CallHangupOverlay.hide(it) }
-            }
+            CallState.State.ENDED -> showStatus("Call ended")
             CallState.State.DECLINED -> {
                 showStatus("The call was declined")
                 RobotController.speak("Sorry, the call was declined.")
-                context?.let { CallHangupOverlay.hide(it) }
             }
             CallState.State.NOT_ANSWERED -> {
                 showStatus("No answer")
                 RobotController.speak("Sorry, nobody answered the call.")
-                context?.let { CallHangupOverlay.hide(it) }
             }
             CallState.State.BUSY -> {
                 showStatus("The contact is busy")
                 RobotController.speak("Sorry, this person is busy right now.")
-                context?.let { CallHangupOverlay.hide(it) }
             }
             CallState.State.POOR_CONNECTION, CallState.State.CANT_JOIN -> {
                 showStatus("Connection problem, please try again")
                 RobotController.speak("Sorry, I have a connection problem. Please try again.")
-                context?.let { CallHangupOverlay.hide(it) }
             }
         }
+    }
+
+    // Fin d'appel détectée via le signal d'événement (notamment quand
+    // l'interlocuteur distant quitte) : même traitement que CallState.ENDED.
+    private fun onCallEnded() {
+        ringTimeoutHandler.removeCallbacksAndMessages(null)
+        showStatus("Call ended")
+        endNativeCall()
+        scheduleAutoClose()
+    }
+
+    // Coupe la session de téléprésence native : ça referme l'écran d'appel du
+    // Temi et redonne la main à notre app (même mécanisme éprouvé que le bouton
+    // "Hang up"). On ne ramène PAS l'app au premier plan manuellement : le faire
+    // pendant un appel encore actif fait apparaître la bulle flottante "retour à
+    // l'appel" du Temi en bas de l'écran.
+    private fun endNativeCall() {
+        RobotController.stopCall()
+        context?.let { CallHangupOverlay.hide(it) }
     }
 
     private fun showStatus(message: String) {
@@ -186,6 +208,7 @@ class CallPage : Fragment() {
         ringTimeoutHandler.removeCallbacksAndMessages(null)
         autoCloseHandler.removeCallbacksAndMessages(null)
         RobotController.setCallStateCallback(null)
+        RobotController.setCallEndedCallback(null)
         context?.let { CallHangupOverlay.hide(it) }
         statusText = null
     }

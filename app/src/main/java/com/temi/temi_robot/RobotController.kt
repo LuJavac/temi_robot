@@ -16,7 +16,10 @@ import com.robotemi.sdk.constants.Platform
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 import com.robotemi.sdk.listeners.OnRobotReadyListener
+import com.robotemi.sdk.listeners.OnTelepresenceEventChangedListener
 import com.robotemi.sdk.listeners.OnTelepresenceStatusChangedListener
+import com.robotemi.sdk.model.CallEventModel
+import com.robotemi.sdk.model.MemberStatusModel
 import com.robotemi.sdk.map.OnLoadMapStatusChangedListener
 import com.robotemi.sdk.navigation.listener.OnDistanceToDestinationChangedListener
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener
@@ -37,6 +40,7 @@ object RobotController:
     OnDistanceToDestinationChangedListener,
     OnRequestPermissionResultListener,
     OnLoadMapStatusChangedListener,
+    OnTelepresenceEventChangedListener,
     OnTelepresenceStatusChangedListener(sessionId = "")
 {
     private var robotRef: WeakReference<Robot>? = null
@@ -60,6 +64,7 @@ object RobotController:
         getRobot()?.addOnRequestPermissionResultListener(this)
         getRobot()?.addOnLoadMapStatusChangedListener(this)
         getRobot()?.addOnTelepresenceStatusChangedListener(this)
+        getRobot()?.addOnTelepresenceEventChangedListener(this)
     }
 
     // Lists of keywords for approving or denying librarian call request
@@ -382,6 +387,15 @@ object RobotController:
         callStateCallback = callback
     }
 
+    // Signal fiable de fin d'appel : déclenché aussi quand l'interlocuteur
+    // distant raccroche/quitte. CallState.ENDED ne suffit pas toujours pour
+    // refermer l'écran d'appel natif du Temi, d'où ce second canal.
+    private var callEndedCallback: (() -> Unit)? = null
+
+    fun setCallEndedCallback(callback: (() -> Unit)?) {
+        callEndedCallback = callback
+    }
+
     // Role 10 contacts are face-recognition only and cannot be called (see UserInfo doc)
     fun getCallableContacts(): List<UserInfo> {
         return getRobot()?.allContact?.filter { it.role != 10 } ?: emptyList()
@@ -391,13 +405,70 @@ object RobotController:
     // seule des deux qui établit l'appel sur ce robot (startMeeting → CANT_JOIN)
     @Suppress("DEPRECATION")
     fun startCall(contact: UserInfo): String {
+        startCallMonitor(contact.userId)
         return getRobot()?.startTelepresence(contact.name, contact.userId, Platform.MOBILE) ?: ""
     }
 
     // 200 = OK, 404 = no ongoing call, 403 = MEETINGS permission missing,
     // 400 = package name verification failed, 500 = SDK internal error
     fun stopCall(): Int {
+        stopCallMonitor()
         return getRobot()?.stopTelepresence() ?: 500
+    }
+
+    // ---- Surveillance du départ du participant pendant un appel ----
+    // Quand l'interlocuteur distant raccroche, le Temi n'émet PAS de fin
+    // d'appel : il affiche "No participants left. Would you like to end the
+    // meeting?" avec un compteur d'1 minute. On surveille donc le statut des
+    // membres pour couper l'appel dès que le distant a quitté (= disparaît ou
+    // passe hors-ligne), sans attendre ce compteur.
+    private val callMonitorHandler = Handler(Looper.getMainLooper())
+    private val callMonitorIntervalMillis = 2000L
+    private var currentCallPeerId: String? = null
+    // Le distant est "dans l'appel" quand son statut passe à BUSY (2). Tant
+    // qu'on n'a pas vu ce BUSY, on ne coupe rien (l'appel est peut-être encore
+    // en train de sonner). Une fois BUSY vu, sa sortie de l'état BUSY = il a
+    // raccroché. On confirme sur 2 sondages pour éviter un faux positif.
+    private var remoteWasInCall = false
+    private var leftPollCount = 0
+    private val leftPollsBeforeEnding = 2
+
+    private val callMonitorRunnable = object : Runnable {
+        override fun run() {
+            val members = getRobot()?.membersStatus ?: emptyList()
+            val peerId = currentCallPeerId
+            val peer = members.find { it.memberId == peerId }
+            val peerInCall = peer != null &&
+                (peer.mobileStatus == MemberStatusModel.STATUS_BUSY ||
+                 peer.centerStatus == MemberStatusModel.STATUS_BUSY)
+
+            if (peerInCall) {
+                remoteWasInCall = true
+                leftPollCount = 0
+            } else if (remoteWasInCall) {
+                // Le distant était dans l'appel (BUSY) et ne l'est plus :
+                // il a raccroché. On confirme sur quelques sondages.
+                leftPollCount++
+                if (leftPollCount >= leftPollsBeforeEnding) {
+                    callEndedCallback?.invoke()
+                    stopCall()
+                    return
+                }
+            }
+            callMonitorHandler.postDelayed(this, callMonitorIntervalMillis)
+        }
+    }
+
+    private fun startCallMonitor(peerId: String) {
+        currentCallPeerId = peerId
+        remoteWasInCall = false
+        leftPollCount = 0
+        callMonitorHandler.removeCallbacks(callMonitorRunnable)
+        callMonitorHandler.postDelayed(callMonitorRunnable, callMonitorIntervalMillis)
+    }
+
+    fun stopCallMonitor() {
+        callMonitorHandler.removeCallbacks(callMonitorRunnable)
     }
 
     private fun callLibrarian(){
@@ -678,6 +749,14 @@ object RobotController:
         }
     }
 
+    override fun onTelepresenceEventChanged(callEventModel: CallEventModel) {
+        // Fin d'appel (l'interlocuteur a raccroché/quitté, ou fin normale) :
+        // on prévient la page pour qu'elle referme l'écran d'appel natif.
+        if (callEventModel.state == CallEventModel.STATE_ENDED) {
+            callEndedCallback?.invoke()
+        }
+    }
+
     override fun onTelepresenceStatusChanged(callState: CallState) {
         // While the call page is open it handles the states itself
         val pageCallback = callStateCallback
@@ -687,7 +766,6 @@ object RobotController:
         }
         when(callState.state){
             CallState.State.ENDED -> {
-                speak("I'm always in the library in case you need any help.")
                 backToMainPageCallback?.onBackToMainPage()
             }
             CallState.State.DECLINED -> {
@@ -724,7 +802,7 @@ object RobotController:
         if(isAskSatisfiedRequest){
             isAskSatisfiedRequest = false
             if(isIntoList(asrResult, deniedKeywords) or !isIntoList(asrResult, approvedKeywords)){
-                speak("OK. I'm always in the library in case you need any help.")
+                speak("OK.")
                 backToMainPageCallback?.onBackToMainPage()
             }
             else {
