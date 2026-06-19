@@ -320,6 +320,23 @@ object RobotController:
             mapReadyCallback?.onMapIsReady()
             return
         }
+        // IMPORTANT (anti-écrasement des points) : si le robot a DÉJÀ cette carte
+        // active, on NE recharge PAS. loadMap(id) réécrit la carte active avec la
+        // version stockée et efface les points ajoutés en live via le map editor
+        // (mode following). On se contente alors d'utiliser la carte courante.
+        val currentMapName = getRobot()?.getMapData()?.mapName
+        if (mapName != null && currentMapName == mapName) {
+            loadedMapName = mapName
+            val locationsWithoutHome = getRobot()?.locations?.filter { it.lowercase() != "home base" }
+            if (locationsWithoutHome != null) {
+                patrolStates = PatrolStates(
+                    locationsWithoutHome,
+                    locationsWithoutHome.associateWith { true }.toMutableMap()
+                )
+            }
+            mapReadyCallback?.onMapIsReady()
+            return
+        }
         val maps = getRobot()?.getMapList()
         val map = maps?.find { it.name == mapName }
         if(map == null){

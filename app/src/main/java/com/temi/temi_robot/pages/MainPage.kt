@@ -321,7 +321,8 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.setLastRequestTimeNow()
             RobotController.stopMovement()
             RobotController.resetInactivityTimer()
-            RobotController.askQuestion("Hi, how can I help you ?")
+            // Pas de "Hi" ici : le bonjour a déjà été dit au réveil
+            RobotController.askQuestion("How can I help you ?")
         }
 
         // Settings button behavior
@@ -664,8 +665,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 isSleeping = false
                 isWakingUp = false
                 resetLocalInactivityTimer()
-                // Une seule activation de l'écoute vocale par réveil, après l'animation
-                RobotController.askQuestion("Hi, how can I help you ?")
+                // Au réveil : on dit juste la phrase d'accueil via speak (pas
+                // d'UI de conversation / "tête qui parle", pas d'écoute vocale).
+                // "Hi, how can I help you ?" + écoute vocale n'est déclenché que
+                // par le bouton "click here" (interactionButton).
+                RobotController.speak("Hi, I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
             }, 1000)
         }, 5000)
     }
