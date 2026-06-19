@@ -687,6 +687,12 @@ object RobotController:
             }
             else if(isMoveRequest){
                 isMoveRequest = false
+                // Relève la tête pour regarder la personne (et non son pantalon),
+                // comme au retour à la base. On ré-applique après un court délai :
+                // juste à la fin du trajet le robot remet parfois la tête à plat,
+                // ce qui annulait un tilt appliqué immédiatement.
+                tiltHead(+55)
+                Handler(Looper.getMainLooper()).postDelayed({ tiltHead(+55) }, 1500)
                 speak("We arrived at your destination.")
 
                 // 🔴 ON A SUPPRIMÉ LE RETOUR AUTOMATIQUE (goToHomeBase) ICI !
