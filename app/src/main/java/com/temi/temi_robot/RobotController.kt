@@ -277,19 +277,30 @@ object RobotController:
     }
 
     // Speech
-    fun speak(speech: String, subtitles: Boolean = true) { // Make the robot speak
-        // On .test builds, use Android TTS exclusively to avoid the double-voice
+    //  On rajoute une variable pour mémoriser la langue actuelle
+    var currentTtsLanguage = TtsRequest.Language.EN_US
+
+    // On stocke la langue ici pour qu'elle ne s'efface jamais
+    var currentLangCode = "EN"
+
+    // Fonction pour changer l'accent du robot (Temi ET Android)
+    fun updateLanguage(langCode: String, temiLang: TtsRequest.Language, locale: Locale) {
+        currentLangCode = langCode
+        currentTtsLanguage = temiLang
+        androidTts?.language = locale // Change l'accent de la voix de secours !
+    }
+
+    fun speak(speech: String, subtitles: Boolean = true) {
         if (useFallbackTts && androidTtsReady) {
             androidTts?.speak(speech, TextToSpeech.QUEUE_ADD, null, "TemiAudio")
             return
         }
 
-        // Production: Temi TTS with subtitles on the conversation layer.
         val request = TtsRequest.create(
             speech = speech,
-            isShowOnConversationLayer = false, // Toujours sur false !
+            isShowOnConversationLayer = false,
             showAnimationOnly = true,
-            language = TtsRequest.Language.EN_US
+            language = currentTtsLanguage
         )
         getRobot()?.speak(request)
     }
