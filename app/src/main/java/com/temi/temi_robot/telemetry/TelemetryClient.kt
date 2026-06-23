@@ -35,7 +35,7 @@ object TelemetryClient {
     private const val TAG = "TelemetryClient"
 
     // IP : RaspBerry (même machine que serverUrl dans MainActivity)
-    private const val ENDPOINT_URL = "http://100.118.110.67:8000/events/batch"
+    private const val ENDPOINT_URL = "http://192.168.1.8:8000/events/batch"
     // Jeton lu depuis local.properties (telemetry.token=...), jamais versionné.
     // Doit correspondre à API_TOKEN dans temi-telemetry/.env sur le Pi.
     private val TELEMETRY_TOKEN = com.temi.temi_robot.BuildConfig.TELEMETRY_TOKEN

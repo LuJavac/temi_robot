@@ -22,8 +22,8 @@ class MainActivity : AppCompatActivity() {
     private val mapName = "R4 Block Complete (USE THIS) for RIG1" //level 2 backup
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
-    internal var serverUrl = "http://100.118.110.67:5000/process" // IP Tailscale du RaspBerry
-    internal var streamUrl = "http://100.118.110.67:5000/stream" // Streaming SSE endpoint (token par token)
+    internal var serverUrl = "http://192.168.1.8:5000/process" // IP locale du RaspBerry (même Wi-Fi)
+    internal var streamUrl = "http://192.168.1.8:5000/stream" // Streaming SSE endpoint (token par token)
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
