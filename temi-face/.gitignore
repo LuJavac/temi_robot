@@ -1,0 +1,11 @@
+# Données biométriques / personnelles : NE JAMAIS versionner
+*.db
+data/
+# Photos de test (visages de personnes réelles)
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.webp
+__pycache__/
+*.pyc

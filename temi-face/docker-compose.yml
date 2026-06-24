@@ -1,0 +1,18 @@
+services:
+  face:
+    build: .
+    container_name: temi-face
+    ports:
+      - "8001:8001"
+    volumes:
+      - face-data:/data          # base SQLite biométrique, persistée hors de l'image
+    environment:
+      - FACE_DB_PATH=/data/faces.db
+      - MATCH_THRESHOLD=0.50      # cosinus minimum pour un match
+      - MATCH_MARGIN=0.05         # écart minimum avec la 2e personne (anti-confusion)
+      - MIN_DET_SCORE=0.50        # qualité minimale du visage détecté
+    mem_limit: 1200m              # garde-fou RAM sur le Pi 4 (4 Go)
+    restart: unless-stopped
+
+volumes:
+  face-data:
