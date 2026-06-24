@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Aperçu caméra live (miroir auto pour la caméra frontale) -->
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Bandeau de guidage en haut -->
+    <TextView
+        android:id="@+id/guidanceText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="#AA000000"
+        android:padding="24dp"
+        android:gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        android:text="" />
+
+    <!-- Panneau de saisie du prénom (affiché en premier) -->
+    <LinearLayout
+        android:id="@+id/namePanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#CC000000"
+        android:padding="36dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="What's your name?"
+            android:textColor="#FFFFFF"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
+
+        <EditText
+            android:id="@+id/nameInput"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:hint="Your name"
+            android:textColorHint="#888888"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp"
+            android:inputType="textCapWords"
+            android:layout_marginBottom="28dp" />
+
+        <Button
+            android:id="@+id/startButton"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            android:textSize="22sp"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:textSize="18sp" />
+    </LinearLayout>
+</FrameLayout>

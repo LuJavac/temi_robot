@@ -3,6 +3,7 @@ package com.temi.temi_robot.detection
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -16,6 +17,7 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarker
 import com.google.mediapipe.tasks.vision.handlandmarker.HandLandmarkerResult
+import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import kotlin.math.hypot
 
@@ -91,6 +93,12 @@ class WaveGestureRecognizer(
     private var openPalmCount = 0L
     private var firstHandLogged = false
 
+    // Dernière frame caméra (pour la reconnaissance faciale au réveil). On réutilise
+    // le flux du wave detector au lieu d'ouvrir une 2e caméra, qui entrerait en
+    // conflit avec celle-ci (bind silencieux qui échoue).
+    @Volatile private var latestFrame: Bitmap? = null
+    @Volatile private var latestRotation: Int = 0
+
     /** Initializes MediaPipe and binds the camera. Idempotent. */
     fun start() {
         if (handLandmarker != null) return
@@ -109,6 +117,27 @@ class WaveGestureRecognizer(
             handLandmarker = null
             cameraProvider = null
             wristXHistory.clear()
+            latestFrame = null
+        }
+    }
+
+    /**
+     * Dernière frame caméra en JPEG (remise droite selon la rotation), pour la
+     * reconnaissance faciale. Réutilise le flux déjà actif du wave detector,
+     * donc aucune 2e caméra à ouvrir. Renvoie null si aucune frame encore reçue.
+     */
+    fun latestJpeg(): ByteArray? {
+        val frame = latestFrame ?: return null
+        val rotation = latestRotation
+        val upright = if (rotation != 0) {
+            val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
+            Bitmap.createBitmap(frame, 0, 0, frame.width, frame.height, matrix, true)
+        } else {
+            frame
+        }
+        return ByteArrayOutputStream().use { out ->
+            upright.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            out.toByteArray()
         }
     }
 
@@ -195,6 +224,9 @@ class WaveGestureRecognizer(
                 Log.i(TAG, "Camera frames processed: $framesProcessed (hand-detected: $handsDetected, open-palm: $openPalmCount)")
             }
             val bitmap: Bitmap = imageProxy.toBitmap()
+            // Mémorise la dernière frame + sa rotation pour la reconnaissance faciale.
+            latestFrame = bitmap
+            latestRotation = imageProxy.imageInfo.rotationDegrees
             val mpImage = BitmapImageBuilder(bitmap).build()
             handLandmarker?.detectAsync(mpImage, System.currentTimeMillis())
         } catch (e: Exception) {

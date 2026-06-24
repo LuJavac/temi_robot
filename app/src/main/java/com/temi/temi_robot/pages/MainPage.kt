@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.face.FaceClient
 import com.temi.temi_robot.telemetry.TelemetryClient
 import androidx.core.content.edit
 
@@ -58,7 +59,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     private var isWakingUp = false
     private var sleepStep = 0
-    private val SLEEP_TIMEOUT = 300000L // Temps avant de s'endormir : 300 000 ms (300 secondes - 5 minutes)
+    private val SLEEP_TIMEOUT = 15000L // TEST : 15 s (valeur prod = 300000L / 5 min — À REMETTRE après le test)
 
     private var snorePlayer: android.media.MediaPlayer? = null
     private var hihiPlayer: android.media.MediaPlayer? = null
@@ -685,7 +686,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         isSleeping = true
         view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
         sleepAnimationHandler.post(sleepAnimationRunnable)
-        startSnoring()
+        // startSnoring() // TEST : son de ronflement désactivé — À REMETTRE après le test
     }
 
     private val sleepAnimationRunnable = object : Runnable {
@@ -724,7 +725,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         isWakingUp = true
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
-        playHihi()
+        // playHihi() // TEST : son de réveil désactivé — À REMETTRE après le test
+        // On capture la frame MAINTENANT : la personne vient de réveiller le robot,
+        // elle est forcément devant la caméra (plus fiable qu'attendre la fin de
+        // l'animation, le temps qu'elle ait pu s'écarter).
+        val wakeFrame = waveRecognizer?.latestJpeg()
         embarrassedStep = 0
         sleepAnimationHandler.post(embarrassedRunnable)
 
@@ -737,14 +742,56 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
                 isSleeping = false
                 isWakingUp = false
-                resetLocalInactivityTimer()
-                // Au réveil : on dit juste la phrase d'accueil via speak (pas
-                // d'UI de conversation / "tête qui parle", pas d'écoute vocale).
-                // "Hi, how can I help you ?" + écoute vocale n'est déclenché que
-                // par le bouton "click here" (interactionButton).
-                RobotController.speak("Hi, I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen.")
+                recognizeAndGreet(wakeFrame)
             }, 1000)
-        }, 5000)
+        }, 1500) // TEST : 1500 ms (valeur d'origine 5000) pour un réveil rapide — À REMETTRE
+    }
+
+    /**
+     * Reconnaissance faciale au réveil : prend la dernière frame du wave detector
+     * et interroge le service face du Pi. Si la personne est connue, on la salue
+     * par son prénom ; sinon message d'accueil générique. Aucune 2e caméra ouverte.
+     */
+    private val genericGreeting = "Hi, I'm Temi bot, please ask me a question. You can ask me by clicking the button or writing it with the keyboard on the screen."
+
+    private fun recognizeAndGreet(jpeg: ByteArray?) {
+        // Empêche la veille de se déclencher pendant la reconnaissance / l'enrôlement :
+        // sinon le timer de 15 s endort le robot en plein milieu du flux.
+        inactivityHandler.removeCallbacksAndMessages(null)
+
+        if (jpeg == null) {
+            RobotController.speak(genericGreeting)
+            resetLocalInactivityTimer()
+            return
+        }
+        FaceClient.recognize(jpeg) { result ->
+            if (!isAdded) return@recognize
+            Log.i("MainPage", "recognize -> match=${result?.match} name=${result?.name} score=${result?.score} reason=${result?.reason}")
+            when {
+                result == null -> {                        // échec réseau
+                    RobotController.speak(genericGreeting)
+                    resetLocalInactivityTimer()
+                }
+                result.match && result.name != null -> {   // reconnu
+                    RobotController.speak("Hi ${result.name}! How can I help you today?")
+                    TelemetryClient.track("greeting")
+                    resetLocalInactivityTimer()
+                }
+                result.reason == "no_face" -> {             // aucun visage capté
+                    RobotController.speak(genericGreeting)
+                    resetLocalInactivityTimer()
+                }
+                else -> promptEnrollment()  // visage vu mais inconnu → enrôlement (la veille reste annulée)
+            }
+        }
+    }
+
+    /** Personne inconnue : on ouvre l'écran d'enrôlement dédié (aperçu live + multi-angles). */
+    private fun promptEnrollment() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, EnrollPage())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun startSnoring() {
