@@ -59,7 +59,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     private var isWakingUp = false
     private var sleepStep = 0
-    private val SLEEP_TIMEOUT = 15000L // TEST : 15 s (valeur prod = 300000L / 5 min — À REMETTRE après le test)
+    private val SLEEP_TIMEOUT = 300000L // Temps avant de s'endormir : 300 000 ms (300 secondes - 5 minutes)
 
     private var snorePlayer: android.media.MediaPlayer? = null
     private var hihiPlayer: android.media.MediaPlayer? = null
@@ -686,7 +686,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         isSleeping = true
         view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
         sleepAnimationHandler.post(sleepAnimationRunnable)
-        // startSnoring() // TEST : son de ronflement désactivé — À REMETTRE après le test
+        startSnoring()
     }
 
     private val sleepAnimationRunnable = object : Runnable {
@@ -725,7 +725,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         isWakingUp = true
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
-        // playHihi() // TEST : son de réveil désactivé — À REMETTRE après le test
+        playHihi()
         // On capture la frame MAINTENANT : la personne vient de réveiller le robot,
         // elle est forcément devant la caméra (plus fiable qu'attendre la fin de
         // l'animation, le temps qu'elle ait pu s'écarter).
