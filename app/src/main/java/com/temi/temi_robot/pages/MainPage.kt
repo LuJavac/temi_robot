@@ -744,7 +744,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 isWakingUp = false
                 recognizeAndGreet(wakeFrame)
             }, 1000)
-        }, 1500) // TEST : 1500 ms (valeur d'origine 5000) pour un réveil rapide — À REMETTRE
+        }, 5000)
     }
 
     /**
