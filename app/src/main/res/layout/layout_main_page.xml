@@ -31,7 +31,7 @@
                 android:layout_marginEnd="15dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_call"
-                android:tint="#FFFFFF" />
+                app:tint="#FFFFFF" />
 
             <Button
                 android:id="@+id/langButton"
@@ -51,7 +51,7 @@
                 android:layout_marginEnd="15dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_dialog_map"
-                android:tint="#FFFFFF" />
+                app:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/timeButton"
@@ -59,7 +59,7 @@
                 android:layout_height="50dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_recent_history"
-                android:tint="#FFFFFF" />
+                app:tint="#FFFFFF" />
 
             <ImageButton
                 android:id="@+id/settingsButton"
@@ -68,7 +68,7 @@
                 android:layout_marginStart="15dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@android:drawable/ic_menu_preferences"
-                android:tint="#FFFFFF" />
+                app:tint="#FFFFFF" />
         </LinearLayout>
     </RelativeLayout>
 
@@ -147,6 +147,18 @@
                 android:textColor="#FFFFFF"
                 android:textSize="22sp"
                 android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/cardPhoto"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="📸 Take a selfie with me!"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+
         </GridLayout>
     </LinearLayout>
 

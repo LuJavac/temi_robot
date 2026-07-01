@@ -531,6 +531,17 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             resetLocalInactivityTimer()
             onRequestIsReady((it as Button).text.toString())
         }
+
+
+        // Bouton pour lancer le mode Photo
+        view.findViewById<Button>(R.id.cardPhoto)?.setOnClickListener {
+            resetLocalInactivityTimer()
+            RobotController.speak("Let's take a picture together!")
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, PhotoPage())
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
     // INTERCEPTION DES DEMANDES DE DÉPLACEMENT Vocales ou Clavier

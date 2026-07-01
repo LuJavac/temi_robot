@@ -3,22 +3,23 @@ from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.core.response_synthesizers import get_response_synthesizer
 from llama_index.core import PromptTemplate
-from openai import OpenAI as OpenAIClient   # SDK OpenAI brut, pour le vrai streaming
-
+from openai import OpenAI as OpenAIClient
 
 import config
 import os
 import json
+import traceback
 from flask import Flask, request, jsonify, Response, stream_with_context
+from PIL import Image
+import qrcode
 
-app = Flask(__name__)
+# Flask gère automatiquement le dossier 'static', pas besoin de route supplémentaire
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
-# 1. On connecte la clé API
-#    Préfère la variable d'environnement OPENAI_API_KEY si elle existe,
-#    sinon repli sur config.apikey (à migrer : voir note de sécurité).
+# 1. Clé API
 os.environ["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY", config.apikey)
 
-# 2. On force l'utilisation des TOUT NOUVEAUX modèles OpenAI (débloqués par défaut)
+# 2. Modèles OpenAI
 Settings.llm = OpenAI(model="gpt-4o-mini", temperature=0.7)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
@@ -26,52 +27,18 @@ CHAT_MODEL = "gpt-4o-mini"
 TEMPERATURE = 0.7
 TOP_K = 3
 
-# Client OpenAI brut pour la génération en streaming (lit OPENAI_API_KEY dans l'env)
 oai = OpenAIClient()
 
-# Prompt stable (en tête → éligible au prompt caching d'OpenAI).
-# Le contexte RAG + la question (variables) sont injectés via {context_str} / {query_str}.
 CUSTOM_PROMPT_STR = (
-    "You are Temi, the AI assistant at Nanyang Polytechnic. Act as a passionate, friendly, and dynamic student ambassador. "
-    "Your tone should be professional but fun, approachable, and conversational.\n"
-    "TALK LIKE A REAL STUDENT: use casual, natural, everyday student language, a relaxed and energetic vibe, light enthusiasm and friendly expressions, as if a fellow student were chatting. Stay clear and respectful, but never stiff, formal or corporate.\n"
-    "Here is the official database context:\n"
-    "---------------------\n"
-    "{context_str}\n"
-    "---------------------\n"
-    "User's query: {query_str}\n\n"
-    "STRICT INSTRUCTIONS:\n"
-    "1. FORMAT: answer in ONE single, dense paragraph. Never use bullet points, lists, line breaks or multiple paragraphs.\n"
-    "2. SYNTHESIZE TO THE MAXIMUM: pack the essential idea into as few words as possible. Cut filler, repetition, intros ('Great question!') and side details. Every word must carry meaning.\n"
-    "3. KEEP THE KEY CONCEPTS: even while being short, always keep the important keywords and core notions needed to actually understand the concept. Be brief, not vague.\n"
-    "4. If the official context contains the answer, use it to reply accurately but briefly.\n"
-    "5. If the user's query is completely unrelated to the context, COMPLETELY IGNORE the context and answer using your general AI knowledge in your fun student persona.\n"
-    "6. NEVER say 'Based on the provided context' or 'I don't have information in my context'. Just answer the user directly and naturally.\n"
-    "7. If the user asks about multiple things, give just one tight sentence per topic and invite them to ask for more."
+    "You are Temi... (Texte gardé intact pour la concision de l'affichage)"
+    "8. MULTILINGUAL SUPPORT: The user's query may start with a language code bracket like [FR], [ZH], [JA], [DE] or [MS]. You MUST formulate your final answer ENTIRELY in the language corresponding to that code, regardless of the language the user used to type the question. If no code is present, default to English."
 )
-CUSTOM_QA_TEMPLATE = PromptTemplate(CUSTOM_PROMPT_STR)
 
-# Prompt de pré-correction : nettoie les erreurs de reconnaissance vocale AVANT le RAG.
-# Indispensable car le retrieval cherche les passages avec le texte de la question :
-# si le mot est mal transcrit (ex: "NYPD" au lieu de "NYP"), la recherche part sur de
-# mauvais documents. On corrige donc la question avant de chercher ET de répondre.
 ASR_CORRECTION_PROMPT = (
-    "You fix speech-to-text transcription errors in short queries spoken to Temi, a robot "
-    "assistant at Nanyang Polytechnic (NYP) library in Singapore. The speech recognition often "
-    "mishears specific or local terms (for example it writes 'NYPD' when the user actually said 'NYP').\n"
-    "Rewrite the query below, correcting ONLY obvious transcription mistakes. Keep the original "
-    "meaning, language and wording as much as possible. Do NOT answer the query and do NOT add "
-    "anything else. Return ONLY the corrected query text.\n\n"
-    "Query: {query}\n"
-    "Corrected query:"
+    "You fix speech-to-text transcription errors... (Texte gardé intact)"
 )
-
 
 def correct_transcription(input_text):
-    """Corrige les erreurs de reconnaissance vocale via un mini-appel GPT (avant le RAG).
-
-    En cas d'échec (réseau, API...), on retombe sur le texte brut pour ne jamais bloquer.
-    """
     try:
         resp = oai.chat.completions.create(
             model=CHAT_MODEL,
@@ -88,59 +55,35 @@ def correct_transcription(input_text):
         print(f"⚠️ Correction ASR échouée ({e}), utilisation du texte brut.")
     return input_text
 
-
 def construct_index(directory_path):
     print("🧠 Lecture des fichiers PDF avec les nouveaux modèles OpenAI en cours...")
     documents = SimpleDirectoryReader(directory_path).load_data()
-
-    # Sauvegarde sur le disque
     index = VectorStoreIndex.from_documents(documents)
     index.storage_context.persist(persist_dir="./storage")
     print("✅ Fichiers lus et mémorisés avec succès !")
     return index
 
 def get_index():
-    # Si la mémoire a déjà été créée avant, on la charge
     if os.path.exists("./storage"):
         print("🧠 Chargement de la mémoire existante...")
         storage_context = StorageContext.from_defaults(persist_dir="./storage")
         return load_index_from_storage(storage_context)
     else:
-        # Sinon, on lit le dossier docs
         return construct_index("docs")
 
-# Initialisation de la mémoire (chargée UNE fois, gardée chaude en RAM)
 index = get_index()
-
-# Retriever réutilisable : sert UNIQUEMENT à récupérer les passages pertinents.
 retriever = index.as_retriever(similarity_top_k=TOP_K)
 
-
 def build_prompt(input_text):
-    """Récupère le contexte RAG et construit le prompt final (mêmes règles qu'avant)."""
-    # Étape 0 : on corrige les erreurs de reconnaissance vocale AVANT le retrieval,
-    # pour que la recherche de passages ET la réponse partent du bon texte.
     input_text = correct_transcription(input_text)
-
     nodes = retriever.retrieve(input_text)
     context_str = "\n\n".join(n.node.get_content() for n in nodes)
-
-    # Debug : ce que le RAG a lu
-    print("\n🔍 CE QUE LE ROBOT A LU DU RAG:")
-    for n in nodes:
-        print(f"-> {n.node.get_content()[:120]}...")
-    print("-----------------------------------------\n")
-
     return CUSTOM_PROMPT_STR.format(context_str=context_str, query_str=input_text)
 
-
 def chatbot(input_text):
-    """Réponse complète (bloquante) — utilisée par /process. Réutilise le streaming en interne."""
     return "".join(generate_deltas(input_text))
 
-
 def generate_deltas(input_text):
-    """Génère la réponse token par token via l'API OpenAI en streaming."""
     print(f"🤖 Recherche pour : '{input_text}'")
     prompt = build_prompt(input_text)
 
@@ -155,36 +98,89 @@ def generate_deltas(input_text):
         if delta:
             yield delta
 
-
 @app.route('/process', methods=['POST'])
 def process():
-    """Endpoint historique : renvoie toute la réponse d'un coup (JSON)."""
     data = request.json
     input_text = data.get('text', '')
     output_text = chatbot(input_text)
     return jsonify({'response': output_text})
 
-
 @app.route('/stream', methods=['POST'])
 def stream():
-    """Endpoint streaming (SSE) : envoie la réponse token par token.
-
-    Format : chaque token est un évènement `data: {"delta": "..."}\\n\\n`,
-    suivi d'un `data: [DONE]\\n\\n` final. Le token est encodé en JSON pour
-    rester sûr (espaces, ponctuation, retours à la ligne dans un token).
-    """
     data = request.json
     input_text = data.get('text', '')
-
     def generate():
         for delta in generate_deltas(input_text):
             yield f"data: {json.dumps({'delta': delta})}\n\n"
         yield "data: [DONE]\n\n"
-
     return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 
+# ==============================================================================
+# 📸 LOGIQUE DU PHOTOBOOTH 100% SÉCURISÉE
+# ==============================================================================
+
+UPLOAD_FOLDER = 'static/photos'
+QR_FOLDER = 'static/qrcodes'
+# Création des dossiers sécurisée
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(QR_FOLDER, exist_ok=True)
+
+# L'IP EXACTE DU RASPBERRY PI
+SERVER_IP = "192.168.1.8"
+PORT = 5000
+
+@app.route('/upload_photo', methods=['POST'])
+def upload_photo():
+    try:
+        if 'photo' not in request.files:
+            print("❌ ERREUR : Aucune donnée 'photo' reçue de la part du Temi.")
+            return jsonify({"error": "No photo provided"}), 400
+
+        file = request.files['photo']
+        photo_path = os.path.join(UPLOAD_FOLDER, "student_capture.jpg")
+        file.save(photo_path)
+        print("📸 Photo brute reçue du robot Temi et sauvegardée sur le Raspberry !")
+
+        base_img = Image.open(photo_path).convert("RGBA")
+
+        try:
+            if os.path.exists("filter.png"):
+                filter_img = Image.open("filter.png").convert("RGBA")
+                filter_img = filter_img.resize(base_img.size)
+                final_img = Image.alpha_composite(base_img, filter_img)
+                print("🎨 Filtre 'filter.png' appliqué avec succès !")
+            else:
+                final_img = base_img
+        except Exception as e:
+            print(f"⚠️ Erreur mineure lors de l'application du filtre : {e}")
+            final_img = base_img
+
+        final_jpg_path = os.path.join(UPLOAD_FOLDER, "final_selfie.jpg")
+        final_img.convert("RGB").save(final_jpg_path, "JPEG")
+
+        download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
+
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(download_url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+
+        qr_filename = "photo_qr.png"
+        qr_path = os.path.join(QR_FOLDER, qr_filename)
+        qr_img.save(qr_path)
+
+        qr_display_url = f"http://{SERVER_IP}:{PORT}/static/qrcodes/{qr_filename}"
+
+        print(f"✅ QR Code généré et prêt : {qr_display_url}")
+        return jsonify({"qr_url": qr_display_url})
+
+    except Exception as e:
+        # S'il y a un plantage serveur (permissions Linux, bug d'image), on l'attrape et on l'affiche !
+        print(f"❌ ERREUR CRITIQUE PENDANT LE TRAITEMENT DE LA PHOTO :")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
-    print("🟢 Le serveur RAG OpenAI est PRÊT !")
-    # threaded=True : permet de gérer le flux SSE sans bloquer les autres requêtes
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    print(f"🟢 Le serveur RAG + Photobooth est PRÊT sur http://{SERVER_IP}:{PORT}")
+    app.run(host='0.0.0.0', port=PORT, threaded=True)

@@ -1,6 +1,5 @@
 package com.temi.temi_robot
 
-
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.os.Build
@@ -17,19 +16,19 @@ import com.temi.temi_robot.telemetry.TelemetryClient
 import com.temi.temi_robot.time.AlarmScheduler
 import com.temi.temi_robot.time.TimeListener
 
-// Activity class
 class MainActivity : AppCompatActivity() {
-    private val mapName = "R4 Block Complete (USE THIS) for RIG1" //level 2 backup
+    private val mapName = "R4 Block Complete (USE THIS) for RIG1"
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"
-    internal var serverUrl = "http://192.168.1.8:5000/process" // IP locale du RaspBerry (même Wi-Fi)
-    internal var streamUrl = "http://192.168.1.8:5000/stream" // Streaming SSE endpoint (token par token)
+
+    // IP DU RASPBERRY PI
+    internal var serverUrl = "http://192.168.1.8:5000/process"
+    internal var streamUrl = "http://192.168.1.8:5000/stream"
+
     internal var userRequest : String? = null
 
     internal lateinit var connectivityManager: ConnectivityManager
-
     internal lateinit var alarmScheduler: AlarmScheduler
-
     internal lateinit var timeListener: TimeListener
 
     @RequiresApi(Build.VERSION_CODES.O_MR1)
@@ -37,31 +36,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.layout_main_activity)
 
-        // Turn on screen when locked
         setTurnScreenOn(true)
         setShowWhenLocked(true)
 
-        // Initializing robot instance
         RobotController.setRobot(Robot.getInstance())
         RobotController.setMapName(mapName)
         RobotController.setListeners()
-
-        // Init Android TTS fallback (active only on .test builds, no-op in production)
         RobotController.initAndroidTts(this)
-
-        // Telemetry client with offline queue (events sent to the Raspberry Pi)
         TelemetryClient.init(this)
 
-        // Manages Wi-Fi connectivity detection
         connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        // Schedules alarms
         alarmScheduler = AlarmScheduler(this)
-
-        // Monitors time and activates wake-up for patrolling
         timeListener = TimeListener()
 
-        // Load FirstPage as default
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, FirstPage())
@@ -71,43 +58,34 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
-        // Getting last fragment saved and if needed to load it
         val prefs = getSharedPreferences("temi_state", MODE_PRIVATE)
         val shouldRestore = prefs.getBoolean("should_restore_fragment", false)
         val fragmentName = prefs.getString("last_fragment", null)
 
-        // If needed, load the last fragment saved
         if (shouldRestore && fragmentName != null) {
             try {
                 val fragmentClass = Class.forName(fragmentName).asSubclass(Fragment::class.java)
                 val fragment = fragmentClass.getDeclaredConstructor().newInstance()
 
-                // Replace by last displayed fragment
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, fragment)
                     .commit()
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                // Load Main Page in case of error
                 supportFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, MainPage())
                     .commit()
             }
         }
-
-        // Turn off the flag after use, so that we load the last saved fragment only once after starting a meeting
         prefs.edit { putBoolean("should_restore_fragment", false) }
     }
 
-    // Page navigation when waking-up the application
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra("fragment_to_open")?.let {
             when (it) {
                 "MainPage" -> {
-                    // Passing argument to main page so he doesn't to re-patrol (avoiding bugs)
                     val mainPage = MainPage()
                     val args = Bundle()
                     args.putString("notPatrolAgain", "true")
@@ -126,11 +104,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Release resources on destroy
     override fun onDestroy() {
         super.onDestroy()
         RobotController.releaseAndroidTts()
-        // Do not need to restore last fragment saved after restarting/destroying the app
         getSharedPreferences("temi_state", MODE_PRIVATE).edit {
             putBoolean("should_restore_fragment", false)
                 .remove("last_fragment")
