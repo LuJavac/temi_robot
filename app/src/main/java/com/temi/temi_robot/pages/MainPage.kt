@@ -737,10 +737,6 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
         playHihi()
-        // On capture la frame MAINTENANT : la personne vient de réveiller le robot,
-        // elle est forcément devant la caméra (plus fiable qu'attendre la fin de
-        // l'animation, le temps qu'elle ait pu s'écarter).
-        val wakeFrame = waveRecognizer?.latestJpeg()
         embarrassedStep = 0
         sleepAnimationHandler.post(embarrassedRunnable)
 
@@ -753,7 +749,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
                 isSleeping = false
                 isWakingUp = false
-                recognizeAndGreet(wakeFrame)
+                // On capture la frame ICI, à la fin de l'animation de réveil : la
+                // personne s'est redressée pour regarder le robot (elle ne se penche
+                // plus vers l'écran comme au moment du clic), donc son visage est
+                // dans le champ de la caméra qui pointe vers le haut.
+                recognizeAndGreet(waveRecognizer?.latestJpeg())
             }, 1000)
         }, 5000)
     }
