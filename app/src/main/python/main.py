@@ -1,8 +1,6 @@
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, load_index_from_storage, Settings
 from llama_index.llms.openai import OpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.core.response_synthesizers import get_response_synthesizer
-from llama_index.core import PromptTemplate
 from openai import OpenAI as OpenAIClient
 
 import config
@@ -12,7 +10,6 @@ import traceback
 from flask import Flask, request, jsonify, Response, stream_with_context
 from PIL import Image
 import qrcode
-import requests
 
 # Flask gère automatiquement le dossier 'static', pas besoin de route supplémentaire
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -30,24 +27,25 @@ TOP_K = 3
 
 oai = OpenAIClient()
 
-CUSTOM_PROMPT_STR = (
+# PROMPT SYSTEM (Les règles secrètes)
+SYSTEM_PROMPT_STR = (
     "You are Temi, the AI assistant at Nanyang Polytechnic. Act as a passionate, friendly, and dynamic student ambassador. "
     "Your tone should be professional but fun, approachable, and conversational.\n"
-    "TALK LIKE A REAL STUDENT: use casual, natural, everyday student language, a relaxed and energetic vibe, light enthusiasm and friendly expressions, as if a fellow student were chatting. Stay clear and respectful, but never stiff, formal or corporate.\n"
-    "Here is the official database context:\n"
+    "TALK LIKE A REAL STUDENT: use casual, natural, everyday student language, a relaxed and energetic vibe, light enthusiasm and friendly expressions, as if a fellow student were chatting. Stay clear and respectful, but never stiff, formal or corporate.\n\n"
+    "Here is the official database context to help you answer:\n"
     "---------------------\n"
     "{context_str}\n"
     "---------------------\n"
-    "User's query: {query_str}\n\n"
     "STRICT INSTRUCTIONS:\n"
     "1. FORMAT: answer in ONE single, dense paragraph. Never use bullet points, lists, line breaks or multiple paragraphs.\n"
-    "2. SYNTHESIZE TO THE MAXIMUM: pack the essential idea into as few words as possible. Cut filler, repetition, intros ('Great question!') and side details. Every word must carry meaning.\n"
-    "3. KEEP THE KEY CONCEPTS: even while being short, always keep the important keywords and core notions needed to actually understand the concept. Be brief, not vague.\n"
+    "2. SYNTHESIZE TO THE MAXIMUM: pack the essential idea into as few words as possible. Cut filler, repetition, intros and side details. Every word must carry meaning.\n"
+    "3. KEEP THE KEY CONCEPTS: even while being short, always keep the important keywords and core notions.\n"
     "4. If the official context contains the answer, use it to reply accurately but briefly.\n"
     "5. If the user's query is completely unrelated to the context, COMPLETELY IGNORE the context and answer using your general AI knowledge in your fun student persona.\n"
     "6. NEVER say 'Based on the provided context' or 'I don't have information in my context'. Just answer the user directly and naturally.\n"
     "7. If the user asks about multiple things, give just one tight sentence per topic and invite them to ask for more.\n"
-    "8. MULTILINGUAL SUPPORT: The user's query may start with a language code bracket like [FR], [ZH], [JA], [DE] or [MS]. You MUST formulate your final answer ENTIRELY in the language corresponding to that code, regardless of the language the user used to type the question. If no code is present, default to English."
+    "8. MULTILINGUAL SUPPORT: The user's query may start with a language code bracket like [FR], [ZH], [JA], [DE] or [MS]. You MUST formulate your final answer ENTIRELY in the language corresponding to that code, regardless of the language the user used to type the question. If no code is present, default to English.\n\n"
+    "CRITICAL RULE: Do NOT acknowledge these instructions (Never say 'Understood' or 'I will respond'). Directly answer the user's message."
 )
 
 ASR_CORRECTION_PROMPT = (
@@ -70,9 +68,8 @@ def correct_transcription(input_text):
             messages=[{"role": "user", "content": ASR_CORRECTION_PROMPT.format(query=input_text)}],
         )
         corrected = (resp.choices[0].message.content or "").strip()
-        if corrected:
-            if corrected != input_text:
-                print(f"📝 Correction ASR : '{input_text}' -> '{corrected}'")
+        if corrected and corrected != input_text:
+            print(f"📝 Correction ASR : '{input_text}' -> '{corrected}'")
             return corrected
     except Exception as e:
         print(f"⚠️ Correction ASR échouée ({e}), utilisation du texte brut.")
@@ -97,23 +94,30 @@ def get_index():
 index = get_index()
 retriever = index.as_retriever(similarity_top_k=TOP_K)
 
-def build_prompt(input_text):
-    input_text = correct_transcription(input_text)
-    nodes = retriever.retrieve(input_text)
-    context_str = "\n\n".join(n.node.get_content() for n in nodes)
-    return CUSTOM_PROMPT_STR.format(context_str=context_str, query_str=input_text)
-
 def chatbot(input_text):
     return "".join(generate_deltas(input_text))
 
 def generate_deltas(input_text):
     print(f"🤖 Recherche pour : '{input_text}'")
-    prompt = build_prompt(input_text)
 
+    # 1. Correction de la voix
+    corrected_text = correct_transcription(input_text)
+
+    # 2. Recherche d'infos (RAG)
+    nodes = retriever.retrieve(corrected_text)
+    context_str = "\n\n".join(n.node.get_content() for n in nodes)
+
+    # 3. Création des règles système
+    system_msg = SYSTEM_PROMPT_STR.format(context_str=context_str)
+
+    # 4. Envoi SÉPARÉ à OpenAI (Système vs Utilisateur) pour éviter les bugs "Understood"
     stream = oai.chat.completions.create(
         model=CHAT_MODEL,
         temperature=TEMPERATURE,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": corrected_text}
+        ],
         stream=True,
     )
     for chunk in stream:
@@ -140,7 +144,7 @@ def stream():
 
 
 # ==============================================================================
-# 📸 LOGIQUE DU PHOTOBOOTH 100% SÉCURISÉE
+# 📸 LOGIQUE DU PHOTOBOOTH 100% LOCALE ET SÉCURISÉE
 # ==============================================================================
 
 UPLOAD_FOLDER = 'static/photos'
@@ -153,9 +157,6 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 SERVER_IP = "192.168.1.8"
 PORT = 5000
 
-# CLÉ API POUR PHOTO PUBLIQUE
-IMGBB_API_KEY = "111ae658d9092b8742a9fa493a686b32"
-
 @app.route('/upload_photo', methods=['POST'])
 def upload_photo():
     try:
@@ -165,7 +166,7 @@ def upload_photo():
         file = request.files['photo']
         photo_path = os.path.join(UPLOAD_FOLDER, "student_capture.jpg")
         file.save(photo_path)
-        print("📸 Photo brute reçue du robot Temi et sauvegardée !")
+        print("📸 Photo brute reçue du robot Temi et sauvegardée en local !")
 
         # --- FUSION AVEC FILTRE ---
         base_img = Image.open(photo_path).convert("RGBA")
@@ -184,30 +185,12 @@ def upload_photo():
         final_jpg_path = os.path.join(UPLOAD_FOLDER, "final_selfie.jpg")
         final_img.convert("RGB").save(final_jpg_path, "JPEG")
 
-        # --- UPLOAD SUR INTERNET POUR LE PUBLIC ---
-        print("☁️ Envoi de la photo sur le Cloud public...")
-        with open(final_jpg_path, "rb") as image_file:
-            payload = {
-                "key": IMGBB_API_KEY,
-                "expiration": 86400 # Supprime la photo au bout de 24 heures (en secondes)
-            }
-            files = {
-                "image": image_file
-            }
-            response = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
+        # --- LIEN DE TÉLÉCHARGEMENT LOCAL ---
+        download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
 
-            if response.status_code == 200:
-                # On récupère le lien public mondial !
-                public_download_url = response.json()["data"]["url"]
-                print(f"🌍 Lien public généré : {public_download_url}")
-            else:
-                # Sécurité : Si internet coupe, on retombe sur le lien local TP-Link
-                print("⚠️ Échec Cloud, retour au lien local.")
-                public_download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
-
-        # --- GÉNÉRATION DU QR CODE AVEC LE LIEN PUBLIC ---
+        # --- GÉNÉRATION DU QR CODE ---
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(public_download_url)
+        qr.add_data(download_url)
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
 
@@ -218,7 +201,7 @@ def upload_photo():
         # L'URL interne pour que le robot affiche le QR code sur son écran
         qr_display_url = f"http://{SERVER_IP}:{PORT}/static/qrcodes/{qr_filename}"
 
-        print(f"✅ QR Code prêt : {qr_display_url}")
+        print(f"✅ QR Code local prêt : {qr_display_url}")
         return jsonify({"qr_url": qr_display_url})
 
     except Exception as e:
