@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.telemetry.TelemetryClient
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -122,6 +123,7 @@ class PhotoPage : Fragment() {
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     RobotController.speak("Great picture! Uploading to server.")
+                    TelemetryClient.track("photo_taken")
                     sendPhotoToServer(photoFile)
                 }
             }
@@ -187,6 +189,7 @@ class PhotoPage : Fragment() {
         val qrCodeImage = requireView().findViewById<ImageView>(R.id.qrCodeImage)
 
         qrCodeOverlay.visibility = View.VISIBLE
+        TelemetryClient.track("qr_shown")
 
         if (isAdded) {
             Glide.with(this).load(qrUrl).into(qrCodeImage)

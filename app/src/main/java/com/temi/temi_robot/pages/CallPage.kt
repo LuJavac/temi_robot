@@ -18,6 +18,7 @@ import com.robotemi.sdk.telepresence.CallState
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.telemetry.TelemetryClient
 import com.temi.temi_robot.ui_utils.CallHangupOverlay
 
 // Page d'appel : liste les contacts du robot et lance un appel vidéo via
@@ -191,6 +192,7 @@ class CallPage : Fragment() {
     private fun placeCall(contact: UserInfo) {
         if (!isAdded) return
         RobotController.startCall(contact)
+        TelemetryClient.track("prof_call")
         showStatus("Calling ${contact.name}...")
         // Bouton raccrocher visible par-dessus l'écran d'appel natif
         // (no-op si la permission de superposition n'est pas accordée).
