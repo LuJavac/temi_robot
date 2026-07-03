@@ -85,16 +85,28 @@
       "id": 6,
       "type": "piechart",
       "title": "Conversations par thème",
-      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 17 },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
       "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
       "fieldConfig": {
         "defaults": { "unit": "short" },
         "overrides": []
       },
+      "options": {
+        "pieType": "donut",
+        "displayLabels": ["name", "percent"],
+        "tooltip": { "mode": "multi" },
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }
+      },
       "targets": [
         {
           "refId": "A",
-          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group(columns: [\"topic\"])\n  |> count()\n  |> yield(name: \"by_topic\")"
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> map(fn: (r) => ({ r with theme:\n        if exists r.topic and r.topic == \"directions\" then \"Directions\"\n        else if exists r.topic and r.topic == \"library\" then \"Bibliothèque\"\n        else if exists r.topic and r.topic == \"clubs\" then \"Clubs / CCA\"\n        else if exists r.topic and r.topic == \"admin\" then \"Admin / Inscription\"\n        else if exists r.topic and r.topic == \"facilities\" then \"Installations\"\n        else \"Autre\" }))\n  |> group(columns: [\"theme\"])\n  |> count(column: \"_value\")\n  |> keep(columns: [\"theme\", \"_value\"])\n  |> yield(name: \"by_topic\")"
         }
       ]
     },
