@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.util.Log
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
@@ -14,7 +15,9 @@ import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.temi.temi_robot.detection.FaceProximityAnalyzer
 import java.io.ByteArrayOutputStream
+import java.util.concurrent.Executors
 
 /**
  * Capture une photo JPEG depuis la caméra frontale du robot, pour la
@@ -39,15 +42,25 @@ class FaceCamera(
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageCapture: ImageCapture? = null
+    private var proximityAnalyzer: FaceProximityAnalyzer? = null
     private val mainExecutor = ContextCompat.getMainExecutor(context)
+    private val analysisExecutor = Executors.newSingleThreadExecutor()
 
     /**
      * Ouvre la caméra. [surfaceProvider] est optionnel : le passer (depuis un
      * PreviewView) affiche l'aperçu live pour l'écran d'enrôlement ; le laisser
      * null fait une capture "headless" (cas de la reconnaissance au réveil).
+     * [onProximity] (optionnel) reçoit en continu l'estimation de distance de la
+     * personne (taille du visage) pour guider "rapprochez-vous / reculez" avant
+     * de capturer — évite les photos prises trop vite / trop loin. Callback sur
+     * le thread principal.
      * [onReady] indique si la caméra a pu être ouverte.
      */
-    fun start(surfaceProvider: Preview.SurfaceProvider? = null, onReady: (Boolean) -> Unit = {}) {
+    fun start(
+        surfaceProvider: Preview.SurfaceProvider? = null,
+        onProximity: ((FaceProximityAnalyzer.Proximity) -> Unit)? = null,
+        onReady: (Boolean) -> Unit = {},
+    ) {
         val future = ProcessCameraProvider.getInstance(context)
         future.addListener({
             try {
@@ -80,6 +93,15 @@ class FaceCamera(
                     val preview = Preview.Builder().build()
                     preview.setSurfaceProvider(surfaceProvider)
                     useCases.add(preview)
+                }
+                if (onProximity != null) {
+                    val analyzer = FaceProximityAnalyzer(onProximity)
+                    proximityAnalyzer = analyzer
+                    val analysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also { it.setAnalyzer(analysisExecutor, analyzer) }
+                    useCases.add(analysis)
                 }
 
                 provider.unbindAll()
@@ -121,6 +143,9 @@ class FaceCamera(
     fun stop() {
         cameraProvider?.unbindAll()
         imageCapture = null
+        proximityAnalyzer?.close()
+        proximityAnalyzer = null
+        analysisExecutor.shutdown()
     }
 
     private fun extractJpeg(image: ImageProxy): ByteArray {

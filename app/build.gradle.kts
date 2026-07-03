@@ -101,6 +101,9 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    // Détection de visage embarquée (modèle inclus, hors-ligne) : sert à estimer
+    // la distance de l'utilisateur pendant le photobooth (guidage rapprochez/reculez).
+    implementation("com.google.mlkit:face-detection:16.1.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

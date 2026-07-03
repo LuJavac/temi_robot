@@ -15,6 +15,7 @@ import androidx.camera.view.PreviewView
 import androidx.fragment.app.Fragment
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.detection.FaceProximityAnalyzer
 import com.temi.temi_robot.face.FaceCamera
 import com.temi.temi_robot.face.FaceClient
 import com.temi.temi_robot.telemetry.TelemetryClient
@@ -33,6 +34,22 @@ class EnrollPage : Fragment() {
     private var faceCamera: FaceCamera? = null
     private val handler = Handler(Looper.getMainLooper())
     private val frames = mutableListOf<ByteArray>()
+
+    // Dernière estimation de distance (taille du visage), mise à jour en continu
+    // par l'analyseur de la caméra. Sert à cadrer la 1re photo avant de capturer.
+    private var currentProximity = FaceProximityAnalyzer.Proximity.NO_FACE
+    private var goodSinceMs = 0L
+    private var stepStartMs = 0L
+    private var lastPrompt: FaceProximityAnalyzer.Proximity? = null
+    private var lastPromptMs = 0L
+
+    companion object {
+        private const val POLL_MS = 200L          // fréquence de vérif du cadrage
+        private const val HOLD_MS = 800L          // rester bien cadré avant de shooter
+        private const val MAX_WAIT_MS = 6000L     // secours : on capture quand même
+        private const val PROMPT_COOLDOWN_MS = 2500L
+        private const val STEP_DELAY_MS = 2500L   // délai des étapes d'angle suivantes
+    }
 
     // (phrase TTS, texte à l'écran) pour chaque angle
     private val captureSteps = listOf(
@@ -60,7 +77,10 @@ class EnrollPage : Fragment() {
         val guidanceText = view.findViewById<TextView>(R.id.guidanceText)
 
         faceCamera = FaceCamera(requireContext(), viewLifecycleOwner).also { cam ->
-            cam.start(previewView.surfaceProvider) { ok ->
+            cam.start(
+                surfaceProvider = previewView.surfaceProvider,
+                onProximity = { p -> currentProximity = p },
+            ) { ok ->
                 if (!ok && isAdded) {
                     RobotController.speak("Sorry, I can't access my camera right now.")
                     goBack()
@@ -94,13 +114,71 @@ class EnrollPage : Fragment() {
         val (speech, label) = captureSteps[index]
         guidanceText.text = label
         RobotController.speak(speech)
-        // Laisse le temps d'entendre la consigne et de bouger avant la capture.
-        handler.postDelayed({
-            faceCamera?.captureJpeg { jpeg ->
-                if (jpeg != null) frames.add(jpeg)
-                captureStep(name, index + 1, guidanceText)
+
+        if (index == 0) {
+            // Première photo (de face) : on attend que la personne soit à bonne
+            // distance et bien cadrée avant de capturer, au lieu de shooter trop
+            // vite. On laisse d'abord entendre la consigne.
+            stepStartMs = System.currentTimeMillis()
+            goodSinceMs = 0L
+            lastPrompt = null
+            lastPromptMs = 0L
+            handler.postDelayed({ gateThenCapture(name, index, guidanceText, label) }, 1000)
+        } else {
+            // Étapes d'angle suivantes : la personne est déjà à la bonne distance,
+            // on garde un délai fixe pour lui laisser le temps de tourner la tête.
+            handler.postDelayed({ doCapture(name, index, guidanceText) }, STEP_DELAY_MS)
+        }
+    }
+
+    /**
+     * Attend que la personne soit bien cadrée (taille de visage correcte) avant
+     * de capturer, en la guidant "rapprochez-vous / reculez". Filet de sécurité :
+     * après [MAX_WAIT_MS] on capture quand même pour ne jamais bloquer.
+     */
+    private fun gateThenCapture(name: String, index: Int, guidanceText: TextView, label: String) {
+        if (!isAdded) return
+        val now = System.currentTimeMillis()
+        val elapsed = now - stepStartMs
+
+        if (currentProximity == FaceProximityAnalyzer.Proximity.GOOD) {
+            if (goodSinceMs == 0L) goodSinceMs = now
+            guidanceText.text = label
+            if (now - goodSinceMs >= HOLD_MS || elapsed >= MAX_WAIT_MS) {
+                doCapture(name, index, guidanceText)
+                return
             }
-        }, 2500)
+        } else {
+            goodSinceMs = 0L
+            if (elapsed >= MAX_WAIT_MS) {
+                doCapture(name, index, guidanceText)
+                return
+            }
+            guide(currentProximity, guidanceText)
+        }
+        handler.postDelayed({ gateThenCapture(name, index, guidanceText, label) }, POLL_MS)
+    }
+
+    /** Consigne de repositionnement, dite sans être répétée trop souvent. */
+    private fun guide(p: FaceProximityAnalyzer.Proximity, guidanceText: TextView) {
+        val now = System.currentTimeMillis()
+        if (p == lastPrompt && now - lastPromptMs < PROMPT_COOLDOWN_MS) return
+        lastPrompt = p
+        lastPromptMs = now
+        val (label, speech) = when (p) {
+            FaceProximityAnalyzer.Proximity.TOO_FAR -> "Come closer ➡️" to "Come a little closer."
+            FaceProximityAnalyzer.Proximity.TOO_CLOSE -> "Step back ⬅️" to "Please step back a little."
+            else -> "Face me 🙂" to "Please look straight at me." // NO_FACE
+        }
+        guidanceText.text = label
+        RobotController.speak(speech)
+    }
+
+    private fun doCapture(name: String, index: Int, guidanceText: TextView) {
+        faceCamera?.captureJpeg { jpeg ->
+            if (jpeg != null) frames.add(jpeg)
+            captureStep(name, index + 1, guidanceText)
+        }
     }
 
     private fun finishEnroll(name: String, guidanceText: TextView) {
