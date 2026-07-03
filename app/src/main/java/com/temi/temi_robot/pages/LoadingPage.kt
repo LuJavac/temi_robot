@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import com.temi.temi_robot.MainActivity
 import com.temi.temi_robot.R
 import com.temi.temi_robot.RobotController
+import com.temi.temi_robot.telemetry.TelemetryClient
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -162,9 +163,16 @@ class LoadingPage : Fragment(), RobotController.BackToMainPageCallback {
                         flushSentences(force = true)
                     }
 
+                    // Sauvegarde du verbatim (question + réponse) pour Grafana.
+                    // Canal télémétrie dédié, bufferisé hors-ligne comme le reste.
+                    val answer = full.toString()
+                    if (answer.isNotBlank()) {
+                        TelemetryClient.recordConversationLog(request, answer)
+                    }
+
                     // Une fois le flux terminé, on affiche la transcription complète
                     // (sans refaire parler : le robot a déjà tout dit en streaming).
-                    activity?.runOnUiThread { goToMainPage(full.toString()) }
+                    activity?.runOnUiThread { goToMainPage(answer) }
                 }
             }
         })

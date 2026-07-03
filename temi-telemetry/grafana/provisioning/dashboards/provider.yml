@@ -5,7 +5,11 @@ providers:
     folder: temi
     type: file
     disableDeletion: false
-    allowUiUpdates: true
+    # false = le fichier JSON fait autorite : la plage de temps (et le reste)
+    # est reappliquee a chaque rechargement, l'UI ne peut plus la faire deriver.
+    allowUiUpdates: false
+    # Recharge le fichier toutes les 10 s si son contenu change (checksum).
+    updateIntervalSeconds: 10
     options:
       path: /etc/grafana/provisioning/dashboards
       foldersFromFilesStructure: false

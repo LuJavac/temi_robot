@@ -1,15 +1,17 @@
 """API d'ingestion de la telemetrie temi.
 
-Recoit les evenements JSON du robot, valide, applique la regle de
-confidentialite (aucun verbatim, aucun identifiant nominatif) et ecrit
-dans InfluxDB.
+Recoit les evenements JSON du robot, valide et ecrit dans InfluxDB.
 
-Regle de confidentialite appliquee ici :
-- le schema d'entree interdit tout champ inattendu (extra="forbid"),
-  donc impossible d'envoyer du texte de conversation par accident ;
-- les champs libres (event_type, topic, zone) sont limites a un petit
-  vocabulaire de caracteres et une longueur courte : on ne peut pas y
-  glisser une phrase ;
+Confidentialite :
+- Par defaut, aucun verbatim : le schema interdit tout champ inattendu
+  (extra="forbid"), et les champs libres (event_type, topic, zone) sont
+  limites a un petit vocabulaire ([a-z0-9_-], 32 car max) : impossible d'y
+  glisser une phrase.
+- EXCEPTION AUTORISEE (feu vert donne) : un canal dedie event_type
+  "conversation_log" transporte le texte des echanges (question + reponse)
+  via deux champs explicites (question/answer), plafonnes en longueur, et
+  ranges dans une mesure separee "conversation_logs". Aucun autre type
+  d'evenement ne peut porter de texte libre.
 - session_id doit etre un UUID (anonyme par construction).
 """
 
@@ -57,6 +59,11 @@ class Event(BaseModel):
     topic: str | None = None
     duration_s: float | None = Field(default=None, ge=0, le=86_400)
     turn_count: int | None = Field(default=None, ge=0, le=10_000)
+    # Texte libre reserve au canal "conversation_log" (verbatim autorise).
+    # Plafonne en longueur pour eviter les charges abusives ; volontairement
+    # NON soumis a LABEL_RE (ce sont des phrases, pas des etiquettes).
+    question: str | None = Field(default=None, max_length=2_000)
+    answer: str | None = Field(default=None, max_length=8_000)
 
     @field_validator("event_type", "zone", "topic")
     @classmethod
@@ -92,6 +99,16 @@ def to_point(event: Event) -> Point:
         if event.session_id:
             point.tag("session_id", event.session_id)
         point.field("duration_s", float(event.duration_s or 0))
+    elif event.event_type == "conversation_log":
+        # Canal dedie au verbatim (feu vert) : question + reponse du robot.
+        point = Point("conversation_logs")
+        if event.topic:
+            point.tag("topic", event.topic)
+        if event.session_id:
+            point.tag("session_id", event.session_id)
+        point.field("question", event.question or "")
+        point.field("answer", event.answer or "")
+        point.field("count", 1)
     else:
         # Evenements ponctuels : wave, face_detected, greeting, idle, ...
         point = Point("robot_events")

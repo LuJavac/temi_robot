@@ -5,7 +5,7 @@
   "timezone": "Asia/Singapore",
   "schemaVersion": 39,
   "refresh": "1m",
-  "time": { "from": "now-24h", "to": "now" },
+  "time": { "from": "2026-06-09T16:00:00.000Z", "to": "2026-07-31T16:00:00.000Z" },
   "panels": [
     {
       "id": 1,
@@ -115,6 +115,29 @@
         {
           "refId": "A",
           "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversations\" and r._field == \"duration_s\")\n  |> group()\n  |> aggregateWindow(every: 1d, fn: count, createEmpty: true)\n  |> fill(value: 0)\n  |> yield(name: \"conversations_per_day\")"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "table",
+      "title": "Conversations (verbatim)",
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 25 },
+      "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "left", "cellOptions": { "type": "auto", "wrapText": true } } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "question" }, "properties": [ { "id": "custom.width", "value": 340 } ] },
+          { "matcher": { "id": "byName", "options": "_time" }, "properties": [ { "id": "custom.width", "value": 165 }, { "id": "displayName", "value": "Heure" } ] },
+          { "matcher": { "id": "byName", "options": "topic" }, "properties": [ { "id": "custom.width", "value": 100 }, { "id": "displayName", "value": "Thème" } ] },
+          { "matcher": { "id": "byName", "options": "session_id" }, "properties": [ { "id": "custom.width", "value": 130 }, { "id": "displayName", "value": "Conversation" } ] }
+        ]
+      },
+      "options": { "showHeader": true, "sortBy": [ { "displayName": "Heure", "desc": true } ] },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"temi\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"conversation_logs\" and (r._field == \"question\" or r._field == \"answer\"))\n  |> pivot(rowKey: [\"_time\", \"session_id\", \"topic\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> keep(columns: [\"_time\", \"session_id\", \"topic\", \"question\", \"answer\"])\n  |> sort(columns: [\"_time\"], desc: true)"
         }
       ]
     }

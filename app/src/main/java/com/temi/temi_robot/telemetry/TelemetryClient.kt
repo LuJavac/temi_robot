@@ -132,6 +132,24 @@ object TelemetryClient {
     }
 
     /**
+     * Enregistre le VERBATIM d'un échange (question de l'étudiant + réponse
+     * du robot). Canal dédié, distinct des métriques anonymes : à n'utiliser
+     * que dans le cadre autorisé (feu vert). Rattaché à la session en cours
+     * si elle existe, et catégorisé par thème en local.
+     */
+    @Synchronized
+    fun recordConversationLog(question: String, answer: String) {
+        val event = JSONObject()
+            .put("event_type", "conversation_log")
+            .put("timestamp", isoFormat.format(Date()))
+            .put("question", question)
+            .put("answer", answer)
+            .put("topic", categorizeTopic(question))
+        sessionId?.let { event.put("session_id", it) }
+        enqueue(event)
+    }
+
+    /**
      * Clôt la session en cours (inactivité, mise en veille, sortie de page)
      * et envoie ses métriques : durée + nombre de tours. Sans verbatim.
      */
