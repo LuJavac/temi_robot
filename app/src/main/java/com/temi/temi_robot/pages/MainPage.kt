@@ -694,6 +694,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private val goToSleepRunnable = Runnable {
         TelemetryClient.endSession()
         TelemetryClient.track("idle")
+        // On endort le robot tête haute : elle reste ainsi bien orientée vers le
+        // visage pendant toute la veille, et le réveil part déjà de la bonne position.
+        RobotController.tiltHead(+55)
         isSleeping = true
         view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.VISIBLE
         sleepAnimationHandler.post(sleepAnimationRunnable)
@@ -734,6 +737,11 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private fun wakeUpSequence() {
         if (isWakingUp) return
         isWakingUp = true
+        // On relève la tête TOUT DE SUITE : au réveil elle est souvent basse (elle
+        // vise le pantalon), ce qui casse le scan du visage. En l'appliquant dès le
+        // début, elle a le temps de monter pendant l'animation de réveil (~6 s)
+        // avant la capture de la frame pour la reconnaissance faciale.
+        RobotController.tiltHead(+55)
         sleepAnimationHandler.removeCallbacksAndMessages(null)
         stopSnoring()
         playHihi()
@@ -749,6 +757,9 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 view?.findViewById<View>(R.id.sleepOverlay)?.visibility = View.GONE
                 isSleeping = false
                 isWakingUp = false
+                // Sécurité : on réaffirme la tête haute juste avant la capture, car
+                // Temi remet parfois la tête à plat pendant l'animation de réveil.
+                RobotController.tiltHead(+55)
                 // On capture la frame ICI, à la fin de l'animation de réveil : la
                 // personne s'est redressée pour regarder le robot (elle ne se penche
                 // plus vers l'écran comme au moment du clic), donc son visage est
