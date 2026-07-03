@@ -12,6 +12,7 @@ import traceback
 from flask import Flask, request, jsonify, Response, stream_with_context
 from PIL import Image
 import qrcode
+import requests
 
 # Flask gère automatiquement le dossier 'static', pas besoin de route supplémentaire
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -152,20 +153,22 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 SERVER_IP = "192.168.1.8"
 PORT = 5000
 
+# CLÉ API POUR PHOTO PUBLIQUE
+IMGBB_API_KEY = "111ae658d9092b8742a9fa493a686b32"
+
 @app.route('/upload_photo', methods=['POST'])
 def upload_photo():
     try:
         if 'photo' not in request.files:
-            print("❌ ERREUR : Aucune donnée 'photo' reçue de la part du Temi.")
             return jsonify({"error": "No photo provided"}), 400
 
         file = request.files['photo']
         photo_path = os.path.join(UPLOAD_FOLDER, "student_capture.jpg")
         file.save(photo_path)
-        print("📸 Photo brute reçue du robot Temi et sauvegardée sur le Raspberry !")
+        print("📸 Photo brute reçue du robot Temi et sauvegardée !")
 
+        # --- FUSION AVEC FILTRE ---
         base_img = Image.open(photo_path).convert("RGBA")
-
         try:
             if os.path.exists("filter.png"):
                 filter_img = Image.open("filter.png").convert("RGBA")
@@ -175,16 +178,36 @@ def upload_photo():
             else:
                 final_img = base_img
         except Exception as e:
-            print(f"⚠️ Erreur mineure lors de l'application du filtre : {e}")
+            print(f"⚠️ Erreur mineure filtre : {e}")
             final_img = base_img
 
         final_jpg_path = os.path.join(UPLOAD_FOLDER, "final_selfie.jpg")
         final_img.convert("RGB").save(final_jpg_path, "JPEG")
 
-        download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
+        # --- UPLOAD SUR INTERNET POUR LE PUBLIC ---
+        print("☁️ Envoi de la photo sur le Cloud public...")
+        with open(final_jpg_path, "rb") as image_file:
+            payload = {
+                "key": IMGBB_API_KEY,
+                "expiration": 86400 # Supprime la photo au bout de 24 heures (en secondes)
+            }
+            files = {
+                "image": image_file
+            }
+            response = requests.post("https://api.imgbb.com/1/upload", data=payload, files=files)
 
+            if response.status_code == 200:
+                # On récupère le lien public mondial !
+                public_download_url = response.json()["data"]["url"]
+                print(f"🌍 Lien public généré : {public_download_url}")
+            else:
+                # Sécurité : Si internet coupe, on retombe sur le lien local TP-Link
+                print("⚠️ Échec Cloud, retour au lien local.")
+                public_download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
+
+        # --- GÉNÉRATION DU QR CODE AVEC LE LIEN PUBLIC ---
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(download_url)
+        qr.add_data(public_download_url)
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
 
@@ -192,13 +215,14 @@ def upload_photo():
         qr_path = os.path.join(QR_FOLDER, qr_filename)
         qr_img.save(qr_path)
 
+        # L'URL interne pour que le robot affiche le QR code sur son écran
         qr_display_url = f"http://{SERVER_IP}:{PORT}/static/qrcodes/{qr_filename}"
 
-        print(f"✅ QR Code généré et prêt : {qr_display_url}")
+        print(f"✅ QR Code prêt : {qr_display_url}")
         return jsonify({"qr_url": qr_display_url})
 
     except Exception as e:
-        print(f"❌ ERREUR CRITIQUE PENDANT LE TRAITEMENT DE LA PHOTO :")
+        print(f"❌ ERREUR CRITIQUE :")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
