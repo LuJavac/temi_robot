@@ -10,6 +10,7 @@ import traceback
 from flask import Flask, request, jsonify, Response, stream_with_context
 from PIL import Image
 import qrcode
+import requests
 
 # Flask gère automatiquement le dossier 'static', pas besoin de route supplémentaire
 app = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -157,6 +158,13 @@ os.makedirs(QR_FOLDER, exist_ok=True)
 SERVER_IP = "192.168.1.8"
 PORT = 5000
 
+# --- Photo souvenir : hébergement public via ImgBB ---
+# Clé lue depuis config.py (gitignoré) ; repli sur la variable d'environnement.
+# Si la clé est vide OU qu'Internet est coupé, on retombe automatiquement sur le
+# lien local (même Wi-Fi requis) sans planter.
+IMGBB_API_KEY = os.environ.get("IMGBB_API_KEY", getattr(config, "imgbb_key", ""))
+PHOTO_EXPIRATION_S = 86400  # ImgBB supprime la photo après ce délai (24 h) — vie privée / PDPA
+
 @app.route('/upload_photo', methods=['POST'])
 def upload_photo():
     try:
@@ -185,12 +193,38 @@ def upload_photo():
         final_jpg_path = os.path.join(UPLOAD_FOLDER, "final_selfie.jpg")
         final_img.convert("RGB").save(final_jpg_path, "JPEG")
 
-        # --- LIEN DE TÉLÉCHARGEMENT LOCAL ---
-        download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
+        # --- LIEN DE TÉLÉCHARGEMENT PUBLIC (ImgBB) ---
+        # Objectif : le visiteur scanne le QR et récupère sa photo depuis n'importe
+        # où (4G comprise), sans se connecter au Wi-Fi du robot. ImgBB renvoie une
+        # URL publique et supprime la photo tout seul après PHOTO_EXPIRATION_S.
+        public_download_url = None
+        if IMGBB_API_KEY:
+            try:
+                print("☁️ Envoi de la photo sur ImgBB (lien public)...")
+                with open(final_jpg_path, "rb") as image_file:
+                    response = requests.post(
+                        "https://api.imgbb.com/1/upload",
+                        data={"key": IMGBB_API_KEY, "expiration": PHOTO_EXPIRATION_S},
+                        files={"image": image_file},
+                        timeout=15,  # ne jamais figer le robot si Internet rame
+                    )
+                if response.status_code == 200:
+                    public_download_url = response.json()["data"]["url"]
+                    print(f"🌍 Lien public généré : {public_download_url}")
+                else:
+                    print(f"⚠️ ImgBB a répondu {response.status_code}, repli sur le lien local.")
+            except Exception as e:
+                print(f"⚠️ Échec de l'upload ImgBB ({e}), repli sur le lien local.")
+        else:
+            print("ℹ️ Pas de clé ImgBB configurée, utilisation du lien local.")
 
-        # --- GÉNÉRATION DU QR CODE ---
+        # Repli : lien local (nécessite le même Wi-Fi) si pas de clé / pas d'Internet / erreur.
+        if not public_download_url:
+            public_download_url = f"http://{SERVER_IP}:{PORT}/static/photos/final_selfie.jpg"
+
+        # --- GÉNÉRATION DU QR CODE AVEC LE LIEN PUBLIC ---
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
-        qr.add_data(download_url)
+        qr.add_data(public_download_url)
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
 
