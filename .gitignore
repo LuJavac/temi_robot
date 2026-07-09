@@ -43,6 +43,7 @@ recap_reseau_temi.md
 app/src/main/python/temi/
 app/src/main/python/venv/
 app/src/main/python/storage/
+app/src/main/python/photo_archive/
 
 # Fichiers temporaires de test (corps de requêtes curl pour /stream, /process)
 body.json

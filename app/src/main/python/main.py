@@ -151,9 +151,13 @@ def stream():
 
 UPLOAD_FOLDER = 'static/photos'
 QR_FOLDER = 'static/qrcodes'
+# Dossier d'archive : HORS de static/ (donc jamais servi sur le réseau). rclone y
+# prend les photos pour les envoyer sur Google Drive, puis les supprime du Pi.
+ARCHIVE_FOLDER = 'photo_archive'
 # Création des dossiers sécurisée
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(QR_FOLDER, exist_ok=True)
+os.makedirs(ARCHIVE_FOLDER, exist_ok=True)
 
 # L'IP EXACTE DU RASPBERRY PI
 SERVER_IP = "192.168.1.8"
@@ -164,7 +168,7 @@ PORT = 5000
 # Si la clé est vide OU qu'Internet est coupé, on retombe automatiquement sur le
 # lien local (même Wi-Fi requis) sans planter.
 IMGBB_API_KEY = os.environ.get("IMGBB_API_KEY", getattr(config, "imgbb_key", ""))
-PHOTO_EXPIRATION_S = 86400  # ImgBB supprime la photo après ce délai (24 h) — vie privée / PDPA
+PHOTO_EXPIRATION_S = 300  # ImgBB supprime le lien public après ce délai (5 min) — vie privée / PDPA
 
 @app.route('/upload_photo', methods=['POST'])
 def upload_photo():
@@ -193,6 +197,13 @@ def upload_photo():
 
         final_jpg_path = os.path.join(UPLOAD_FOLDER, "final_selfie.jpg")
         final_img.convert("RGB").save(final_jpg_path, "JPEG")
+
+        # --- ARCHIVE : copie horodatée UNIQUE (final_selfie.jpg est écrasé à chaque
+        # photo). rclone déplacera ces copies vers Google Drive puis les supprimera. ---
+        archive_name = f"selfie_{time.strftime('%Y%m%d_%H%M%S')}.jpg"
+        archive_path = os.path.join(ARCHIVE_FOLDER, archive_name)
+        final_img.convert("RGB").save(archive_path, "JPEG")
+        print(f"🗄️ Copie d'archive écrite : {archive_path}")
 
         # --- LIEN DE TÉLÉCHARGEMENT PUBLIC (ImgBB) ---
         # Objectif : le visiteur scanne le QR et récupère sa photo depuis n'importe
