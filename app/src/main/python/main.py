@@ -6,6 +6,7 @@ from openai import OpenAI as OpenAIClient
 import config
 import os
 import json
+import time
 import traceback
 from flask import Flask, request, jsonify, Response, stream_with_context
 from PIL import Image
@@ -232,10 +233,14 @@ def upload_photo():
         qr_path = os.path.join(QR_FOLDER, qr_filename)
         qr_img.save(qr_path)
 
-        # L'URL interne pour que le robot affiche le QR code sur son écran
-        qr_display_url = f"http://{SERVER_IP}:{PORT}/static/qrcodes/{qr_filename}"
+        # URL interne : sert juste à la tablette pour télécharger l'IMAGE du QR et
+        # l'afficher à l'écran. Ce n'est PAS ce que le QR contient (voir add_data ci-dessus).
+        # Le "?v=..." force Glide à retélécharger : sans lui, le nom de fichier ne change
+        # jamais et la tablette réaffiche l'ancien QR en cache (ancien lien).
+        qr_display_url = f"http://{SERVER_IP}:{PORT}/static/qrcodes/{qr_filename}?v={int(time.time())}"
 
-        print(f"✅ QR Code local prêt : {qr_display_url}")
+        print(f"✅ Image QR prête (affichage robot) : {qr_display_url}")
+        print(f"   → contenu scanné par le visiteur : {public_download_url}")
         return jsonify({"qr_url": qr_display_url})
 
     except Exception as e:
