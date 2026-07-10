@@ -159,6 +159,18 @@
                 android:textSize="22sp"
                 android:textAllCaps="false" />
 
+            <Button
+                android:id="@+id/btnShowMap"
+                android:layout_width="360dp"
+                android:layout_height="100dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/button_blue_transparent"
+                android:text="🗺️ Show Interactive Map"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textAllCaps="false" />
+
+
         </GridLayout>
     </LinearLayout>
 

@@ -548,6 +548,19 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 .addToBackStack(null)
                 .commit()
         }
+
+
+
+// bouton qu'on a dessiné dans le XML
+        val btnShowMap = view.findViewById<Button>(R.id.btnShowMap)
+
+//quoi faire au clic
+        btnShowMap.setOnClickListener {
+            RobotController.speak("Sure! Opening the campus map.")
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, MapPage()) // Ouvre la nouvelle page de la carte
+                .commit()
+        }
     }
 
     // INTERCEPTION DES DEMANDES DE DÉPLACEMENT Vocales ou Clavier
