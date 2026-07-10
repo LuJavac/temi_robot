@@ -262,18 +262,25 @@
       "id": 7,
       "type": "table",
       "title": "Conversations (verbatim)",
-      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 57 },
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 57 },
       "datasource": { "type": "influxdb", "uid": "influxdb-temi" },
       "fieldConfig": {
-        "defaults": { "custom": { "align": "left", "cellOptions": { "type": "auto", "wrapText": true } } },
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "minWidth": 120,
+            "cellOptions": { "type": "auto", "wrapText": true }
+          }
+        },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "question" }, "properties": [ { "id": "custom.width", "value": 340 } ] },
+          { "matcher": { "id": "byName", "options": "question" }, "properties": [ { "id": "custom.minWidth", "value": 280 }, { "id": "displayName", "value": "Question" } ] },
+          { "matcher": { "id": "byName", "options": "answer" }, "properties": [ { "id": "custom.minWidth", "value": 420 }, { "id": "displayName", "value": "Réponse" } ] },
           { "matcher": { "id": "byName", "options": "_time" }, "properties": [ { "id": "custom.width", "value": 165 }, { "id": "displayName", "value": "Heure" } ] },
-          { "matcher": { "id": "byName", "options": "topic" }, "properties": [ { "id": "custom.width", "value": 100 }, { "id": "displayName", "value": "Thème" } ] },
-          { "matcher": { "id": "byName", "options": "session_id" }, "properties": [ { "id": "custom.width", "value": 130 }, { "id": "displayName", "value": "Conversation" } ] }
+          { "matcher": { "id": "byName", "options": "topic" }, "properties": [ { "id": "custom.width", "value": 110 }, { "id": "displayName", "value": "Thème" } ] },
+          { "matcher": { "id": "byName", "options": "session_id" }, "properties": [ { "id": "custom.width", "value": 120 }, { "id": "displayName", "value": "Conversation" } ] }
         ]
       },
-      "options": { "showHeader": true, "sortBy": [ { "displayName": "Heure", "desc": true } ] },
+      "options": { "showHeader": true, "cellHeight": "lg", "sortBy": [ { "displayName": "Heure", "desc": true } ] },
       "targets": [
         {
           "refId": "A",
