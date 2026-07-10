@@ -67,14 +67,17 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     // LA BASE DE DONNÉES DE TOUTES LES CARTES
     private val mapsData = mapOf(
+        // Lieux nommes d'abord, puis les salles par numero croissant.
+        // L'ordre de cette liste est l'ordre d'affichage des boutons dans la grille.
         "R4 Block Complete (USE THIS) for RIG1" to listOf(
-            "test point 1", "test point 2", "home base", "tour start spot",
-            "r410 front door", "r406", "r412", "r405", "award exit",
-            "trophy cabinet 1", "r416", "r417", "r410 back door",
-            "middle ramp", "reception", "back entrance",
-            "r403", "r404", "r411", "r413", "r414", "r415", "toilet",
-            "r420", "r421", "r422", "r423", "r424", "r425",
-            "r426", "r427", "r428", "r429"
+            "reception", "back entrance", "middle ramp", "toilet",
+            "award exit", "trophy cabinet 1", "tour start spot",
+            "home base", "test point 1", "test point 2",
+            "r403", "r404", "r405", "r406",
+            "r410 front door", "r410 back door", "r411", "r412",
+            "r413", "r414", "r415", "r416", "r417",
+            "r420", "r421", "r422", "r423", "r424",
+            "r425", "r426", "r427", "r428", "r429"
         ),
         "S118" to listOf(
             "home base", "start", "okura", "festo", "pcb",
