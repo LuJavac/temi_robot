@@ -39,6 +39,7 @@ temi-kiosk-mode-contexte.md
 temi_telemetry_pi_specs.md
 recap_reseau_temi.txt
 recap_reseau_temi.md
+temi_dashboard1.json
 
 app/src/main/python/temi/
 app/src/main/python/venv/
