@@ -274,7 +274,7 @@
         },
         "overrides": [
           { "matcher": { "id": "byName", "options": "question" }, "properties": [ { "id": "custom.minWidth", "value": 280 }, { "id": "displayName", "value": "Question" } ] },
-          { "matcher": { "id": "byName", "options": "answer" }, "properties": [ { "id": "custom.minWidth", "value": 420 }, { "id": "displayName", "value": "Réponse" } ] },
+          { "matcher": { "id": "byName", "options": "answer" }, "properties": [ { "id": "custom.minWidth", "value": 420 }, { "id": "custom.inspect", "value": true }, { "id": "displayName", "value": "Réponse" } ] },
           { "matcher": { "id": "byName", "options": "_time" }, "properties": [ { "id": "custom.width", "value": 165 }, { "id": "displayName", "value": "Heure" } ] },
           { "matcher": { "id": "byName", "options": "topic" }, "properties": [ { "id": "custom.width", "value": 110 }, { "id": "displayName", "value": "Thème" } ] },
           { "matcher": { "id": "byName", "options": "session_id" }, "properties": [ { "id": "custom.width", "value": 120 }, { "id": "displayName", "value": "Conversation" } ] }
