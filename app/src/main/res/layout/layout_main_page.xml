@@ -82,6 +82,7 @@
         android:padding="5dp">
 
         <TextView
+            android:id="@+id/greetingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
@@ -384,7 +385,7 @@
         android:id="@+id/mapOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E6000000"
+        android:background="#000000"
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
@@ -511,7 +512,7 @@
         android:id="@+id/langOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E6000000"
+        android:background="#000000"
         android:visibility="gone"
         android:clickable="true"
         android:focusable="true"
@@ -522,7 +523,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="60dp"
             android:text="🌍 Select your language"
             android:textColor="#FFFFFF"
             android:textSize="40sp"
@@ -533,26 +534,28 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:columnCount="3"
-            android:rowCount="2">
+            android:rowCount="2"
+            android:alignmentMode="alignBounds"
+            android:useDefaultMargins="true">
 
-            <Button android:id="@+id/btnLangEn" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇬🇧 English" android:textColor="#FFFFFF" android:textSize="24sp" />
-            <Button android:id="@+id/btnLangZh" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇨🇳 中文 (Mandarin)" android:textColor="#FFFFFF" android:textSize="24sp" />
-            <Button android:id="@+id/btnLangMs" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇲🇾 Bahasa Melayu" android:textColor="#FFFFFF" android:textSize="24sp" />
-            <Button android:id="@+id/btnLangFr" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇫🇷 Français" android:textColor="#FFFFFF" android:textSize="24sp" />
-            <Button android:id="@+id/btnLangJa" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇯🇵 日本語 (Japanese)" android:textColor="#FFFFFF" android:textSize="24sp" />
-            <Button android:id="@+id/btnLangDe" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="10dp" android:background="@drawable/card_bg" android:text="🇩🇪 Deutsch" android:textColor="#FFFFFF" android:textSize="24sp" />
+            <Button android:id="@+id/btnLangEn" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇬🇧 English" android:textColor="#FFFFFF" android:textSize="24sp" />
+            <Button android:id="@+id/btnLangZh" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇨🇳 中文\n(Mandarin)" android:textColor="#FFFFFF" android:textSize="22sp" />
+            <Button android:id="@+id/btnLangMs" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇲🇾 Bahasa\nMelayu" android:textColor="#FFFFFF" android:textSize="22sp" />
+            <Button android:id="@+id/btnLangFr" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇫🇷 Français" android:textColor="#FFFFFF" android:textSize="24sp" />
+            <Button android:id="@+id/btnLangJa" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇯🇵 日本語\n(Japanese)" android:textColor="#FFFFFF" android:textSize="22sp" />
+            <Button android:id="@+id/btnLangDe" android:layout_width="200dp" android:layout_height="100dp" android:layout_margin="15dp" android:background="@drawable/card_bg" android:text="🇩🇪 Deutsch" android:textColor="#FFFFFF" android:textSize="24sp" />
         </GridLayout>
 
         <Button
             android:id="@+id/closeLangButton"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:layout_alignParentEnd="true"
             android:layout_margin="30dp"
             android:background="@drawable/button_blue_transparent"
             android:text="X"
             android:textColor="#FFFFFF"
-            android:textSize="28sp"
+            android:textSize="32sp"
             android:textStyle="bold" />
     </RelativeLayout>
 </RelativeLayout>

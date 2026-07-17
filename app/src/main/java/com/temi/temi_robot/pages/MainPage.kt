@@ -99,6 +99,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             "patrol northwing1", "patrol northwing1 middle", "patrol northwing1 back"
         )
     )
+    // --- DICTIONNAIRE DE TRADUCTION COMPLET ---
+    private val uiTexts = mapOf(
+        "EN" to mapOf("greeting" to "Hi there, it's Temi! How can I help you?", "pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here or Wave at me", "selfie" to "📸 Take a selfie with me!", "mapBtn" to "🗺️ Show Interactive Map", "send" to "SEND"),
+        "FR" to mapOf("greeting" to "Bonjour, c'est Temi ! Comment puis-je vous aider ?", "pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez ou faites coucou", "selfie" to "📸 Prenez un selfie avec moi !", "mapBtn" to "🗺️ Carte Interactive", "send" to "ENVOYER"),
+        "ZH" to mapOf("greeting" to "你好，我是 Temi！我能帮到你什么？", "pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里或向我挥手", "selfie" to "📸 和我一起自拍！", "mapBtn" to "🗺️ 互动地图", "send" to "发送"),
+        "MS" to mapOf("greeting" to "Hai, saya Temi! Bagaimana saya boleh bantu anda?", "pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan sini atau lambai pada saya", "selfie" to "📸 Ambil swafoto bersama saya!", "mapBtn" to "🗺️ Peta Interaktif", "send" to "HANTAR"),
+        "JA" to mapOf("greeting" to "こんにちは、Temiです！何かお手伝いしましょうか？", "pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押すか手を振って", "selfie" to "📸 一緒に自撮りしましょう！", "mapBtn" to "🗺️ インタラクティブマップ", "send" to "送信"),
+        "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken oder winken", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN")
+    )
 
     // La liste des points de la carte ACTUELLE (pour l'écoute vocale)
     private var currentActivePoints: List<String> = emptyList()
@@ -329,8 +338,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.setLastRequestTimeNow()
             RobotController.stopMovement()
             RobotController.resetInactivityTimer()
-            // Pas de "Hi" ici : le bonjour a déjà été dit au réveil
-            RobotController.askQuestion("How can I help you ?")
+
+            // Fait parler le robot dans la langue choisie
+            val spokenGreeting = uiTexts[RobotController.currentLangCode]?.get("greeting") ?: "How can I help you?"
+            RobotController.askQuestion(spokenGreeting)
         }
 
         // Settings button behavior
@@ -455,37 +466,43 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         val langOverlay = view.findViewById<View>(R.id.langOverlay)
         val closeLangButton = view.findViewById<Button>(R.id.closeLangButton)
 
-        // Textes de l'interface traduits
-        val uiTexts = mapOf(
-            "EN" to mapOf("pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here or Wave at me"),
-            "FR" to mapOf("pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez ou faites coucou"),
-            "ZH" to mapOf("pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里或向我挥手"),
-            "MS" to mapOf("pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan sini atau lambai pada saya"),
-            "JA" to mapOf("pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押すか手を振って"),
-            "DE" to mapOf("pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken oder winken")
-        )
+
+
 
         fun changeLanguage(flagText: String, langCode: String, ttsLang: com.robotemi.sdk.TtsRequest.Language, locale: java.util.Locale) {
             resetLocalInactivityTimer()
             langOverlay.visibility = View.GONE
             langButton.text = flagText
 
-            // 1. Sauvegarde globale de la langue et de l'accent !
             RobotController.updateLanguage(langCode, ttsLang, locale)
 
-            // 2. Change les textes des boutons
             val dict = uiTexts[langCode]
             if (dict != null) {
+                view.findViewById<android.widget.TextView>(R.id.greetingText).text = dict["greeting"]
                 view.findViewById<Button>(R.id.cardPool).text = dict["pool"]
                 view.findViewById<Button>(R.id.cardLibrary).text = dict["lib"]
                 view.findViewById<Button>(R.id.cardClubs).text = dict["club"]
                 view.findViewById<Button>(R.id.cardBursary).text = dict["bursary"]
                 view.findViewById<android.widget.EditText>(R.id.textInput).hint = dict["hint"]
                 view.findViewById<Button>(R.id.interactionButton).text = dict["interaction"]
+                view.findViewById<Button>(R.id.cardPhoto).text = dict["selfie"]
+                view.findViewById<Button>(R.id.btnShowMap).text = dict["mapBtn"]
+                view.findViewById<Button>(R.id.sendTextButton).text = dict["send"]
             }
-
             RobotController.speak("Language updated")
         }
+
+        langButton.setOnClickListener { langOverlay.visibility = View.VISIBLE }
+        closeLangButton.setOnClickListener { langOverlay.visibility = View.GONE }
+
+        view.findViewById<Button>(R.id.btnLangEn).setOnClickListener { changeLanguage("🇬🇧 EN", "EN", com.robotemi.sdk.TtsRequest.Language.EN_US, java.util.Locale.US) }
+        view.findViewById<Button>(R.id.btnLangFr).setOnClickListener { changeLanguage("🇫🇷 FR", "FR", com.robotemi.sdk.TtsRequest.Language.FR_FR, java.util.Locale.FRANCE) }
+        view.findViewById<Button>(R.id.btnLangZh).setOnClickListener { changeLanguage("🇨🇳 ZH", "ZH", com.robotemi.sdk.TtsRequest.Language.ZH_CN, java.util.Locale.CHINA) }
+        view.findViewById<Button>(R.id.btnLangMs).setOnClickListener { changeLanguage("🇲🇾 MS", "MS", com.robotemi.sdk.TtsRequest.Language.EN_US, java.util.Locale("ms", "MY")) }
+        view.findViewById<Button>(R.id.btnLangJa).setOnClickListener { changeLanguage("🇯🇵 JA", "JA", com.robotemi.sdk.TtsRequest.Language.JA_JP, java.util.Locale.JAPAN) }
+        view.findViewById<Button>(R.id.btnLangDe).setOnClickListener { changeLanguage("🇩🇪 DE", "DE", com.robotemi.sdk.TtsRequest.Language.DE_DE, java.util.Locale.GERMANY) }
+
+
 
         langButton.setOnClickListener { langOverlay.visibility = View.VISIBLE }
         closeLangButton.setOnClickListener { langOverlay.visibility = View.GONE }
@@ -580,6 +597,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 }
             }
 
+
             RobotController.speak("I don't have this location saved on my CURRENT map. Please check the map menu.")
             return
         }
@@ -627,9 +645,18 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 if (isSleeping) {
                     wakeUpSequence()
                 } else {
-                    RobotController.speak("Hello!")
+                    // FIX : Le signe de la main active l'écoute vocale comme le bouton !
+                    RobotController.setDetectionModeOn(false, 0.5f)
+                    RobotController.setLastRequestTimeNow()
+                    RobotController.stopMovement()
+                    RobotController.resetInactivityTimer()
+
+                    // Récupère la phrase traduite pour parler
+                    val currentDict = uiTexts[RobotController.currentLangCode]
+                    val spokenGreeting = currentDict?.get("greeting") ?: "How can I help you?"
+
+                    RobotController.askQuestion(spokenGreeting)
                     TelemetryClient.track("greeting")
-                    resetLocalInactivityTimer()
                 }
             }
         }
