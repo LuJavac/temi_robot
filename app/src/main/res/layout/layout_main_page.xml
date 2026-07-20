@@ -421,55 +421,33 @@
             android:orientation="horizontal"
             android:baselineAligned="false">
 
-            <LinearLayout
+            <!-- Boutons de cartes générés dynamiquement (MainPage) selon les
+                 cartes présentes sur le robot : NYP RIG et NYP BOA ont chacun
+                 les leurs. Le ScrollView évite le débordement si un robot a
+                 beaucoup de cartes. -->
+            <ScrollView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:paddingEnd="20dp">
+                android:fadeScrollbars="false">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:id="@+id/mapsListContainer"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="1. Select Area"
-                    android:textColor="#00BFFF"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="20dp"/>
+                    android:orientation="vertical"
+                    android:paddingEnd="20dp">
 
-                <Button
-                    android:id="@+id/btnMapR4"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_marginBottom="15dp"
-                    android:background="@drawable/button_blue_transparent"
-                    android:text="Block R4 (RIG1)"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnMapS118"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_marginBottom="15dp"
-                    android:background="@drawable/button_blue_transparent"
-                    android:text="S118"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/btnMapLibrary"
-                    android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_marginBottom="15dp"
-                    android:background="@drawable/button_blue_transparent"
-                    android:text="Library Level 4"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1. Select Area"
+                        android:textColor="#00BFFF"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="20dp"/>
+                </LinearLayout>
+            </ScrollView>
 
             <View
                 android:layout_width="2dp"

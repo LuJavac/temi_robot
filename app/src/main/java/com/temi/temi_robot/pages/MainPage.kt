@@ -109,6 +109,15 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken oder winken", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN")
     )
 
+    // Noms courts pour les boutons de cartes (sinon on affiche le nom brut de la carte).
+    // Les cartes absentes d'ici (ex: celle de NYP BOA) restent utilisables : leur nom
+    // brut est affiché et leurs points sont lus directement depuis le robot.
+    private val mapDisplayNames = mapOf(
+        "R4 Block Complete (USE THIS) for RIG1" to "Block R4 (RIG1)",
+        "S118" to "S118",
+        "Library level 4 (pls dont delete)1" to "Library Level 4"
+    )
+
     // La liste des points de la carte ACTUELLE (pour l'écoute vocale)
     private var currentActivePoints: List<String> = emptyList()
 
@@ -389,27 +398,12 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             mapOverlay.visibility = View.GONE
         }
 
-        // --- Le moteur de création des boutons ---
-        // announce = false pour le chargement par défaut à l'ouverture de la page,
-        // pour ne pas répéter "Loading map" à chaque retour sur la page principale
-        fun loadMapAndGenerateButtons(mapName: String, announce: Boolean = true) {
-            resetLocalInactivityTimer()
-
-            // 1. Ordonner au robot de charger la carte
-            RobotController.setMapName(mapName)
-            RobotController.loadMap()
-            if (announce) {
-                RobotController.speak("Loading map for $mapName.")
-            }
-
-            // 2. Récupérer les points de cette carte
-            val points = mapsData[mapName] ?: emptyList()
-            currentActivePoints = points // Met à jour l'intelligence vocale !
-
-            // 3. Vider l'ancienne grille
+        // --- Le moteur de création des boutons de destinations ---
+        fun generateDestinationButtons(points: List<String>) {
+            // 1. Vider l'ancienne grille
             destinationsGrid.removeAllViews()
 
-            // 4. Générer les nouveaux boutons
+            // 2. Générer les nouveaux boutons
             val density = resources.displayMetrics.density
             for (point in points) {
                 val btn = Button(requireContext())
@@ -438,21 +432,99 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             }
         }
 
-        // Clics sur les cartes (à gauche de l'écran)
-        view.findViewById<Button>(R.id.btnMapR4).setOnClickListener {
-            loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1")
+        // announce = false pour le chargement par défaut à l'ouverture de la page,
+        // pour ne pas répéter "Loading map" à chaque retour sur la page principale.
+        // mapId : id Temi Center, prioritaire sur le nom (noms dupliqués sur le compte)
+        fun loadMapAndGenerateButtons(mapName: String, mapId: String? = null, announce: Boolean = true) {
+            resetLocalInactivityTimer()
+
+            // 1. Points connus en dur pour cette carte ; liste vide sinon (ex: carte
+            // de NYP BOA) → la grille sera remplie via onMapIsReady avec les points
+            // lus sur le robot. On met à jour AVANT loadMap() car le callback peut
+            // se déclencher de façon synchrone si la carte est déjà chargée.
+            val points = mapsData[mapName] ?: emptyList()
+            currentActivePoints = points // Met à jour l'intelligence vocale !
+            generateDestinationButtons(points)
+
+            // 2. Ordonner au robot de charger la carte
+            if (mapId != null) {
+                RobotController.setMapTarget(mapName, mapId)
+            } else {
+                RobotController.setMapName(mapName)
+            }
+            RobotController.loadMap()
+            if (announce) {
+                RobotController.speak("Loading map for ${mapDisplayNames[mapName] ?: mapName}.")
+            }
         }
 
-        view.findViewById<Button>(R.id.btnMapS118).setOnClickListener {
-            loadMapAndGenerateButtons("S118")
-        }
+        // Carte hors mapsData : quand elle est prête, on récupère ses points
+        // directement depuis le robot pour remplir la grille et l'écoute vocale
+        RobotController.setMapReadyCallback(object : RobotController.MapReadyCallback {
+            override fun onMapIsReady() {
+                if (!isAdded) return
+                if (currentActivePoints.isEmpty()) {
+                    val points = RobotController.getCurrentLocations()
+                        .filter { it.lowercase() != "home base" }
+                    currentActivePoints = points
+                    generateDestinationButtons(points)
+                }
+            }
+        })
 
-        view.findViewById<Button>(R.id.btnMapLibrary).setOnClickListener {
-            loadMapAndGenerateButtons("Library level 4 (pls dont delete)1")
-        }
+        // Boutons de cartes (à gauche de l'écran) générés depuis le compte Temi
+        // Center, triés de la PLUS RÉCENTE à la plus ancienne (date de création
+        // décodée depuis l'id) pour repérer les vieilles cartes non mises à jour.
+        // Récupération asynchrone (appels SDK lourds → ANR sinon).
+        val mapsListContainer = view.findViewById<android.widget.LinearLayout>(R.id.mapsListContainer)
+        RobotController.fetchMapsInfo { availableMaps, currentMap ->
+            if (!isAdded) return@fetchMapsInfo
+            // Repli si le SDK ne renvoie rien : les cartes connues en dur, sans date
+            val mapsToShow = availableMaps.ifEmpty {
+                mapsData.keys.map { RobotController.TemiMap("", it, 0L) }
+            }
+            val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.US)
+            val density = resources.displayMetrics.density
+            for (map in mapsToShow) {
+                val btn = Button(requireContext())
+                val title = mapDisplayNames[map.name] ?: map.name
+                if (map.createdAtMillis > 0L) {
+                    // Nom en gros + date de création en petit et grisé dessous
+                    val dateLine = "Created: ${dateFormat.format(java.util.Date(map.createdAtMillis))}"
+                    val label = android.text.SpannableString("$title\n$dateLine")
+                    val dateStart = label.length - dateLine.length
+                    label.setSpan(android.text.style.RelativeSizeSpan(0.6f), dateStart, label.length, 0)
+                    label.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#AACCCCCC")), dateStart, label.length, 0)
+                    btn.text = label
+                } else {
+                    btn.text = title
+                }
+                btn.setTextColor(android.graphics.Color.WHITE)
+                btn.textSize = 22f
+                btn.setTypeface(null, android.graphics.Typeface.BOLD)
+                btn.isAllCaps = false
+                btn.setBackgroundResource(R.drawable.button_blue_transparent)
+                val params = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    (100 * density).toInt()
+                )
+                params.bottomMargin = (15 * density).toInt()
+                btn.layoutParams = params
+                // Chargement par id : plusieurs cartes du compte ont le même nom,
+                // le nom seul chargerait la plus ancienne
+                btn.setOnClickListener {
+                    loadMapAndGenerateButtons(map.name, mapId = map.id.ifEmpty { null })
+                }
+                mapsListContainer.addView(btn)
+            }
 
-        // Par défaut, au démarrage, on charge R4 dans la mémoire UI (sans annonce vocale)
-        loadMapAndGenerateButtons("R4 Block Complete (USE THIS) for RIG1", announce = false)
+            // Par défaut, on charge la carte actuellement active sur le robot
+            // (sans annonce vocale) : R4 sur RIG, sa propre carte sur BOA
+            val defaultMap = currentMap ?: mapsToShow.firstOrNull()?.name
+            if (defaultMap != null) {
+                loadMapAndGenerateButtons(defaultMap, announce = false)
+            }
+        }
         // --- Wave gesture detection ---
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {

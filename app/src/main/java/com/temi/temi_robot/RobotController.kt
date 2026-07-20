@@ -45,6 +45,7 @@ object RobotController:
 {
     private var robotRef: WeakReference<Robot>? = null
     private var mapName: String? = null
+    private var mapId: String? = null
     private lateinit var patrolStates: PatrolStates
 
     // Fallback Android TTS — used on .test builds where the Temi SDK rejects
@@ -168,6 +169,40 @@ object RobotController:
 
     fun setMapName(name: String) {
         mapName = name
+        mapId = null
+    }
+
+    // Cible par id Temi Center : prioritaire sur le nom, car plusieurs cartes
+    // du compte portent exactement le même nom (ex: 4 cartes "S118")
+    fun setMapTarget(name: String, id: String) {
+        mapName = name
+        mapId = id
+    }
+
+    // Une carte du compte Temi Center, avec sa date de création
+    data class TemiMap(val id: String, val name: String, val createdAtMillis: Long)
+
+    // Cartes du compte Temi Center (les deux robots voient le même pool) et
+    // carte actuellement active, triées de la plus récente à la plus ancienne.
+    // getMapList()/getMapData() sont des appels LOURDS (getMapData embarque
+    // l'image de la carte) : on les fait hors du thread principal pour éviter
+    // un ANR, et on livre le résultat sur le main.
+    fun fetchMapsInfo(callback: (maps: List<TemiMap>, currentMapName: String?) -> Unit) {
+        Thread {
+            val maps = (getRobot()?.getMapList() ?: emptyList()).map {
+                // L'id Temi Center est un ObjectId MongoDB : ses 8 premiers
+                // caractères hex = date de création (epoch en secondes)
+                val created = it.id.take(8).toLongOrNull(16)?.times(1000L) ?: 0L
+                TemiMap(it.id, it.name, created)
+            }.sortedByDescending { it.createdAtMillis }
+            val current = getRobot()?.getMapData()?.mapName
+            Handler(Looper.getMainLooper()).post { callback(maps, current) }
+        }.start()
+    }
+
+    // Points enregistrés sur la carte actuellement active
+    fun getCurrentLocations(): List<String> {
+        return getRobot()?.locations ?: emptyList()
     }
 
     fun setBlockMode(value: Boolean) {
@@ -322,43 +357,71 @@ object RobotController:
 
     // Movements and map
     private var loadedMapName: String? = null
+    private var loadedMapId: String? = null
     private var pendingMapName: String? = null
+    private var pendingMapId: String? = null
 
     fun loadMap() {
         // Carte déjà chargée : on ne recharge pas, ça évitait de re-déclencher
-        // le chargement (et son annonce) à chaque retour sur la page principale
-        if (mapName != null && mapName == loadedMapName) {
+        // le chargement (et son annonce) à chaque retour sur la page principale.
+        // Comparaison par id si on en a un (noms dupliqués sur le compte).
+        if (mapName != null && mapName == loadedMapName &&
+            (mapId == null || mapId == loadedMapId)) {
             mapReadyCallback?.onMapIsReady()
             return
         }
-        // IMPORTANT (anti-écrasement des points) : si le robot a DÉJÀ cette carte
-        // active, on NE recharge PAS. loadMap(id) réécrit la carte active avec la
-        // version stockée et efface les points ajoutés en live via le map editor
-        // (mode following). On se contente alors d'utiliser la carte courante.
-        val currentMapName = getRobot()?.getMapData()?.mapName
-        if (mapName != null && currentMapName == mapName) {
-            loadedMapName = mapName
-            val locationsWithoutHome = getRobot()?.locations?.filter { it.lowercase() != "home base" }
-            if (locationsWithoutHome != null) {
-                patrolStates = PatrolStates(
-                    locationsWithoutHome,
-                    locationsWithoutHome.associateWith { true }.toMutableMap()
-                )
+        // getMapList()/getMapData() sont des appels LOURDS (getMapData embarque
+        // l'image de la carte) : sur le thread principal ils provoquaient un ANR
+        // au démarrage. On les fait donc en arrière-plan, puis on termine la
+        // logique sur le thread principal.
+        Thread {
+            val availableMaps = getRobot()?.getMapList()
+            val mapData = getRobot()?.getMapData()
+            val currentMapName = mapData?.mapName
+            val currentMapId = mapData?.mapId
+            Handler(Looper.getMainLooper()).post {
+                // Multi-robots (NYP RIG / NYP BOA) : chaque robot a sa propre carte
+                // car leurs points de départ diffèrent. Si la carte demandée n'existe
+                // pas sur CE robot (ex: carte par défaut de RIG alors qu'on tourne
+                // sur BOA), on se rabat sur la carte actuellement active du robot.
+                if (availableMaps != null && currentMapName != null && mapId == null &&
+                    availableMaps.none { it.name == mapName }) {
+                    mapName = currentMapName
+                }
+                // IMPORTANT (anti-écrasement des points) : si le robot a DÉJÀ cette carte
+                // active, on NE recharge PAS. loadMap(id) réécrit la carte active avec la
+                // version stockée et efface les points ajoutés en live via le map editor
+                // (mode following). On se contente alors d'utiliser la carte courante.
+                // Comparaison par id quand on en a un : plusieurs cartes du compte
+                // portent le même nom.
+                val isAlreadyActive = if (mapId != null) mapId == currentMapId
+                                      else mapName != null && currentMapName == mapName
+                if (isAlreadyActive) {
+                    loadedMapName = mapName
+                    loadedMapId = currentMapId
+                    val locationsWithoutHome = getRobot()?.locations?.filter { it.lowercase() != "home base" }
+                    if (locationsWithoutHome != null) {
+                        patrolStates = PatrolStates(
+                            locationsWithoutHome,
+                            locationsWithoutHome.associateWith { true }.toMutableMap()
+                        )
+                    }
+                    mapReadyCallback?.onMapIsReady()
+                    return@post
+                }
+                val map = availableMaps?.find { it.id == mapId }
+                    ?: availableMaps?.find { it.name == mapName }
+                if (map == null) {
+                    patrolStates.setLocations(emptyList())
+                    readyCallback?.onRobotIsReady()
+                } else {
+                    pendingMapName = map.name
+                    pendingMapId = map.id
+                    // withoutUI = true : pas de pop-up du launcher pendant/après le chargement
+                    getRobot()?.loadMap(map.id, withoutUI = true)
+                }
             }
-            mapReadyCallback?.onMapIsReady()
-            return
-        }
-        val maps = getRobot()?.getMapList()
-        val map = maps?.find { it.name == mapName }
-        if(map == null){
-            patrolStates.setLocations(emptyList())
-            readyCallback?.onRobotIsReady()
-        }
-        else {
-            pendingMapName = map.name
-            // withoutUI = true : pas de pop-up du launcher pendant/après le chargement
-            getRobot()?.loadMap(map.id, withoutUI = true)
-        }
+        }.start()
     }
 
     fun goTo(location: String) {
@@ -752,6 +815,7 @@ object RobotController:
             0 -> {
                 // La carte est chargée avec succès
                 loadedMapName = pendingMapName
+                loadedMapId = pendingMapId
                 val locationsWithoutHome = getRobot()?.locations?.filter{it.lowercase() != "home base"}
                 if (locationsWithoutHome != null){
                     patrolStates = PatrolStates(

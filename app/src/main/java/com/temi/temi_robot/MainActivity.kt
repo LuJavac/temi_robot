@@ -17,6 +17,9 @@ import com.temi.temi_robot.time.AlarmScheduler
 import com.temi.temi_robot.time.TimeListener
 
 class MainActivity : AppCompatActivity() {
+    // Carte par défaut (celle de NYP RIG). Sur un robot qui ne la possède pas
+    // (ex: NYP BOA), RobotController.loadMap() bascule automatiquement sur la
+    // carte actuellement active du robot.
     private val mapName = "R4 Block Complete (USE THIS) for RIG1"
     internal var savePatrolStatesFileName = "patrolState.json"
     internal var saveTimeSlotsFileName = "timeSlots.json"

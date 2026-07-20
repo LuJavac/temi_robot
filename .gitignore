@@ -40,6 +40,35 @@ temi_telemetry_pi_specs.md
 recap_reseau_temi.txt
 recap_reseau_temi.md
 temi_dashboard1.json
+PLAN_RAPPORT_FINAL.md
+Partie Photobooth QR Code Lucas.pdf
+RAPPORT_F_refonte_ux.md
+RAPPORT_G_telemetrie.md
+RAPPORT_H_appels.md
+RAPPORT_J_reconnaissance_faciale.md
+RAPPORT_K_photobooth_suite.md
+Rapport Intermédiaire Lucas Alexandre.pdf
+TEMI PRESENTATION - Alex.pptx
+TEMI PRESENTATION.pptx
+TEMI_PRESENTATION_final.pptx
+capture_qrcodephoto.png
+docs/figure_face_architecture_en.svg
+docs/figure_face_pipeline_en.svg
+docs/figure_mifi_topology_en.svg
+docs/figure_photo_pipeline_en.svg
+docs/figure_streaming_pipeline.svg
+docs/figure_streaming_pipeline_en.svg
+docs/figure_telemetrie_architecture.svg
+docs/figure_telemetry_architecture_en.svg
+docs/figure_topologie_mifi.svg
+figure_face_api_endpoints_en.png
+figure_rclone_drive.png
+figure_table_photo_solutions_en.png
+figure_tests_reconnaissance.png
+rapport_final.pdf
+report.pdf
+slide_facialrecognition.png
+
 
 app/src/main/python/temi/
 app/src/main/python/venv/
