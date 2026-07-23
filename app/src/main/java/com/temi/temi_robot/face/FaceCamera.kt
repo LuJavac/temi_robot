@@ -23,13 +23,13 @@ import java.util.concurrent.Executors
  * Capture une photo JPEG depuis la caméra frontale du robot, pour la
  * reconnaissance et l'enrôlement faciaux.
  *
- * Réutilise le même schéma que [com.temi.temi_robot.detection.WaveGestureRecognizer] :
+ * Réutilise le même schéma que [com.temi.temi_robot.detection.CameraFrameProvider] :
  * énumération CameraX + fallback FRONT -> BACK (sur certains Temi l'unique caméra
  * tournée vers l'utilisateur est exposée comme LENS_FACING_BACK).
  *
- * ⚠️ Contention caméra : la détection native Temi et le wave detector tiennent
+ * ⚠️ Contention caméra : la détection native Temi et le CameraFrameProvider tiennent
  * aussi la caméra frontale. Avant d'appeler [start], libérer la caméra
- * (RobotController.setDetectionModeOn(false) + arrêt du wave detector), et la
+ * (RobotController.setDetectionModeOn(false) + arrêt du CameraFrameProvider), et la
  * rendre via [stop] quand on a fini.
  */
 class FaceCamera(

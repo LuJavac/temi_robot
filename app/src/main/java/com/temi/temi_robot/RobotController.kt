@@ -172,39 +172,6 @@ object RobotController:
         mapId = null
     }
 
-    // Cible par id Temi Center : prioritaire sur le nom, car plusieurs cartes
-    // du compte portent exactement le même nom (ex: 4 cartes "S118")
-    fun setMapTarget(name: String, id: String) {
-        mapName = name
-        mapId = id
-    }
-
-    // Une carte du compte Temi Center, avec sa date de création
-    data class TemiMap(val id: String, val name: String, val createdAtMillis: Long)
-
-    // Cartes du compte Temi Center (les deux robots voient le même pool) et
-    // carte actuellement active, triées de la plus récente à la plus ancienne.
-    // getMapList()/getMapData() sont des appels LOURDS (getMapData embarque
-    // l'image de la carte) : on les fait hors du thread principal pour éviter
-    // un ANR, et on livre le résultat sur le main.
-    fun fetchMapsInfo(callback: (maps: List<TemiMap>, currentMapName: String?) -> Unit) {
-        Thread {
-            val maps = (getRobot()?.getMapList() ?: emptyList()).map {
-                // L'id Temi Center est un ObjectId MongoDB : ses 8 premiers
-                // caractères hex = date de création (epoch en secondes)
-                val created = it.id.take(8).toLongOrNull(16)?.times(1000L) ?: 0L
-                TemiMap(it.id, it.name, created)
-            }.sortedByDescending { it.createdAtMillis }
-            val current = getRobot()?.getMapData()?.mapName
-            Handler(Looper.getMainLooper()).post { callback(maps, current) }
-        }.start()
-    }
-
-    // Points enregistrés sur la carte actuellement active
-    fun getCurrentLocations(): List<String> {
-        return getRobot()?.locations ?: emptyList()
-    }
-
     fun setBlockMode(value: Boolean) {
         blockMode = value
         setDetectionModeOn(!value, 0.5f)

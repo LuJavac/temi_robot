@@ -4,7 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.temi.temi_robot.detection.WaveGestureRecognizer
+import com.temi.temi_robot.detection.CameraFrameProvider
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
@@ -42,7 +42,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     // soit prêt, sans que ce soit une vraie panne
     private val lostNetworkHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private val lostNetworkGraceMillis = 7_000L
-    private var waveRecognizer: WaveGestureRecognizer? = null
+    private var cameraFrameProvider: CameraFrameProvider? = null
 
     // Variables pour l'animation du robot sur le menu
     private val animationHandler = android.os.Handler(android.os.Looper.getMainLooper())
@@ -65,20 +65,26 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     private var hihiPlayer: android.media.MediaPlayer? = null
     private var embarrassedStep = 0
 
+    // Points du bloc R4 : identiques sur les deux robots (même bâtiment).
+    // Seule la home base diffère, d'où deux cartes distinctes dans Temi Center
+    // ("...for RIG1" et "...for BOA1") — on charge la bonne selon le robot.
+    // Lieux nommes d'abord, puis les salles par numero croissant.
+    // L'ordre de cette liste est l'ordre d'affichage des boutons dans la grille.
+    private val r4Points = listOf(
+        "reception", "back entrance", "middle ramp", "toilet",
+        "award exit", "trophy cabinet 1", "tour start spot",
+        "home base", "test point 1", "test point 2",
+        "r403", "r404", "r405", "r406",
+        "r410 front door", "r410 back door", "r411", "r412",
+        "r413", "r414", "r415", "r416", "r417",
+        "r420", "r421", "r422", "r423", "r424",
+        "r425", "r426", "r427", "r428", "r429"
+    )
+
     // LA BASE DE DONNÉES DE TOUTES LES CARTES
     private val mapsData = mapOf(
-        // Lieux nommes d'abord, puis les salles par numero croissant.
-        // L'ordre de cette liste est l'ordre d'affichage des boutons dans la grille.
-        "R4 Block Complete (USE THIS) for RIG1" to listOf(
-            "reception", "back entrance", "middle ramp", "toilet",
-            "award exit", "trophy cabinet 1", "tour start spot",
-            "home base", "test point 1", "test point 2",
-            "r403", "r404", "r405", "r406",
-            "r410 front door", "r410 back door", "r411", "r412",
-            "r413", "r414", "r415", "r416", "r417",
-            "r420", "r421", "r422", "r423", "r424",
-            "r425", "r426", "r427", "r428", "r429"
-        ),
+        "R4 Block Complete (USE THIS) for RIG1" to r4Points,
+        "R4 Block Complete (USE THIS) for BOA1" to r4Points,
         "S118" to listOf(
             "home base", "start", "okura", "festo", "pcb",
             "pca", "abb", "kawada", "tea time"
@@ -101,19 +107,18 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     )
     // --- DICTIONNAIRE DE TRADUCTION COMPLET ---
     private val uiTexts = mapOf(
-        "EN" to mapOf("greeting" to "Hi there, it's Temi! How can I help you?", "pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here or Wave at me", "selfie" to "📸 Take a selfie with me!", "mapBtn" to "🗺️ Show Interactive Map", "send" to "SEND"),
-        "FR" to mapOf("greeting" to "Bonjour, c'est Temi ! Comment puis-je vous aider ?", "pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez ou faites coucou", "selfie" to "📸 Prenez un selfie avec moi !", "mapBtn" to "🗺️ Carte Interactive", "send" to "ENVOYER"),
-        "ZH" to mapOf("greeting" to "你好，我是 Temi！我能帮到你什么？", "pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里或向我挥手", "selfie" to "📸 和我一起自拍！", "mapBtn" to "🗺️ 互动地图", "send" to "发送"),
-        "MS" to mapOf("greeting" to "Hai, saya Temi! Bagaimana saya boleh bantu anda?", "pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan sini atau lambai pada saya", "selfie" to "📸 Ambil swafoto bersama saya!", "mapBtn" to "🗺️ Peta Interaktif", "send" to "HANTAR"),
-        "JA" to mapOf("greeting" to "こんにちは、Temiです！何かお手伝いしましょうか？", "pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押すか手を振って", "selfie" to "📸 一緒に自撮りしましょう！", "mapBtn" to "🗺️ インタラクティブマップ", "send" to "送信"),
-        "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken oder winken", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN")
+        "EN" to mapOf("greeting" to "Hi there, it's Temi! How can I help you?", "pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here to ask me a question", "selfie" to "📸 Take a selfie with me!", "mapBtn" to "🗺️ Show Interactive Map", "send" to "SEND"),
+        "FR" to mapOf("greeting" to "Bonjour, c'est Temi ! Comment puis-je vous aider ?", "pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez pour me poser une question", "selfie" to "📸 Prenez un selfie avec moi !", "mapBtn" to "🗺️ Carte Interactive", "send" to "ENVOYER"),
+        "ZH" to mapOf("greeting" to "你好，我是 Temi！我能帮到你什么？", "pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里向我提问", "selfie" to "📸 和我一起自拍！", "mapBtn" to "🗺️ 互动地图", "send" to "发送"),
+        "MS" to mapOf("greeting" to "Hai, saya Temi! Bagaimana saya boleh bantu anda?", "pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan di sini untuk bertanya", "selfie" to "📸 Ambil swafoto bersama saya!", "mapBtn" to "🗺️ Peta Interaktif", "send" to "HANTAR"),
+        "JA" to mapOf("greeting" to "こんにちは、Temiです！何かお手伝いしましょうか？", "pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押して質問してください", "selfie" to "📸 一緒に自撮りしましょう！", "mapBtn" to "🗺️ インタラクティブマップ", "send" to "送信"),
+        "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken, um zu fragen", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN")
     )
 
-    // Noms courts pour les boutons de cartes (sinon on affiche le nom brut de la carte).
-    // Les cartes absentes d'ici (ex: celle de NYP BOA) restent utilisables : leur nom
-    // brut est affiché et leurs points sont lus directement depuis le robot.
+    // Noms courts affichés sur les boutons de cartes (sinon on afficherait le nom brut).
     private val mapDisplayNames = mapOf(
         "R4 Block Complete (USE THIS) for RIG1" to "Block R4 (RIG1)",
+        "R4 Block Complete (USE THIS) for BOA1" to "Block R4 (BOA1)",
         "S118" to "S118",
         "Library level 4 (pls dont delete)1" to "Library Level 4"
     )
@@ -434,103 +439,71 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
         // announce = false pour le chargement par défaut à l'ouverture de la page,
         // pour ne pas répéter "Loading map" à chaque retour sur la page principale.
-        // mapId : id Temi Center, prioritaire sur le nom (noms dupliqués sur le compte)
-        fun loadMapAndGenerateButtons(mapName: String, mapId: String? = null, announce: Boolean = true) {
+        fun loadMapAndGenerateButtons(mapName: String, announce: Boolean = true) {
             resetLocalInactivityTimer()
 
-            // 1. Points connus en dur pour cette carte ; liste vide sinon (ex: carte
-            // de NYP BOA) → la grille sera remplie via onMapIsReady avec les points
-            // lus sur le robot. On met à jour AVANT loadMap() car le callback peut
-            // se déclencher de façon synchrone si la carte est déjà chargée.
+            // Points connus en dur pour cette carte
             val points = mapsData[mapName] ?: emptyList()
             currentActivePoints = points // Met à jour l'intelligence vocale !
             generateDestinationButtons(points)
 
-            // 2. Ordonner au robot de charger la carte
-            if (mapId != null) {
-                RobotController.setMapTarget(mapName, mapId)
-            } else {
-                RobotController.setMapName(mapName)
-            }
+            // Ordonner au robot de charger la carte
+            RobotController.setMapName(mapName)
             RobotController.loadMap()
             if (announce) {
                 RobotController.speak("Loading map for ${mapDisplayNames[mapName] ?: mapName}.")
             }
         }
 
-        // Carte hors mapsData : quand elle est prête, on récupère ses points
-        // directement depuis le robot pour remplir la grille et l'écoute vocale
+        // On reprend la main sur le callback de carte prête (sinon celui de
+        // FirstPage, désormais détaché, se déclencherait pendant nos chargements).
+        // Les points sont connus en dur, il n'y a donc rien à faire ici.
         RobotController.setMapReadyCallback(object : RobotController.MapReadyCallback {
-            override fun onMapIsReady() {
-                if (!isAdded) return
-                if (currentActivePoints.isEmpty()) {
-                    val points = RobotController.getCurrentLocations()
-                        .filter { it.lowercase() != "home base" }
-                    currentActivePoints = points
-                    generateDestinationButtons(points)
-                }
-            }
+            override fun onMapIsReady() { /* points chargés en dur */ }
         })
 
-        // Boutons de cartes (à gauche de l'écran) générés depuis le compte Temi
-        // Center, triés de la PLUS RÉCENTE à la plus ancienne (date de création
-        // décodée depuis l'id) pour repérer les vieilles cartes non mises à jour.
-        // Récupération asynchrone (appels SDK lourds → ANR sinon).
-        val mapsListContainer = view.findViewById<android.widget.LinearLayout>(R.id.mapsListContainer)
-        RobotController.fetchMapsInfo { availableMaps, currentMap ->
-            if (!isAdded) return@fetchMapsInfo
-            // Repli si le SDK ne renvoie rien : les cartes connues en dur, sans date
-            val mapsToShow = availableMaps.ifEmpty {
-                mapsData.keys.map { RobotController.TemiMap("", it, 0L) }
-            }
-            val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.US)
-            val density = resources.displayMetrics.density
-            for (map in mapsToShow) {
-                val btn = Button(requireContext())
-                val title = mapDisplayNames[map.name] ?: map.name
-                if (map.createdAtMillis > 0L) {
-                    // Nom en gros + date de création en petit et grisé dessous
-                    val dateLine = "Created: ${dateFormat.format(java.util.Date(map.createdAtMillis))}"
-                    val label = android.text.SpannableString("$title\n$dateLine")
-                    val dateStart = label.length - dateLine.length
-                    label.setSpan(android.text.style.RelativeSizeSpan(0.6f), dateStart, label.length, 0)
-                    label.setSpan(android.text.style.ForegroundColorSpan(android.graphics.Color.parseColor("#AACCCCCC")), dateStart, label.length, 0)
-                    btn.text = label
-                } else {
-                    btn.text = title
-                }
-                btn.setTextColor(android.graphics.Color.WHITE)
-                btn.textSize = 22f
-                btn.setTypeface(null, android.graphics.Typeface.BOLD)
-                btn.isAllCaps = false
-                btn.setBackgroundResource(R.drawable.button_blue_transparent)
-                val params = android.widget.LinearLayout.LayoutParams(
-                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
-                    (100 * density).toInt()
-                )
-                params.bottomMargin = (15 * density).toInt()
-                btn.layoutParams = params
-                // Chargement par id : plusieurs cartes du compte ont le même nom,
-                // le nom seul chargerait la plus ancienne
-                btn.setOnClickListener {
-                    loadMapAndGenerateButtons(map.name, mapId = map.id.ifEmpty { null })
-                }
-                mapsListContainer.addView(btn)
-            }
+        // Multi-robots (NYP RIG / NYP BOA) : chaque robot a sa propre carte du bloc
+        // R4 (home base différente). On détecte le robot via son nom Bluetooth
+        // ("NYP RIG" / "NYP BOA") pour afficher et charger la bonne carte R4.
+        val robotName = android.provider.Settings.Secure.getString(
+            requireContext().contentResolver, "bluetooth_name"
+        ) ?: ""
+        val r4MapName = if (robotName.contains("boa", ignoreCase = true))
+            "R4 Block Complete (USE THIS) for BOA1"
+        else
+            "R4 Block Complete (USE THIS) for RIG1"
 
-            // Par défaut, on charge la carte actuellement active sur le robot
-            // (sans annonce vocale) : R4 sur RIG, sa propre carte sur BOA
-            val defaultMap = currentMap ?: mapsToShow.firstOrNull()?.name
-            if (defaultMap != null) {
-                loadMapAndGenerateButtons(defaultMap, announce = false)
-            }
+        // Boutons de cartes (à gauche de l'écran) : liste fixe — la carte R4 du
+        // robot courant, puis les cartes communes aux deux robots.
+        val mapsToShow = listOf(r4MapName, "S118", "Library level 4 (pls dont delete)1")
+        val mapsListContainer = view.findViewById<android.widget.LinearLayout>(R.id.mapsListContainer)
+        val mapBtnDensity = resources.displayMetrics.density
+        for (name in mapsToShow) {
+            val btn = Button(requireContext())
+            btn.text = mapDisplayNames[name] ?: name
+            btn.setTextColor(android.graphics.Color.WHITE)
+            btn.textSize = 22f
+            btn.setTypeface(null, android.graphics.Typeface.BOLD)
+            btn.isAllCaps = false
+            btn.setBackgroundResource(R.drawable.button_blue_transparent)
+            val params = android.widget.LinearLayout.LayoutParams(
+                android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                (100 * mapBtnDensity).toInt()
+            )
+            params.bottomMargin = (15 * mapBtnDensity).toInt()
+            btn.layoutParams = params
+            btn.setOnClickListener { loadMapAndGenerateButtons(name) }
+            mapsListContainer.addView(btn)
         }
-        // --- Wave gesture detection ---
+
+        // Par défaut, on charge la carte R4 du robot courant (sans annonce vocale).
+        loadMapAndGenerateButtons(r4MapName, announce = false)
+        // --- Camera frames for face recognition at wake ---
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_GRANTED) {
-            initWaveDetector()
+            initCameraFrameProvider()
         } else {
-            Log.w("MainPage", "Camera permission not granted — wave detection unavailable this session")
+            Log.w("MainPage", "Camera permission not granted — face recognition unavailable this session")
         }
 
         //-- LOGIQUE MULTILINGUE
@@ -706,39 +679,59 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
         connectivityManager.unregisterNetworkCallback(networkCallback)
     }
 
-    private fun initWaveDetector() {
+    private fun initCameraFrameProvider() {
         RobotController.setDetectionModeOn(false, 0.5f)
-        waveRecognizer = WaveGestureRecognizer(
+        cameraFrameProvider = CameraFrameProvider(
             context = requireContext(),
             lifecycleOwner = viewLifecycleOwner,
-        ) {
-            requireActivity().runOnUiThread {
-                TelemetryClient.track("wave")
-                if (isSleeping) {
-                    wakeUpSequence()
-                } else {
-                    // FIX : Le signe de la main active l'écoute vocale comme le bouton !
-                    RobotController.setDetectionModeOn(false, 0.5f)
-                    RobotController.setLastRequestTimeNow()
-                    RobotController.stopMovement()
-                    RobotController.resetInactivityTimer()
-
-                    // Récupère la phrase traduite pour parler
-                    val currentDict = uiTexts[RobotController.currentLangCode]
-                    val spokenGreeting = currentDict?.get("greeting") ?: "How can I help you?"
-
-                    RobotController.askQuestion(spokenGreeting)
-                    TelemetryClient.track("greeting")
-                }
-            }
-        }
-        waveRecognizer?.start()
+        )
+        cameraFrameProvider?.start()
     }
+
+    // =========================================================================
+    // WAVE DETECTOR — DÉSACTIVÉ le 2026-07-23 (trop de faux déclenchements).
+    // Câblage d'origine conservé en commentaire comme preuve du travail réalisé.
+    // Le geste de la main réveillait le robot / lançait l'écoute vocale.
+    // Implémentation complète : voir detection/WaveGestureRecognizer.kt (commenté).
+    // Pour réactiver : décommenter WaveGestureRecognizer.kt + ce bloc, et appeler
+    // initWaveDetector() à la place de initCameraFrameProvider().
+    //
+    // private var waveRecognizer: WaveGestureRecognizer? = null
+    //
+    // private fun initWaveDetector() {
+    //     RobotController.setDetectionModeOn(false, 0.5f)
+    //     waveRecognizer = WaveGestureRecognizer(
+    //         context = requireContext(),
+    //         lifecycleOwner = viewLifecycleOwner,
+    //     ) {
+    //         requireActivity().runOnUiThread {
+    //             TelemetryClient.track("wave")
+    //             if (isSleeping) {
+    //                 wakeUpSequence()
+    //             } else {
+    //                 // FIX : Le signe de la main active l'écoute vocale comme le bouton !
+    //                 RobotController.setDetectionModeOn(false, 0.5f)
+    //                 RobotController.setLastRequestTimeNow()
+    //                 RobotController.stopMovement()
+    //                 RobotController.resetInactivityTimer()
+    //
+    //                 // Récupère la phrase traduite pour parler
+    //                 val currentDict = uiTexts[RobotController.currentLangCode]
+    //                 val spokenGreeting = currentDict?.get("greeting") ?: "How can I help you?"
+    //
+    //                 RobotController.askQuestion(spokenGreeting)
+    //                 TelemetryClient.track("greeting")
+    //             }
+    //         }
+    //     }
+    //     waveRecognizer?.start()
+    // }
+    // =========================================================================
 
     override fun onDestroyView() {
         super.onDestroyView()
-        waveRecognizer?.stop()
-        waveRecognizer = null
+        cameraFrameProvider?.stop()
+        cameraFrameProvider = null
         RobotController.setDetectionModeOn(true, 0.5f)
         animationHandler.removeCallbacks(blinkRunnable)
         inactivityHandler.removeCallbacksAndMessages(null)
@@ -882,13 +875,13 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 // personne s'est redressée pour regarder le robot (elle ne se penche
                 // plus vers l'écran comme au moment du clic), donc son visage est
                 // dans le champ de la caméra qui pointe vers le haut.
-                recognizeAndGreet(waveRecognizer?.latestJpeg())
+                recognizeAndGreet(cameraFrameProvider?.latestJpeg())
             }, 1000)
         }, 5000)
     }
 
     /**
-     * Reconnaissance faciale au réveil : prend la dernière frame du wave detector
+     * Reconnaissance faciale au réveil : prend la dernière frame du CameraFrameProvider
      * et interroge le service face du Pi. Si la personne est connue, on la salue
      * par son prénom ; sinon message d'accueil générique. Aucune 2e caméra ouverte.
      */

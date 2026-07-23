@@ -192,7 +192,7 @@
             android:layout_marginEnd="15dp"
             android:layout_weight="1"
             android:background="@drawable/button_blue_transparent"
-            android:text="Press here or Wave at me"
+            android:text="Press here to ask me a question"
             android:textColor="#FFFFFF"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -304,7 +304,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="30dp"
             android:gravity="center"
-            android:text="I'm taking a quick nap! 💤\nWave your hand or touch the screen to wake me up!"
+            android:text="I'm taking a quick nap! 💤\nTouch the screen to wake me up!"
             android:textColor="#FFFFFF"
             android:textSize="35sp"
             android:textStyle="bold" />

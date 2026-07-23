@@ -27,7 +27,7 @@ import com.temi.temi_robot.telemetry.TelemetryClient
  * au service face du Pi.
  *
  * Contention caméra : on coupe la détection native Temi à l'entrée pour libérer
- * la caméra frontale ; en quittant, MainPage relance son wave detector.
+ * la caméra frontale ; en quittant, MainPage relance son CameraFrameProvider.
  */
 class EnrollPage : Fragment() {
 
