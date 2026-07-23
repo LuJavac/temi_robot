@@ -50,6 +50,7 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
 
     // Variables pour l'animation de lecture
     private var isReadingTalking = false
+    private var isWaitingToListen = false // 🟢 NOUVEAU : Mémoire pour ouvrir le micro
     private val typeWriterHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
     // --- VARIABLES MODE VEILLE (SLEEP) ---
@@ -107,12 +108,12 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     )
     // --- DICTIONNAIRE DE TRADUCTION COMPLET ---
     private val uiTexts = mapOf(
-        "EN" to mapOf("greeting" to "Hi there, it's Temi! How can I help you?", "pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here to ask me a question", "selfie" to "📸 Take a selfie with me!", "mapBtn" to "🗺️ Show Interactive Map", "send" to "SEND"),
-        "FR" to mapOf("greeting" to "Bonjour, c'est Temi ! Comment puis-je vous aider ?", "pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez pour me poser une question", "selfie" to "📸 Prenez un selfie avec moi !", "mapBtn" to "🗺️ Carte Interactive", "send" to "ENVOYER"),
-        "ZH" to mapOf("greeting" to "你好，我是 Temi！我能帮到你什么？", "pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里向我提问", "selfie" to "📸 和我一起自拍！", "mapBtn" to "🗺️ 互动地图", "send" to "发送"),
-        "MS" to mapOf("greeting" to "Hai, saya Temi! Bagaimana saya boleh bantu anda?", "pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan di sini untuk bertanya", "selfie" to "📸 Ambil swafoto bersama saya!", "mapBtn" to "🗺️ Peta Interaktif", "send" to "HANTAR"),
-        "JA" to mapOf("greeting" to "こんにちは、Temiです！何かお手伝いしましょうか？", "pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押して質問してください", "selfie" to "📸 一緒に自撮りしましょう！", "mapBtn" to "🗺️ インタラクティブマップ", "send" to "送信"),
-        "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken, um zu fragen", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN")
+        "EN" to mapOf("greeting" to "Hi there, it's Temi! How can I help you?", "pool" to "Where is the swimming pool?", "lib" to "Where is the library?", "club" to "Tell me about Student Clubs", "bursary" to "How do I apply for a bursary?", "hint" to "Type your question here...", "interaction" to "Press here or Wave at me", "selfie" to "📸 Take a selfie with me!", "mapBtn" to "🗺️ Show Interactive Map", "send" to "SEND", "langUpdated" to "Language updated"),
+        "FR" to mapOf("greeting" to "Bonjour, c'est Temi ! Comment puis-je vous aider ?", "pool" to "Où est la piscine ?", "lib" to "Où est la bibliothèque ?", "club" to "Parlez-moi des clubs étudiants", "bursary" to "Comment demander une bourse ?", "hint" to "Tapez votre question...", "interaction" to "Appuyez ou faites coucou", "selfie" to "📸 Prenez un selfie avec moi !", "mapBtn" to "🗺️ Carte Interactive", "send" to "ENVOYER", "langUpdated" to "Langue mise à jour"),
+        "ZH" to mapOf("greeting" to "你好，我是 Temi！我能帮到你什么？", "pool" to "游泳池在哪里？", "lib" to "图书馆在哪里？", "club" to "告诉我关于学生社团的事", "bursary" to "如何申请助学金？", "hint" to "在这里输入你的问题...", "interaction" to "点击这里或向我挥手", "selfie" to "📸 和我一起自拍！", "mapBtn" to "🗺️ 互动地图", "send" to "发送", "langUpdated" to "语言已更新"),
+        "MS" to mapOf("greeting" to "Hai, saya Temi! Bagaimana saya boleh bantu anda?", "pool" to "Di manakah kolam renang?", "lib" to "Di manakah perpustakaan?", "club" to "Beritahu saya tentang kelab pelajar", "bursary" to "Bagaimana untuk memohon biasiswa?", "hint" to "Taip soalan anda di sini...", "interaction" to "Tekan sini atau lambai pada saya", "selfie" to "📸 Ambil swafoto bersama saya!", "mapBtn" to "🗺️ Peta Interaktif", "send" to "HANTAR", "langUpdated" to "Bahasa dikemas kini"),
+        "JA" to mapOf("greeting" to "こんにちは、Temiです！何かお手伝いしましょうか？", "pool" to "プールはどこですか？", "lib" to "図書館はどこですか？", "club" to "学生クラブについて教えて", "bursary" to "奨学金の申請方法は？", "hint" to "ここに質問を入力...", "interaction" to "ここを押すか手を振って", "selfie" to "📸 一緒に自撮りしましょう！", "mapBtn" to "🗺️ インタラクティブマップ", "send" to "送信", "langUpdated" to "言語が更新されました"),
+        "DE" to mapOf("greeting" to "Hallo, ich bin Temi! Wie kann ich dir helfen?", "pool" to "Wo ist das Schwimmbad?", "lib" to "Wo ist die Bibliothek?", "club" to "Erzähl mir von Studentenclubs", "bursary" to "Wie beantrage ich ein Stipendium?", "hint" to "Tippen Sie hier Ihre Frage...", "interaction" to "Hier drücken oder winken", "selfie" to "📸 Mach ein Selfie mit mir!", "mapBtn" to "🗺️ Interaktive Karte", "send" to "SENDEN", "langUpdated" to "Sprache aktualisiert")
     )
 
     // Noms courts affichés sur les boutons de cartes (sinon on afficherait le nom brut).
@@ -353,9 +354,13 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
             RobotController.stopMovement()
             RobotController.resetInactivityTimer()
 
-            // Fait parler le robot dans la langue choisie
             val spokenGreeting = uiTexts[RobotController.currentLangCode]?.get("greeting") ?: "How can I help you?"
-            RobotController.askQuestion(spokenGreeting)
+
+            // 1. On lance la phrase avec la bonne voix (Android TTS)
+            RobotController.speak(spokenGreeting)
+
+            // 2. On ouvre la page d'écoute Temi SANS lui faire lire de texte avec sa voix native
+            RobotController.askQuestion("")
         }
 
         // Settings button behavior
@@ -533,8 +538,10 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
                 view.findViewById<Button>(R.id.cardPhoto).text = dict["selfie"]
                 view.findViewById<Button>(R.id.btnShowMap).text = dict["mapBtn"]
                 view.findViewById<Button>(R.id.sendTextButton).text = dict["send"]
+
+                // 🟢 FIX : Le robot prononce la confirmation dans la langue choisie !
+                RobotController.speak(dict["langUpdated"] ?: "Language updated")
             }
-            RobotController.speak("Language updated")
         }
 
         langButton.setOnClickListener { langOverlay.visibility = View.VISIBLE }
@@ -716,11 +723,12 @@ class MainPage : Fragment(), RobotController.RequestReadyCallback, RobotControll
     //                 RobotController.resetInactivityTimer()
     //
     //                 // Récupère la phrase traduite pour parler
-    //                 val currentDict = uiTexts[RobotController.currentLangCode]
-    //                 val spokenGreeting = currentDict?.get("greeting") ?: "How can I help you?"
+    //                    val currentDict = uiTexts[RobotController.currentLangCode]
+    //                    val spokenGreeting = currentDict?.get("greeting") ?: "How can I help you?"
     //
-    //                 RobotController.askQuestion(spokenGreeting)
-    //                 TelemetryClient.track("greeting")
+    //                    // 🟢 FIX : On utilise la voix HD d'Android au lieu de la voix native Temi
+    //                    RobotController.speak(spokenGreeting)
+    //                    TelemetryClient.track("greeting")
     //             }
     //         }
     //     }
